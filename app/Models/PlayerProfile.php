@@ -3,7 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class playerprofile extends Model
+class Playerprofile extends Model
 {
     protected $table = 'playerprofile'; // Sesuai skema SQL
     protected $primaryKey = 'PlayerId';

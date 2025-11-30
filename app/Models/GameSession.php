@@ -46,7 +46,7 @@ class GameSession extends Model
     // Relasi ke Peserta
     public function participants()
     {
-        return $this->hasMany(participatesin::class, 'sessionId', 'sessionId');
+        return $this->hasMany(ParticipatesIn::class, 'sessionId', 'sessionId');
     }
 
     // Relasi ke Turns (Log Giliran)
