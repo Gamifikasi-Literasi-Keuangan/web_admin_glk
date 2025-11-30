@@ -146,7 +146,9 @@ async function renderPlayerDetail(playerId) {
         };
 
         // --- 2. GENERATE HTML PROFILING ---
-        const answers = ai.initial_answers || []; 
+        const answers = Array.isArray(ai.initial_answers) 
+    ? ai.initial_answers 
+    : []; 
         const profilingHtml = answers.length > 0 ? `
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <span class="text-xs font-bold text-gray-500 uppercase block mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> Profiling Awal:</span>
