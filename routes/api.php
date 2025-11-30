@@ -1,0 +1,88 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\ScenarioController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\InterventionController;
+use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminPlayerController;
+use App\Http\Controllers\Admin\AdminScenarioController;
+use App\Http\Controllers\Admin\AdminCardController;
+use App\Http\Controllers\Admin\AdminTileController;
+use App\Http\Controllers\Admin\AdminInterventionController;
+use App\Http\Controllers\Admin\AdminConfigController;
+use App\Http\Controllers\Admin\AdminSessionController;
+use App\Http\Controllers\Admin\AdminLeaderboardController;
+use App\Http\Controllers\Admin\AdminMetricController;
+use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminAnalyticsController;
+
+Route::get('/scenario/{scenario}', [ScenarioController::class, 'show']);
+Route::post('/scenario/submit', [ScenarioController::class, 'submit']);
+Route::post('/feedback/intervention', [FeedbackController::class, 'store']);
+Route::get('/intervention/trigger', [InterventionController::class, 'trigger']);
+Route::get('/leaderboard', [LeaderboardController::class, 'getLeaderboard']);
+
+
+Route::prefix('admin')->group(function () {
+    Route::post('/auth/login', [AdminAuthController::class, 'login']);
+
+});
+Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
+    
+    Route::post('/auth/logout', [AdminAuthController::class, 'logout']);
+    // Paket 1: Players
+    Route::get('/players', [AdminPlayerController::class, 'index']);
+    Route::get('/players/{id}', [AdminPlayerController::class, 'show']);
+    Route::get('/players/{id}/analysis', [AdminPlayerController::class, 'analysis']);
+    // Paket 2: Content Management
+    Route::get('/scenarios', [AdminScenarioController::class, 'index']);
+    Route::get('/scenarios/{id}', [AdminScenarioController::class, 'show']);
+    Route::get('/tiles', [AdminTileController::class, 'index']);
+    Route::get('/tiles/{id}', [AdminTileController::class, 'show']);
+    Route::get('/interventions', [AdminInterventionController::class, 'index']);
+    Route::get('/config/game', [AdminConfigController::class, 'show']);
+        Route::prefix('cards')->group(function () {
+        // Risk
+        Route::get('/risk', [AdminCardController::class, 'indexRisk']);
+        Route::get('/risk/{id}', [AdminCardController::class, 'showRisk']);
+        // Chance
+        Route::get('/chance', [AdminCardController::class, 'indexChance']);
+        Route::get('/chance/{id}', [AdminCardController::class, 'showChance']);
+        Route::get('/quiz', [AdminCardController::class, 'indexQuiz']);
+        Route::get('/quiz/{id}', [AdminCardController::class, 'showQuiz']);
+    });
+        Route::get('/sessions', [AdminSessionController::class, 'index']);
+    //pake 3: Leaderboard dan Session Detail
+    Route::get('/sessions/{id}', [AdminSessionController::class, 'show']);
+    Route::get('/leaderboard/global', [AdminLeaderboardController::class, 'globalLeaderboard']);
+    Route::get('/sessions/{id}/leaderboard', [AdminSessionController::class, 'leaderboard']);
+
+    Route::get('/reports/outcomes', [AdminReportController::class, 'learningOutcomes']);
+    Route::prefix('analytics')->group(function () {
+        Route::get('/overview', [AdminAnalyticsController::class, 'overview']);
+        Route::get('/learning-curve', [AdminAnalyticsController::class, 'learningCurve']);
+        Route::get('/skill-matrix', [AdminAnalyticsController::class, 'skillMatrix']);
+        Route::get('/mastery', [AdminAnalyticsController::class, 'masteryDistribution']);
+        Route::get('/difficulty', [AdminAnalyticsController::class, 'difficultyAnalysis']);
+        Route::get('/decisions', [AdminAnalyticsController::class, 'decisionPatterns']);
+        Route::get('/mistakes', [AdminAnalyticsController::class, 'mistakePatterns']);
+        Route::get('/interventions', [AdminAnalyticsController::class, 'interventionSummary']);
+        Route::get('/scenarios', [AdminAnalyticsController::class, 'scenarioEffectiveness']);
+        Route::get('/cards', [AdminAnalyticsController::class, 'cardImpact']);
+        Route::get('/quizzes', [AdminAnalyticsController::class, 'quizPerformance']);
+        Route::get('/heatmap/tiles', [AdminAnalyticsController::class, 'tileHeatmap']);
+        Route::get('/heatmap/time', [AdminAnalyticsController::class, 'timeHeatmap']);
+        Route::get('/distribution', [AdminAnalyticsController::class, 'scoreDistribution']);
+        Route::get('/funnel', [AdminAnalyticsController::class, 'funnel']);
+    });
+    Route::prefix('metrics')->group(function () {
+        Route::get('/kpi', [AdminMetricController::class, 'kpi']);
+        Route::get('/growth', [AdminMetricController::class, 'growthMetrics']);
+        Route::get('/engagement', [AdminMetricController::class, 'engagement']);
+    });
+    
+});
