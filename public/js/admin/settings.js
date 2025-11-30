@@ -88,6 +88,11 @@ function renderTiles(tiles) {
             </td>
             <td class="px-4 py-3 text-sm text-gray-800">${t.name || '-'}</td>
             <td class="px-4 py-3 text-xs font-mono text-gray-500">${t.content_id ? 'ID: ' + t.content_id : '(Random/Empty)'}</td>
+            <td class="px-4 py-3 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <i class="fa-solid fa-user-check mr-1"></i> ${t.landed_count || 0}x
+                </span>
+            </td>
             <td class="px-4 py-3 text-right">
                 <button onclick="showTileDetail('${t.tile_id}')" class="text-indigo-600 hover:text-indigo-900 text-xs font-bold border border-indigo-600 px-2 py-1 rounded hover:bg-indigo-50">
                     Lihat
@@ -98,6 +103,7 @@ function renderTiles(tiles) {
 
     container.innerHTML = `
         <h3 class="text-lg font-bold mb-4 text-gray-700">Peta Papan (Read Only)</h3>
+        <p class="text-sm text-gray-500 mb-4"><i class="fa-solid fa-info-circle mr-1"></i> Statistik pendaratan menunjukkan berapa kali tiles dikunjungi oleh pemain</p>
         <div class="overflow-x-auto border rounded-lg">
             <table class="min-w-full leading-normal">
                 <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
@@ -106,6 +112,7 @@ function renderTiles(tiles) {
                         <th class="px-4 py-3 text-left">Tipe</th>
                         <th class="px-4 py-3 text-left">Label</th>
                         <th class="px-4 py-3 text-left">Konten</th>
+                        <th class="px-4 py-3 text-center"><i class="fa-solid fa-chart-bar mr-1"></i> Pendaratan</th>
                         <th class="px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -164,7 +171,7 @@ async function showTileDetail(id) {
                     <span class="inline-block p-3 rounded-full bg-gray-100 mb-2">
                         <i class="fa-solid fa-map-marker-alt text-2xl text-indigo-600"></i>
                     </span>
-                    <h4 class="text-xl font-bold text-gray-800">${t.default_name}</h4>
+                    <h4 class="text-xl font-bold text-gray-800">${t.name || t.default_name || t.tile_id}</h4>
                     <span class="text-xs font-mono text-gray-500">ID: ${t.tile_id}</span>
                 </div>
                 
@@ -175,13 +182,14 @@ async function showTileDetail(id) {
 
                 <div class="bg-gray-50 p-3 rounded border">
                     <p class="text-xs text-gray-500 uppercase">Konten Tertaut</p>
-                    <p class="font-medium text-indigo-600">${t.linked_content?.title || '-'}</p>
-                    <p class="text-xs text-gray-400">${t.linked_content?.id ? 'ID: ' + t.linked_content.id : 'Tidak ada konten khusus'}</p>
+                    <p class="font-medium text-indigo-600">${t.content_title || '-'}</p>
+                    <p class="text-xs text-gray-400">${t.content_id ? (t.content_type + ': ' + t.content_id) : 'Tidak ada konten khusus'}</p>
                 </div>
 
                 <div class="bg-blue-50 p-3 rounded border border-blue-100 text-center">
-                    <p class="text-xs text-blue-500 uppercase">Statistik Pendaratan</p>
-                    <p class="text-2xl font-bold text-blue-700">${t.stats?.landed_count || 0} <span class="text-sm font-normal">kali</span></p>
+                    <p class="text-xs text-blue-500 uppercase mb-2"><i class="fa-solid fa-chart-line mr-1"></i> Statistik Pendaratan</p>
+                    <p class="text-3xl font-bold text-blue-700">${t.landed_count || 0}</p>
+                    <p class="text-xs text-blue-600 mt-1">kali dikunjungi pemain</p>
                 </div>
             </div>
         `;

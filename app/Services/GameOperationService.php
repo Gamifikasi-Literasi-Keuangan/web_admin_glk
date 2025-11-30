@@ -26,7 +26,7 @@ class GameOperationService
         $paginator->getCollection()->transform(function ($session) {
             $duration = 0;
             if ($session->started_at && $session->ended_at) {
-                $duration = Carbon::parse($session->ended_at)->diffInSeconds(Carbon::parse($session->started_at));
+                $duration = Carbon::parse($session->started_at)->diffInSeconds(Carbon::parse($session->ended_at));
             }
 
             return [

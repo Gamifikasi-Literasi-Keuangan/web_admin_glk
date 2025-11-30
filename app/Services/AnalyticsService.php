@@ -62,7 +62,7 @@ class AnalyticsService
     public function getEngagement()
     {
         $sessions = $this->repo->getSessionDurations();
-        $avg = $sessions->avg(fn($s) => Carbon::parse($s->ended_at)->diffInMinutes(Carbon::parse($s->started_at)));
+        $avg = $sessions->avg(fn($s) => Carbon::parse($s->started_at)->diffInMinutes(Carbon::parse($s->ended_at)));
         
         // Asumsi total session di repo counts adalah active + completed
         $counts = $this->repo->getCounts(); // Reuse method

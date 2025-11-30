@@ -20,9 +20,9 @@ class CardRepository
             $query->where('difficulty', $filters['difficulty']);
         }
 
-        // Hitung usage secara otomatis lewat relasi
+        // Hitung usage secara otomatis lewat relasi (gunakan type_card format)
         return $query->withCount(['decisions' => function (Builder $q) use ($type) {
-                $q->where('content_type', $type);
+                $q->where('content_type', $type . '_card');
             }])
             ->orderBy('created_at', 'desc')
             ->paginate($limit);
@@ -37,7 +37,7 @@ class CardRepository
     {
         return DB::table('player_decisions')
             ->where('content_id', $id)
-            ->where('content_type', $type)
+            ->where('content_type', $type . '_card')
             ->count();
     }
 

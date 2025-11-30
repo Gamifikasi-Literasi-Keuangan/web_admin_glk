@@ -17,14 +17,21 @@ class TileService
         $tiles = $this->repo->getAll();
         
         return $tiles->map(function ($tile) {
-            $content = json_decode($tile->linked_content);
-            $contentId = $content->id ?? $content ?? null;
+            $content = json_decode($tile->linked_content, true);
+            $contentType = $content['content_type'] ?? null;
+            $contentId = $content['content_id'] ?? null;
+            
+            // Get landed stats
+            $stats = $this->repo->getLandedStats($tile->tile_id);
 
             return [
                 'tile_id' => $tile->tile_id,
+                'name' => $tile->name,
                 'position' => (int) $tile->position_index,
                 'type' => $tile->type,
-                'content_id' => $contentId
+                'content_type' => $contentType,
+                'content_id' => $contentId,
+                'landed_count' => $stats
             ];
         });
     }
@@ -34,19 +41,20 @@ class TileService
         $tile = $this->repo->findById($id);
         if (!$tile) return null;
 
-        $content = json_decode($tile->linked_content);
-        $contentId = $content->id ?? $content ?? null;
-        $title = $this->repo->getContentTitle($tile->type, $contentId);
+        $content = json_decode($tile->linked_content, true);
+        $contentType = $content['content_type'] ?? null;
+        $contentId = $content['content_id'] ?? null;
+        $contentTitle = $this->repo->getContentTitle($contentType, $contentId);
         $stats = $this->repo->getLandedStats($id);
 
         return [
             'tile_id' => $tile->tile_id,
+            'name' => $tile->name,
             'type' => $tile->type,
-            'linked_content' => [
-                'id' => $contentId,
-                'title' => $title
-            ],
-            'stats' => ['landed' => $stats]
+            'content_type' => $contentType,
+            'content_id' => $contentId,
+            'content_title' => $contentTitle,
+            'landed_count' => $stats
         ];
     }
 }
