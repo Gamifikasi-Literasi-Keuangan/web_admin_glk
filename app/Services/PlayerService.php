@@ -51,6 +51,9 @@ class PlayerService
         if (!$player)
             return null;
 
+        // Hitung stats dari participatesin
+        $stats = $this->repo->getPlayerStats($id);
+
         return [
             'player_info' => [
                 'id' => $player->PlayerId,
@@ -63,15 +66,18 @@ class PlayerService
             // Pastikan relasi profile ada
             'ai_profile' => $player->profile ? [
                 'cluster' => $player->profile->cluster,
-                'traits' => $player->profile->traits, // Laravel otomatis decode JSON jika di-cast di model
+                'traits' => $player->profile->traits,
                 'weak_areas' => $player->profile->weak_areas,
                 'initial_answers' => $player->profile->onboarding_answers ?? [],
                 'ai_confidence' => ($player->profile->confidence_level * 100) . '%',
                 'last_updated' => $player->profile->last_updated
             ] : null,
             'lifetime_stats' => [
-                'total_games' => $player->gamesPlayed
-                // Tambahkan stats lain jika perlu
+                'total_games' => $player->gamesPlayed,
+                'avg_score' => round($stats->avg_score ?? 0, 1),
+                'win_rate' => ($stats && $stats->total_games > 0)
+                    ? round(($stats->wins / $stats->total_games) * 100, 1) . '%' 
+                    : '0%'
             ]
         ];
     }

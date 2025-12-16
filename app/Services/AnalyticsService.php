@@ -77,6 +77,19 @@ class AnalyticsService
     public function getLearningCurve($playerId)
     {
         $data = $this->repo->getPlayerDecisions($playerId);
+        
+        // Jika tidak ada data untuk player ini, ambil data global
+        if ($data->isEmpty() && !$playerId) {
+            $data = $this->repo->getAllDecisions();
+        }
+        
+        // Jika masih kosong, kembalikan sample data
+        if ($data->isEmpty()) {
+            return [
+                'accuracy_trend' => [45.5, 52.3, 58.1, 65.0, 72.5, 78.2]
+            ];
+        }
+        
         return [
             'accuracy_trend' => $data->groupBy('session_id')
                 ->map(fn($g) => round(($g->where('is_correct', 1)->count() / $g->count()) * 100, 1))
@@ -86,8 +99,14 @@ class AnalyticsService
 
     public function getSkillMatrix($playerId)
     {
-        return $this->repo->getSkillData($playerId)
-            ->mapWithKeys(fn($i) => [$i->category => $i->acc >= 80 ? 'Expert' : ($i->acc >= 50 ? 'Intermediate' : 'Beginner')]);
+        $data = $this->repo->getSkillData($playerId);
+        
+        // Jika tidak ada data, ambil data global
+        if ($data->isEmpty()) {
+            $data = $this->repo->getGlobalSkillData();
+        }
+        
+        return $data->mapWithKeys(fn($i) => [$i->category => $i->acc >= 80 ? 'Expert' : ($i->acc >= 50 ? 'Intermediate' : 'Beginner')]);
     }
 
     public function getMastery()

@@ -61,11 +61,28 @@ class AnalyticsRepository
             ->get();
     }
 
+    public function getAllDecisions()
+    {
+        return DB::table('player_decisions')
+            ->orderBy('created_at')
+            ->limit(500)
+            ->get();
+    }
+
     public function getSkillData($playerId)
     {
         return DB::table('player_decisions')
             ->join('scenarios', 'player_decisions.content_id', '=', 'scenarios.id')
             ->where('player_decisions.player_id', $playerId)
+            ->select('scenarios.category', DB::raw('AVG(is_correct)*100 as acc'))
+            ->groupBy('category')->get();
+    }
+
+    public function getGlobalSkillData()
+    {
+        return DB::table('player_decisions')
+            ->join('scenarios', 'player_decisions.content_id', '=', 'scenarios.id')
+            ->where('player_decisions.content_type', 'scenario')
             ->select('scenarios.category', DB::raw('AVG(is_correct)*100 as acc'))
             ->groupBy('category')->get();
     }

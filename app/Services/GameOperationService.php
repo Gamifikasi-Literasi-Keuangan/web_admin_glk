@@ -52,7 +52,8 @@ class GameOperationService
         // Hitung Durasi
         $duration = '-';
         if ($session->started_at && $session->ended_at) {
-            $duration = $session->ended_at->diffInMinutes($session->started_at) . ' menit';
+            $minutes = abs($session->ended_at->diffInMinutes($session->started_at));
+            $duration = $minutes . ' menit';
         }
 
         // Format Timeline dari Turns

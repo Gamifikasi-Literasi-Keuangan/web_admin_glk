@@ -50,4 +50,14 @@ class PlayerRepository
             ->groupBy('category')
             ->get();
     }
+
+    public function getPlayerStats($playerId)
+    {
+        return DB::table('participatesin')
+            ->where('playerId', $playerId)
+            ->selectRaw('COUNT(*) as total_games')
+            ->selectRaw('AVG(score) as avg_score')
+            ->selectRaw('SUM(CASE WHEN `rank` = 1 THEN 1 ELSE 0 END) as wins')
+            ->first();
+    }
 }

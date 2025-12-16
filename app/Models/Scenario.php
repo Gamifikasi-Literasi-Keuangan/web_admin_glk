@@ -15,7 +15,7 @@ class Scenario extends Model
 
     // TAMBAHKAN KOLOM BARU DI SINI
     protected $fillable = [
-        'id', 
+        'id',
         'category', 
         'title', 
         'question', 
