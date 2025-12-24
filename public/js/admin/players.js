@@ -17,13 +17,13 @@ async function renderPlayerList(keyword = '') {
     // Tampilkan container list, sembunyikan detail
     container.classList.remove('hidden');
     detailWrapper.classList.add('hidden');
-    
-    if(!keyword) wrapper.innerHTML = '<div class="loader"></div>';
+
+    if (!keyword) wrapper.innerHTML = '<div class="loader"></div>';
 
     try {
         const url = `${BASE_API}/players?limit=20&search=${encodeURIComponent(keyword)}`;
         const response = await fetch(url, { headers });
-        
+
         if (response.status === 401) {
             wrapper.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Sesi habis. Silakan login ulang.</div>`;
             return;
@@ -86,7 +86,7 @@ async function renderPlayerList(keyword = '') {
 
         // Restore focus input search agar UX nyaman
         const input = document.getElementById('searchInput');
-        if(input) { input.focus(); input.value = keyword; }
+        if (input) { input.focus(); input.value = keyword; }
 
     } catch (e) {
         wrapper.innerHTML = `<div class="text-red-500 p-4">Error: ${e.message}</div>`;
@@ -97,7 +97,7 @@ async function renderPlayerList(keyword = '') {
 async function renderPlayerDetail(playerId) {
     const container = document.getElementById('player-container');
     const detailWrapper = document.getElementById('detail-wrapper');
-    
+
     // Switch View ke Detail
     container.classList.add('hidden');
     detailWrapper.classList.remove('hidden');
@@ -146,22 +146,22 @@ async function renderPlayerDetail(playerId) {
         };
 
         // --- 2. GENERATE HTML PROFILING ---
-        const answers = Array.isArray(ai.initial_answers) 
-    ? ai.initial_answers 
-    : []; 
+        const answers = ai && Array.isArray(ai.initial_answers)
+            ? ai.initial_answers
+            : [];
         const profilingHtml = answers.length > 0 ? `
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <span class="text-xs font-bold text-gray-500 uppercase block mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> Profiling Awal:</span>
                 <div class="grid grid-cols-3 gap-2">
                     ${answers.map((ans, idx) => {
-                        const map = profilingMap[idx] ? profilingMap[idx][ans] : { text: ans, class: 'bg-gray-100 text-gray-600' };
-                        return `
+            const map = profilingMap[idx] ? profilingMap[idx][ans] : { text: ans, class: 'bg-gray-100 text-gray-600' };
+            return `
                             <div class="text-center p-2 rounded border ${map.class || 'bg-gray-50'}">
                                 <div class="text-[10px] uppercase opacity-70">Q${idx + 1}</div>
                                 <div class="font-bold text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis">${map.text || ans}</div>
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
             </div>
         ` : '<p class="text-xs text-gray-400 mt-2 italic">Belum ada data profiling.</p>';
@@ -170,7 +170,7 @@ async function renderPlayerDetail(playerId) {
         const skillHtml = Object.entries(skill).map(([k, v]) => `
             <div class="flex justify-between items-center bg-gray-50 p-2 rounded mb-1 border border-gray-100">
                 <span class="text-sm font-medium text-gray-700">${k}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${v==='Expert'?'bg-green-500':(v==='Intermediate'?'bg-yellow-500':'bg-red-500')}">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${v === 'Expert' ? 'bg-green-500' : (v === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500')}">
                     ${v}
                 </span>
             </div>
@@ -185,17 +185,17 @@ async function renderPlayerDetail(playerId) {
             <div class="bg-white shadow rounded-lg p-6 mb-6 border-l-4 border-indigo-500 flex flex-col md:flex-row justify-between items-start gap-4">
                 <div class="flex-1 w-full">
                     <h1 class="text-2xl font-bold text-gray-800">${p.name}</h1>
-                    <p class="text-gray-500 text-sm">@${p.username} • Joined: ${p.join_date?.substring(0,10)}</p>
+                    <p class="text-gray-500 text-sm">@${p.username} • Joined: ${p.join_date?.substring(0, 10)}</p>
                     
                     ${profilingHtml}
                 </div>
                 
                 <div class="text-left md:text-right w-full md:w-auto bg-indigo-50 md:bg-transparent p-3 md:p-0 rounded">
                     <p class="text-xs text-gray-500 uppercase tracking-wide">Cluster AI</p>
-                    <span class="text-lg font-bold text-indigo-600">${ai.cluster || 'Unprofiled'}</span>
-                    <p class="text-xs text-gray-400">Confidence: ${ai.ai_confidence}</p>
+                    <span class="text-lg font-bold text-indigo-600">${ai?.cluster || 'Unprofiled'}</span>
+                    <p class="text-xs text-gray-400">Confidence: ${ai?.ai_confidence || 'N/A'}</p>
                     <div class="mt-2 flex flex-wrap justify-end gap-1">
-                        ${ai.traits ? ai.traits.map(t => `<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded shadow-sm">${t}</span>`).join('') : ''}
+                        ${ai?.traits ? ai.traits.map(t => `<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded shadow-sm">${t}</span>`).join('') : ''}
                     </div>
                 </div>
             </div>
@@ -270,7 +270,7 @@ async function renderPlayerDetail(playerId) {
             new Chart(document.getElementById('playerCurveChart'), {
                 type: 'line',
                 data: {
-                    labels: curve.accuracy_trend.map((_, i) => `Sesi ${i+1}`),
+                    labels: curve.accuracy_trend.map((_, i) => `Sesi ${i + 1}`),
                     datasets: [{
                         label: 'Akurasi (%)',
                         data: curve.accuracy_trend,
@@ -295,7 +295,7 @@ async function renderPlayerDetail(playerId) {
                 }
             });
         } else {
-            document.getElementById('playerCurveChart').parentNode.innerHTML = 
+            document.getElementById('playerCurveChart').parentNode.innerHTML =
                 '<div class="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50 rounded border border-dashed border-gray-300"><i class="fa-solid fa-chart-line text-3xl mb-2 opacity-50"></i><span class="text-sm">Belum cukup data grafik.</span></div>';
         }
 
