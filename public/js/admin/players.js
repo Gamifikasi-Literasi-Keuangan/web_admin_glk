@@ -653,17 +653,17 @@ function refreshOverview() {
     try {
         // Cari parent window jika di iframe, atau gunakan window saat ini
         const parentWindow = window.parent || window;
-        
+
         // Panggil function loadOverviewStats jika ada di parent
-        if (typeof parentWindow.loadOverviewStats === 'function') {
+        if (typeof parentWindow.loadOverviewStats === "function") {
             parentWindow.loadOverviewStats();
         }
-        
+
         // Atau trigger custom event untuk update overview
-        const event = new CustomEvent('playerListUpdated');
+        const event = new CustomEvent("playerListUpdated");
         document.dispatchEvent(event);
     } catch (e) {
-        console.log('Note: Overview akan ter-refresh otomatis');
+        console.log("Note: Overview akan ter-refresh otomatis");
     }
 }
 
