@@ -46,4 +46,112 @@ class AdminCardController extends Controller
         $data = $this->service->getQuizDetail($id);
         return $data ? response()->json($data) : response()->json(['message' => 'Not Found'], 404);
     }
+
+    // CREATE
+    public function storeRisk(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'effect' => 'required|string',
+            'difficulty' => 'required|integer|between:1,3',
+        ]);
+        $card = $this->service->createCard('risk', $request->all());
+        return response()->json(['message' => 'Risk card created', 'data' => $card], 201);
+    }
+
+    public function storeChance(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'effect' => 'required|string',
+            'difficulty' => 'required|integer|between:1,3',
+        ]);
+        $card = $this->service->createCard('chance', $request->all());
+        return response()->json(['message' => 'Chance card created', 'data' => $card], 201);
+    }
+
+    public function storeQuiz(Request $request)
+    {
+        $request->validate([
+            'question' => 'required|string',
+            'difficulty' => 'required|integer|between:1,3',
+            'options' => 'required|array|min:2',
+            'options.*.text' => 'required|string',
+            'options.*.is_correct' => 'required|boolean',
+        ]);
+        $quiz = $this->service->createQuiz($request->all());
+        return response()->json(['message' => 'Quiz created', 'data' => $quiz], 201);
+    }
+
+    // UPDATE
+    public function updateRisk(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'effect' => 'sometimes|string',
+            'difficulty' => 'sometimes|integer|between:1,3',
+            'scoreChange' => 'sometimes|integer',
+        ]);
+        $card = $this->service->updateCard($id, 'risk', $request->all());
+        if (!$card)
+            return response()->json(['message' => 'Not Found'], 404);
+        return response()->json(['message' => 'Risk card updated', 'data' => $card]);
+    }
+
+    public function updateChance(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'effect' => 'sometimes|string',
+            'difficulty' => 'sometimes|integer|between:1,3',
+            'scoreChange' => 'sometimes|integer',
+        ]);
+        $card = $this->service->updateCard($id, 'chance', $request->all());
+        if (!$card)
+            return response()->json(['message' => 'Not Found'], 404);
+        return response()->json(['message' => 'Chance card updated', 'data' => $card]);
+    }
+
+    public function updateQuiz(Request $request, $id)
+    {
+        $request->validate([
+            'question' => 'sometimes|string',
+            'difficulty' => 'sometimes|integer|between:1,3',
+            'correctScore' => 'sometimes|integer',
+            'incorrectScore' => 'sometimes|integer',
+            'correctOption' => 'sometimes|string',
+            'options' => 'sometimes|array|min:2',
+            'options.*.optionId' => 'sometimes|string',
+            'options.*.text' => 'sometimes|string',
+        ]);
+        $quiz = $this->service->updateQuiz($id, $request->all());
+        if (!$quiz)
+            return response()->json(['message' => 'Not Found'], 404);
+        return response()->json(['message' => 'Quiz updated', 'data' => $quiz]);
+    }
+
+    // DELETE
+    public function destroyRisk($id)
+    {
+        $deleted = $this->service->deleteCard($id, 'risk');
+        if (!$deleted)
+            return response()->json(['message' => 'Not Found'], 404);
+        return response()->json(['message' => 'Risk card deleted']);
+    }
+
+    public function destroyChance($id)
+    {
+        $deleted = $this->service->deleteCard($id, 'chance');
+        if (!$deleted)
+            return response()->json(['message' => 'Not Found'], 404);
+        return response()->json(['message' => 'Chance card deleted']);
+    }
+
+    public function destroyQuiz($id)
+    {
+        $deleted = $this->service->deleteQuiz($id);
+        if (!$deleted)
+            return response()->json(['message' => 'Not Found'], 404);
+        return response()->json(['message' => 'Quiz deleted']);
+    }
 }

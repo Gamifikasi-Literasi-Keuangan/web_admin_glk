@@ -16,6 +16,18 @@ class ScenarioOption extends Model
     public $timestamps = false;
 
     /**
+     * Mass assignable attributes
+     */
+    protected $fillable = [
+        'scenarioId',
+        'optionId',
+        'text',
+        'response',
+        'is_correct',
+        'scoreChange',
+    ];
+
+    /**
      * Otomatis cast kolom JSON (MySQL)
      */
     protected $casts = [

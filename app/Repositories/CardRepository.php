@@ -84,4 +84,60 @@ class CardRepository
     {
         return QuizCard::with('options')->find($id);
     }
+
+    // CREATE
+    public function createCard($data)
+    {
+        return Card::create($data);
+    }
+
+    public function createQuiz($data, $options)
+    {
+        return DB::transaction(function () use ($data, $options) {
+            $quiz = QuizCard::create($data);
+            foreach ($options as &$opt) {
+                $opt['quizId'] = $quiz->id;
+            }
+            $quiz->options()->createMany($options);
+            return $quiz;
+        });
+    }
+
+    // UPDATE
+    public function updateCard($id, $data)
+    {
+        $card = Card::find($id);
+        if (!$card)
+            return null;
+        $card->update($data);
+        return $card;
+    }
+
+    public function updateQuiz($id, $data, $options)
+    {
+        return DB::transaction(function () use ($id, $data, $options) {
+            $quiz = QuizCard::findOrFail($id);
+            $quiz->update($data);
+
+            if (!empty($options)) {
+                $quiz->options()->delete();
+                foreach ($options as &$opt) {
+                    $opt['quizId'] = $quiz->id;
+                }
+                $quiz->options()->createMany($options);
+            }
+            return $quiz;
+        });
+    }
+
+    // DELETE
+    public function deleteCard($id, $type)
+    {
+        return Card::where('id', $id)->where('type', $type)->delete();
+    }
+
+    public function deleteQuiz($id)
+    {
+        return QuizCard::destroy($id);
+    }
 }

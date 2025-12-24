@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Scenario extends Model
 {
     use SoftDeletes;
-    
+
     protected $table = 'scenarios';
     protected $primaryKey = 'id';
     public $incrementing = false;
@@ -16,11 +16,11 @@ class Scenario extends Model
     // TAMBAHKAN KOLOM BARU DI SINI
     protected $fillable = [
         'id',
-        'category', 
-        'title', 
-        'question', 
-        'tags', 
-        'difficulty', 
+        'category',
+        'title',
+        'question',
+        'tags',
+        'difficulty',
         'learning_objective',
         'weak_area_relevance', // <--- Baru
         'cluster_relevance',   // <--- Baru

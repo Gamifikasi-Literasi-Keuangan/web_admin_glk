@@ -27,10 +27,12 @@ class CardService
                 'difficulty' => (int) $card->difficulty,
                 'usage' => (int) ($card->decisions_count ?? 0)
             ];
-            
-            if ($type === 'risk') $data['impact'] = (int) $card->scoreChange;
-            else $data['benefit'] = (int) $card->scoreChange;
-            
+
+            if ($type === 'risk')
+                $data['impact'] = (int) $card->scoreChange;
+            else
+                $data['benefit'] = (int) $card->scoreChange;
+
             return $data;
         });
 
@@ -40,7 +42,8 @@ class CardService
     public function getDetail($id, $type)
     {
         $card = $this->repo->findCardById($id, $type);
-        if (!$card) return null;
+        if (!$card)
+            return null;
 
         $stats = $this->repo->getCardStats($id, $type);
 
@@ -53,8 +56,10 @@ class CardService
             'stats' => ['landed_count' => (int) $stats]
         ];
 
-        if ($type === 'risk') $data['impact'] = (int) $card->scoreChange;
-        else $data['benefit'] = (int) $card->scoreChange;
+        if ($type === 'risk')
+            $data['impact'] = (int) $card->scoreChange;
+        else
+            $data['benefit'] = (int) $card->scoreChange;
 
         return $data;
     }
@@ -82,26 +87,104 @@ class CardService
     public function getQuizDetail($id)
     {
         $quiz = $this->repo->findQuizById($id);
-        if (!$quiz) return null;
+        if (!$quiz)
+            return null;
 
         return [
             'id' => $quiz->id,
             'question' => $quiz->question,
-            
+
             // PERBAIKAN UTAMA DI SINI:
             // Mapping nama kolom DB ke nama variabel yang diminta JS (content.js)
             'correct_option_id' => $quiz->correctOption, // Supaya kunci jawaban hijau muncul
             'correct_score' => (int) $quiz->correctScore, // Supaya Score Benar muncul
             'incorrect_score' => (int) $quiz->incorrectScore, // Supaya Score Salah muncul
-            
+
             'difficulty' => (int) $quiz->difficulty,
-            'options' => $quiz->options->map(function($opt) {
+            'options' => $quiz->options->map(function ($opt) {
                 return [
-                    'id' => $opt->id, 
-                    'label' => $opt->optionId, 
+                    'id' => $opt->id,
+                    'label' => $opt->optionId,
                     'text' => $opt->text
                 ];
             })
         ];
+    }
+
+    // CREATE, UPDATE, DELETE
+    public function createCard($type, $data)
+    {
+        // Generate unique ID for card
+        $id = $type . '_' . uniqid();
+
+        $cardData = [
+            'id' => $id,
+            'type' => $type,
+            'title' => $data['title'],
+            'narration' => $data['effect'],
+            'action' => $data['action'] ?? 'instant',
+            'difficulty' => $data['difficulty'],
+            'scoreChange' => $data['scoreChange'] ?? 0,
+        ];
+        return $this->repo->createCard($cardData);
+    }
+
+    public function createQuiz($data)
+    {
+        // Generate unique ID for quiz
+        $id = 'quiz_' . uniqid();
+
+        $quizData = [
+            'id' => $id,
+            'question' => $data['question'],
+            'difficulty' => $data['difficulty'],
+            'correctOption' => $data['correctOption'] ?? 'A',
+            'correctScore' => $data['correctScore'] ?? 10,
+            'incorrectScore' => $data['incorrectScore'] ?? -5,
+        ];
+        return $this->repo->createQuiz($quizData, $data['options']);
+    }
+
+    public function updateCard($id, $type, $data)
+    {
+        $card = $this->repo->findCardById($id, $type);
+        if (!$card)
+            return null;
+
+        $updateData = array_filter([
+            'title' => $data['title'] ?? $card->title,
+            'narration' => $data['effect'] ?? $card->narration,
+            'difficulty' => $data['difficulty'] ?? $card->difficulty,
+            'scoreChange' => $data['scoreChange'] ?? $card->scoreChange,
+        ]);
+        return $this->repo->updateCard($id, $updateData);
+    }
+
+    public function updateQuiz($id, $data)
+    {
+        $quiz = $this->repo->findQuizById($id);
+        if (!$quiz)
+            return null;
+
+        $updateData = array_filter([
+            'question' => $data['question'] ?? $quiz->question,
+            'difficulty' => $data['difficulty'] ?? $quiz->difficulty,
+            'correctOption' => $data['correctOption'] ?? $quiz->correctOption,
+            'correctScore' => $data['correctScore'] ?? $quiz->correctScore,
+            'incorrectScore' => $data['incorrectScore'] ?? $quiz->incorrectScore,
+        ]);
+
+        $options = $data['options'] ?? [];
+        return $this->repo->updateQuiz($id, $updateData, $options);
+    }
+
+    public function deleteCard($id, $type)
+    {
+        return $this->repo->deleteCard($id, $type);
+    }
+
+    public function deleteQuiz($id)
+    {
+        return $this->repo->deleteQuiz($id);
     }
 }

@@ -23,7 +23,7 @@ class ScenarioService
             throw new \Exception("Opsi jawaban tidak ditemukan.");
         }
 
-        $scoreChangeArray = $option->scoreChange; 
+        $scoreChangeArray = $option->scoreChange;
         $affectedScore = array_key_first($scoreChangeArray);
         $scoreChange = $scoreChangeArray[$affectedScore] ?? 0;
 
@@ -73,7 +73,8 @@ class ScenarioService
     {
         $scenario = $this->repo->findById($id);
 
-        if (!$scenario) return null;
+        if (!$scenario)
+            return null;
 
         return [
             'id' => $scenario->id,
@@ -105,5 +106,53 @@ class ScenarioService
                 ];
             })
         ];
+    }
+
+    public function create($data)
+    {
+        // Generate unique ID untuk scenario
+        $category = strtolower($data['category']);
+        $id = $category . '_' . uniqid();
+
+        $scenarioData = [
+            'id' => $id,
+            'title' => $data['title'],
+            'category' => $data['category'],
+            'question' => $data['question'],
+            'difficulty' => $data['difficulty'],
+            'learning_objective' => $data['learning_objective'] ?? null,
+            'tags' => $data['tags'] ?? [],
+            'weak_area_relevance' => $data['weak_area_relevance'] ?? [],
+            'cluster_relevance' => $data['cluster_relevance'] ?? [],
+            'historical_success_rate' => $data['historical_success_rate'] ?? 0.5,
+        ];
+
+        return $this->repo->createWithOptions($scenarioData, $data['options']);
+    }
+
+    public function update($id, $data)
+    {
+        $scenario = $this->repo->findById($id);
+        if (!$scenario)
+            return null;
+
+        $scenarioData = array_filter([
+            'title' => $data['title'] ?? $scenario->title,
+            'category' => $data['category'] ?? $scenario->category,
+            'question' => $data['question'] ?? $scenario->question,
+            'difficulty' => $data['difficulty'] ?? $scenario->difficulty,
+            'learning_objective' => $data['learning_objective'] ?? $scenario->learning_objective,
+            'tags' => $data['tags'] ?? $scenario->tags,
+            'weak_area_relevance' => $data['weak_area_relevance'] ?? $scenario->weak_area_relevance,
+            'cluster_relevance' => $data['cluster_relevance'] ?? $scenario->cluster_relevance,
+        ]);
+
+        $options = $data['options'] ?? [];
+        return $this->repo->updateWithOptions($id, $scenarioData, $options);
+    }
+
+    public function delete($id)
+    {
+        return $this->repo->delete($id);
     }
 }

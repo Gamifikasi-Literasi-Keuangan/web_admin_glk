@@ -32,7 +32,6 @@ Route::prefix('admin')->group(function () {
 
 });
 Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
-    
     Route::post('/auth/logout', [AdminAuthController::class, 'logout']);
     // Paket 1: Players
     Route::get('/players', [AdminPlayerController::class, 'index']);
@@ -41,21 +40,34 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     // Paket 2: Content Management
     Route::get('/scenarios', [AdminScenarioController::class, 'index']);
     Route::get('/scenarios/{id}', [AdminScenarioController::class, 'show']);
+    Route::post('/scenarios', [AdminScenarioController::class, 'store']);
+    Route::put('/scenarios/{id}', [AdminScenarioController::class, 'update']);
+    Route::delete('/scenarios/{id}', [AdminScenarioController::class, 'destroy']);
     Route::get('/tiles', [AdminTileController::class, 'index']);
     Route::get('/tiles/{id}', [AdminTileController::class, 'show']);
     Route::get('/interventions', [AdminInterventionController::class, 'index']);
     Route::get('/config/game', [AdminConfigController::class, 'show']);
-        Route::prefix('cards')->group(function () {
+    Route::prefix('cards')->group(function () {
         // Risk
         Route::get('/risk', [AdminCardController::class, 'indexRisk']);
         Route::get('/risk/{id}', [AdminCardController::class, 'showRisk']);
+        Route::post('/risk', [AdminCardController::class, 'storeRisk']);
+        Route::put('/risk/{id}', [AdminCardController::class, 'updateRisk']);
+        Route::delete('/risk/{id}', [AdminCardController::class, 'destroyRisk']);
         // Chance
         Route::get('/chance', [AdminCardController::class, 'indexChance']);
         Route::get('/chance/{id}', [AdminCardController::class, 'showChance']);
+        Route::post('/chance', [AdminCardController::class, 'storeChance']);
+        Route::put('/chance/{id}', [AdminCardController::class, 'updateChance']);
+        Route::delete('/chance/{id}', [AdminCardController::class, 'destroyChance']);
+        // Quiz
         Route::get('/quiz', [AdminCardController::class, 'indexQuiz']);
         Route::get('/quiz/{id}', [AdminCardController::class, 'showQuiz']);
+        Route::post('/quiz', [AdminCardController::class, 'storeQuiz']);
+        Route::put('/quiz/{id}', [AdminCardController::class, 'updateQuiz']);
+        Route::delete('/quiz/{id}', [AdminCardController::class, 'destroyQuiz']);
     });
-        Route::get('/sessions', [AdminSessionController::class, 'index']);
+    Route::get('/sessions', [AdminSessionController::class, 'index']);
     //pake 3: Leaderboard dan Session Detail
     Route::get('/sessions/{id}', [AdminSessionController::class, 'show']);
     Route::get('/leaderboard/global', [AdminLeaderboardController::class, 'globalLeaderboard']);
@@ -84,5 +96,6 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
         Route::get('/growth', [AdminMetricController::class, 'growthMetrics']);
         Route::get('/engagement', [AdminMetricController::class, 'engagement']);
     });
-    
+ 
+
 });
