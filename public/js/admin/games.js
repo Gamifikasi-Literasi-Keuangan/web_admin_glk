@@ -2,149 +2,115 @@ const headers = {
     'Authorization': `Bearer ${token}`,
     'Accept': 'application/json'
 };
-let currentTab = 'sessions';
 
 document.addEventListener('DOMContentLoaded', () => loadData());
 
-// --- TAB SWITCHING ---
-function switchTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-indigo-500', 'text-indigo-600');
-        btn.classList.add('border-transparent', 'text-gray-500');
-    });
-    document.getElementById(`tab-${tab}`).classList.remove('border-transparent', 'text-gray-500');
-    document.getElementById(`tab-${tab}`).classList.add('border-indigo-500', 'text-indigo-600');
-    
-    loadData();
-}
-
 // --- DATA LOADER ---
 async function loadData() {
-    const container = document.getElementById('games-content');
-    container.innerHTML = '<div class="loader"></div>';
+    const container = document.getElementById('session-grid');
+    container.innerHTML = '<div class="col-span-2 flex justify-center"><div class="loader"></div></div>';
 
     try {
-        let url = currentTab === 'sessions' 
-            ? `${BASE_API}/sessions?limit=20` 
-            : `${BASE_API}/leaderboard/global?limit=50`;
-
+        const url = `${BASE_API}/sessions?limit=6`; // Load 6 sessions for grid display
         const res = await fetch(url, { headers });
         if (!res.ok) throw new Error("Gagal mengambil data");
         const json = await res.json();
 
-        if (currentTab === 'sessions') renderSessionList(json.data || []);
-        else renderGlobalLeaderboard(json.rankings || []);
+        renderSessionGrid(json.data || []);
 
     } catch (e) {
-        container.innerHTML = `<div class="text-red-500 p-4">Error: ${e.message}</div>`;
+        container.innerHTML = `<div class="col-span-2 text-red-400 p-4 text-center">Error: ${e.message}</div>`;
     }
 }
 
-// --- 1. RENDER SESSION LIST ---
-function renderSessionList(data) {
-    const container = document.getElementById('games-content');
-    if (data.length === 0) { container.innerHTML = 'Belum ada riwayat permainan.'; return; }
+// --- RENDER SESSION GRID ---
+function renderSessionGrid(data) {
+    const container = document.getElementById('session-grid');
+    
+    if (data.length === 0) { 
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <i class="fas fa-gamepad text-zinc-400 text-4xl mb-4"></i>
+                <p class="text-zinc-400 text-lg font-['Poppins']">Belum ada sesi permainan.</p>
+            </div>
+        `; 
+        return; 
+    }
 
-    let rows = data.map(s => `
-        <tr class="hover:bg-gray-50 border-b">
-            <td class="px-5 py-4">
-                <div class="text-sm font-bold text-gray-900">${s.session_id}</div>
-                <div class="text-xs text-gray-500">${s.played_at}</div>
-            </td>
-            <td class="px-5 py-4">
-                <span class="px-2 py-1 rounded-full text-xs font-bold uppercase 
-                    ${s.status.toLowerCase() === 'completed' ? 'bg-green-100 text-green-700' : 
-                      (s.status.toLowerCase() === 'active' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600')}">
-                    ${s.status}
-                </span>
-            </td>
-            <td class="px-5 py-4 text-sm text-gray-700">
-                ${s.winner !== '-' ? `<i class="fa-solid fa-crown text-yellow-500 mr-1"></i> ${s.winner} (${s.winning_score})` : '-'}
-            </td>
-            <td class="px-5 py-4 text-sm text-gray-500">${s.duration_human}</td>
-            <td class="px-5 py-4 text-right">
-                <button onclick="showSessionDetail('${s.session_id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-sm border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-50">
-                    Detail & Replay
-                </button>
-            </td>
-        </tr>
-    `).join('');
-
-    container.innerHTML = `
-    <div class="max-w-4xl mx-auto bg-white rounded-lg overflow-hidden border border-gray-200">
-        <div class="bg-indigo-50 p-4 ...">...</div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full leading-normal">
-                <thead>
-                    <tr class="bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase">
-                        <th class="px-5 py-3">ID Sesi</th>
-                        <th class="px-5 py-3">Status</th>
-                        <th class="px-5 py-3">Pemenang</th>
-                        <th class="px-5 py-3">Durasi</th>
-                        <th class="px-5 py-3 text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>
-        </div>
-    `;
-}
-
-// --- 2. RENDER GLOBAL LEADERBOARD ---
-function renderGlobalLeaderboard(data) {
-    const container = document.getElementById('games-content');
-    if (data.length === 0) { container.innerHTML = 'Belum ada data peringkat.'; return; }
-
-    let rows = data.map((p, index) => {
-        let rankBadge = index < 3 
-            ? `<div class="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold ${index === 0 ? 'bg-yellow-500' : (index === 1 ? 'bg-gray-400' : 'bg-orange-400')}">#${p.rank}</div>`
-            : `<span class="font-bold text-gray-500 ml-2">#${p.rank}</span>`;
-
+    // Generate session cards using modern design
+    const cards = data.map((session, index) => {
+        const sessionId = session.session_id || `GAME-${String(index + 1).padStart(3, '0')}`;
+        const isActive = session.status && session.status.toLowerCase() === 'active';
+        const playerCount = session.player_count || 0;
+        const createdTime = session.created_at || 'Unknown';
+        
         return `
-        <tr class="hover:bg-gray-50 border-b">
-            <td class="px-5 py-4 w-16">${rankBadge}</td>
-            <td class="px-5 py-4">
-                <div class="font-bold text-gray-800 text-lg">${p.name}</div>
-                <div class="text-xs text-gray-500">@${p.username}</div>
-            </td>
-            <td class="px-5 py-4 text-center">
-                <div class="text-indigo-600 font-bold text-lg">${p.total_score}</div>
-                <div class="text-xs text-gray-400">Total Skor</div>
-            </td>
-            <td class="px-5 py-4 text-center">
-                <div class="text-gray-800 font-bold">${p.total_games}</div>
-                <div class="text-xs text-gray-400">Kali Main</div>
-            </td>
-            <td class="px-5 py-4 text-center">
-                <div class="text-green-600 font-bold">${p.avg_score}</div>
-                <div class="text-xs text-gray-400">Rata-rata</div>
-            </td>
-        </tr>
+            <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 session-card" data-session-id="${sessionId}">
+                <!-- Session Header -->
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-white text-lg font-bold font-['Poppins'] mb-1">Session Info</h3>
+                        <p class="text-zinc-400 text-sm font-['Poppins']">Game Session Details</p>
+                    </div>
+                    <div class="session-status-badge px-3 py-1 rounded-full text-xs font-semibold ${isActive ? 'bg-green-500 text-white' : 'bg-zinc-600 text-zinc-300'}">
+                        <span class="session-status-text">${isActive ? 'Active' : 'Ended'}</span>
+                    </div>
+                </div>
+                
+                <!-- Session Stats -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-zinc-700/50 rounded-lg p-3 border border-zinc-600">
+                        <p class="text-zinc-400 text-xs font-['Poppins'] mb-1">Players</p>
+                        <p class="text-white text-lg font-bold font-['Poppins']">${playerCount}</p>
+                    </div>
+                    <div class="bg-zinc-700/50 rounded-lg p-3 border border-zinc-600">
+                        <p class="text-zinc-400 text-xs font-['Poppins'] mb-1">Duration</p>
+                        <p class="text-white text-lg font-bold font-['Poppins']">${session.duration || '0m'}</p>
+                    </div>
+                </div>
+                
+                <!-- Divider -->
+                <div class="border-t border-zinc-600 my-4"></div>
+                
+                <!-- Session Details -->
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-zinc-400 text-sm font-['Poppins'] mb-1">Session ID</p>
+                        <p class="text-white text-xl font-bold font-['Poppins'] session-id-value">${sessionId}</p>
+                    </div>
+                    
+                    <div>
+                        <p class="text-zinc-400 text-sm font-['Poppins'] mb-1">Created</p>
+                        <p class="text-zinc-300 text-sm font-['Poppins']">${createdTime}</p>
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <button onclick="showSessionDetail('${sessionId}')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-semibold font-['Poppins'] transition-all duration-200 flex items-center justify-center group session-detail-btn">
+                        <i class="fas fa-eye mr-2 group-hover:scale-110 transition-transform"></i>
+                        View Details
+                    </button>
+                </div>
+            </div>
         `;
     }).join('');
 
-    container.innerHTML = `
-        <div class="max-w-4xl mx-auto bg-white rounded-lg overflow-hidden border border-gray-200">
-            <div class="bg-indigo-50 p-4 border-b border-indigo-100 flex items-center justify-between">
-                <h3 class="font-bold text-indigo-800"><i class="fa-solid fa-medal mr-2"></i> Top Players Global</h3>
-                <span class="text-xs text-indigo-600 bg-white px-2 py-1 rounded">Update: Realtime</span>
-            </div>
-            <table class="min-w-full">
-                <tbody>${rows}</tbody>
-            </table>
-        </div>
-    `;
+    container.innerHTML = cards;
 }
 
-// --- 3. MODAL DETAIL SESI (Termasuk Leaderboard Sesi) ---
+// --- SESSION DETAIL MODAL ---
 async function showSessionDetail(sessionId) {
     const modal = document.getElementById('session-modal');
     const body = document.getElementById('modal-body');
+    document.getElementById('modal-title').innerText = 'Session Details';
     document.getElementById('modal-subtitle').innerText = `ID: ${sessionId}`;
     
     modal.classList.remove('hidden');
-    body.innerHTML = '<div class="loader"></div>';
+    body.innerHTML = `
+        <div class="flex justify-center items-center py-12">
+            <div class="loader"></div>
+            <p class="ml-4 text-zinc-400 font-['Poppins']">Loading session details...</p>
+        </div>
+    `;
 
     try {
         const res = await fetch(`${BASE_API}/sessions/${sessionId}`, { headers });
@@ -152,40 +118,67 @@ async function showSessionDetail(sessionId) {
         const json = await res.json();
         
         const info = json.session_info;
-        const players = json.leaderboard || []; // Ini Leaderboard Per Sesi
+        const players = json.leaderboard || [];
         const timeline = json.timeline_logs || [];
 
-        // A. Render Info
+        // Session Info Card with modern design
         let html = `
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg border">
-                <div><span class="text-xs text-gray-500 block">Host</span><span class="font-bold">${info.host || '-'}</span></div>
-                <div><span class="text-xs text-gray-500 block">Status</span><span class="font-bold uppercase text-indigo-600">${info.status}</span></div>
-                <div><span class="text-xs text-gray-500 block">Durasi</span><span class="font-bold">${info.duration}</span></div>
-                <div><span class="text-xs text-gray-500 block">Total Giliran</span><span class="font-bold">${info.total_turns}</span></div>
+            <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-white font-['Poppins'] mb-4 flex items-center">
+                    <i class="fas fa-info-circle text-green-500 mr-3"></i>
+                    Session Information
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-zinc-700 rounded-lg p-4">
+                        <span class="text-sm text-zinc-400 block font-['Poppins'] mb-1">Host</span>
+                        <span class="font-bold text-white font-['Poppins']">${info.host || '-'}</span>
+                    </div>
+                    <div class="bg-zinc-700 rounded-lg p-4">
+                        <span class="text-sm text-zinc-400 block font-['Poppins'] mb-1">Status</span>
+                        <span class="font-bold text-green-400 uppercase font-['Poppins']">${info.status}</span>
+                    </div>
+                    <div class="bg-zinc-700 rounded-lg p-4">
+                        <span class="text-sm text-zinc-400 block font-['Poppins'] mb-1">Duration</span>
+                        <span class="font-bold text-white font-['Poppins']">${info.duration}</span>
+                    </div>
+                    <div class="bg-zinc-700 rounded-lg p-4">
+                        <span class="text-sm text-zinc-400 block font-['Poppins'] mb-1">Total Turns</span>
+                        <span class="font-bold text-white font-['Poppins']">${info.total_turns}</span>
+                    </div>
+                </div>
             </div>
         `;
 
-        // B. Render Leaderboard Sesi (Yang Anda Minta)
+        // Players Leaderboard
         html += `
-            <div>
-                <h4 class="font-bold text-gray-700 mb-3 border-l-4 border-green-500 pl-2">🏆 Hasil Pertandingan (Leaderboard)</h4>
-                <div class="overflow-x-auto bg-white border rounded-lg">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-green-50">
+            <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-white font-['Poppins'] mb-4 flex items-center">
+                    <i class="fas fa-trophy text-yellow-400 mr-3"></i>
+                    Match Results
+                </h3>
+                <div class="overflow-hidden">
+                    <table class="min-w-full">
+                        <thead class="bg-gradient-to-r from-green-600 to-green-700">
                             <tr>
-                                <th class="p-3 text-left">Rank</th>
-                                <th class="p-3 text-left">Nama Pemain</th>
-                                <th class="p-3 text-center">Skor Akhir</th>
-                                <th class="p-3 text-center">Posisi Papan</th>
+                                <th class="p-4 text-left text-white font-['Poppins'] font-semibold rounded-tl-lg">Rank</th>
+                                <th class="p-4 text-left text-white font-['Poppins'] font-semibold">Player</th>
+                                <th class="p-4 text-center text-white font-['Poppins'] font-semibold">Final Score</th>
+                                <th class="p-4 text-center text-white font-['Poppins'] font-semibold rounded-tr-lg">Board Position</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${players.map(p => `
-                                <tr class="border-b">
-                                    <td class="p-3 font-bold">#${p.rank}</td>
-                                    <td class="p-3">${p.name}</td>
-                                    <td class="p-3 text-center font-bold text-green-700">${p.score}</td>
-                                    <td class="p-3 text-center">Kotak #${p.final_tile_position}</td>
+                            ${players.map((p, index) => `
+                                <tr class="border-b border-zinc-700 hover:bg-zinc-700/50 transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-500' : 'bg-blue-500'}">
+                                                ${p.rank}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 font-['Poppins'] font-medium text-white">${p.name}</td>
+                                    <td class="p-4 text-center font-bold text-green-400 font-['Poppins']">${p.score}</td>
+                                    <td class="p-4 text-center font-['Poppins'] text-zinc-400">Position #${p.final_tile_position}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -194,34 +187,42 @@ async function showSessionDetail(sessionId) {
             </div>
         `;
 
-        // C. Render Timeline / Replay Log
+        // Timeline Log with modern design
         html += `
-            <div>
-                <h4 class="font-bold text-gray-700 mb-3 border-l-4 border-blue-500 pl-2">📜 Log Permainan (Timeline)</h4>
-                <div class="space-y-3 max-h-80 overflow-y-auto pr-2">
+            <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-white font-['Poppins'] mb-4 flex items-center">
+                    <i class="fas fa-history text-blue-400 mr-3"></i>
+                    Game Timeline
+                </h3>
+                <div class="space-y-4 max-h-80 overflow-y-auto pr-2">
                     ${timeline.map(log => `
-                        <div class="flex gap-3 items-start bg-white p-3 rounded border hover:bg-gray-50">
-                            <div class="bg-gray-200 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0">
-                                ${log.turn_number}
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex justify-between">
-                                    <span class="font-bold text-sm text-gray-800">${log.player}</span>
-                                    <span class="text-xs text-gray-400">${log.timestamp}</span>
-                                </div>
-                                
-                                ${log.activity.dice_roll ? `<div class="text-xs mt-1">🎲 Melempar dadu: <strong>${log.activity.dice_roll}</strong></div>` : ''}
-
-                                ${log.activity.decisions.map(d => `
-                                    <div class="mt-2 text-xs border-l-2 ${d.result === 'Correct' ? 'border-green-400 bg-green-50' : 'border-red-400 bg-red-50'} p-2 rounded">
-                                        <span class="uppercase font-bold text-[10px] text-gray-500">${d.type}</span><br>
-                                        <span class="${d.result === 'Correct' ? 'text-green-700' : 'text-red-700'} font-semibold">
-                                            ${d.result} (${d.impact})
-                                        </span>
-                                        <span class="text-gray-400 ml-2">• ${d.thinking_time}</span>
+                        <div class="bg-zinc-700 rounded-lg p-4 border-l-4 border-green-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center">
+                                    <div class="bg-green-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs mr-3">
+                                        ${log.turn_number}
                                     </div>
-                                `).join('')}
+                                    <span class="font-bold text-white font-['Poppins']">${log.player}</span>
+                                </div>
+                                <span class="text-xs text-zinc-400 font-['Poppins']">${log.timestamp}</span>
                             </div>
+                            
+                            ${log.activity.dice_roll ? `<div class="text-sm mb-2 font-['Poppins'] text-zinc-300">🎲 Dice Roll: <strong class="text-green-400">${log.activity.dice_roll}</strong></div>` : ''}
+
+                            ${log.activity.decisions.map(d => `
+                                <div class="mt-2 text-sm bg-zinc-600 rounded p-3 border ${d.result === 'Correct' ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'}">
+                                    <div class="flex justify-between items-center">
+                                        <span class="uppercase font-bold text-xs text-zinc-400 font-['Poppins']">${d.type}</span>
+                                        <span class="${d.result === 'Correct' ? 'text-green-400 bg-green-500/20' : 'text-red-400 bg-red-500/20'} px-2 py-1 rounded-full text-xs font-semibold font-['Poppins']">
+                                            ${d.result}
+                                        </span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <span class="text-zinc-300 font-['Poppins']">${d.impact}</span>
+                                        <span class="text-zinc-400 ml-2 text-xs font-['Poppins']">• ${d.thinking_time}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
                         </div>
                     `).join('')}
                 </div>
@@ -231,7 +232,13 @@ async function showSessionDetail(sessionId) {
         body.innerHTML = html;
 
     } catch (e) {
-        body.innerHTML = `<div class="text-red-500 p-4 text-center">Error: ${e.message}</div>`;
+        body.innerHTML = `
+            <div class="bg-red-900/50 border border-red-600 rounded-2xl p-6 text-center">
+                <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-4"></i>
+                <p class="text-red-400 font-['Poppins'] font-semibold">Error loading session details</p>
+                <p class="text-red-300 font-['Poppins'] text-sm mt-2">${e.message}</p>
+            </div>
+        `;
     }
 }
 

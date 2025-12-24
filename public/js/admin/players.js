@@ -27,7 +27,15 @@ async function renderPlayerList(keyword = "") {
         const response = await fetch(url, { headers });
 
         if (response.status === 401) {
-            wrapper.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Sesi habis. Silakan login ulang.</div>`;
+            // Token expired or invalid - global interceptor will handle redirect
+            // Just show message and return
+            wrapper.innerHTML = `
+                <div class="bg-red-900/50 border border-red-600 rounded-2xl p-6 text-center">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-4"></i>
+                    <p class="text-red-400 font-['Poppins'] font-semibold">Session Expired</p>
+                    <p class="text-red-300 font-['Poppins'] text-sm mt-2">Redirecting to login...</p>
+                </div>
+            `;
             return;
         }
 
@@ -35,82 +43,101 @@ async function renderPlayerList(keyword = "") {
         const players = json.data || [];
 
         if (players.length === 0) {
-            wrapper.innerHTML = `<div class="bg-white p-8 text-center text-gray-500 rounded shadow">Tidak ditemukan data pemain.</div>`;
+            wrapper.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-16">
+                    <i class="fas fa-users text-zinc-400 text-4xl mb-4"></i>
+                    <p class="text-zinc-400 text-lg font-['Poppins']">Tidak ditemukan data pemain.</p>
+                </div>
+            `;
             return;
         }
 
+        // Header row for desktop layout
         let html = `
-            <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-                <table class="min-w-full leading-normal">
-                    <thead>
-                        <tr>
-                            <th class="px-5 py-3 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pemain</th>
-                            <th class="px-5 py-3 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cluster AI</th>
-                            <th class="px-5 py-3 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                            <th class="px-5 py-3 bg-gray-50 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <div class="hidden md:grid grid-cols-12 gap-4 mb-4 px-6 py-4 bg-zinc-700 rounded-2xl border border-zinc-600">
+                <div class="col-span-4 text-violet-100 text-lg font-semibold font-['Poppins']">Player Name</div>
+                <div class="col-span-3 text-violet-100 text-lg font-semibold font-['Poppins']">Cluster AI</div>
+                <div class="col-span-2 text-violet-100 text-lg font-semibold font-['Poppins']">Status</div>
+                <div class="col-span-3 text-violet-100 text-lg font-semibold font-['Poppins'] text-center">Aksi</div>
+            </div>
+            
+            <div class="space-y-4">
         `;
 
-        players.forEach((p) => {
-            const statusColor =
-                p.status === "Active"
-                    ? "text-green-700 bg-green-100"
-                    : "text-red-700 bg-red-100";
-            const actionButtons = `
-                <div class="flex gap-2 justify-end">
-                    <button onclick="renderPlayerDetail('${p.player_id
-                }')" class="text-indigo-600 hover:text-indigo-900 text-sm font-bold border border-indigo-200 px-2 py-1 rounded hover:bg-indigo-50 transition">
-                        <i class="fa-solid fa-info-circle"></i> Detail
-                    </button>
-                    ${p.status === "Active"
-                    ? `
-                        <button onclick="showBanModal('${p.player_id}', '${p.name}')" class="text-orange-600 hover:text-orange-900 text-sm font-bold border border-orange-200 px-2 py-1 rounded hover:bg-orange-50 transition" title="Ban pemain">
-                            <i class="fa-solid fa-ban"></i> Ban
-                        </button>
-                    `
-                    : `
-                        <button onclick="unbanPlayer('${p.player_id}')" class="text-green-600 hover:text-green-900 text-sm font-bold border border-green-200 px-2 py-1 rounded hover:bg-green-50 transition" title="Unban pemain">
-                            <i class="fa-solid fa-check-circle"></i> Unban
-                        </button>
-                    `
-                }
-                    <button onclick="showDeleteModal('${p.player_id}', '${p.name
-                }')" class="text-red-600 hover:text-red-900 text-sm font-bold border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition" title="Hapus pemain">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            `;
+        players.forEach((p, index) => {
+            const statusColor = p.status === 'Active' ? 'bg-green-600/75' : 'bg-red-600/75';
+            const statusText = p.status === 'Active' ? 'Active' : 'Deactivated';
 
             html += `
-                <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
-                    <td class="px-5 py-4">
-                        <div class="flex items-center">
-                            <div class="ml-3">
-                                <p class="text-gray-900 font-bold whitespace-no-wrap">${p.name}</p>
-                                <p class="text-gray-500 text-xs">@${p.username}</p>
+                <div class="bg-zinc-300 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-zinc-400 player-card" data-player-id="${p.player_id}" data-player-name="${p.name}">
+                    <!-- Mobile Layout -->
+                    <div class="block md:hidden space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-black text-lg font-bold font-['Poppins'] player-name">${p.name}</h3>
+                                <p class="text-gray-600 text-sm font-['Poppins']">@${p.username}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="banPlayer('${p.player_id}')" class="bg-red-600/70 hover:bg-red-600 text-white p-2 rounded-lg transition-colors action-button" title="Ban Player">
+                                    <i class="fas fa-ban text-sm"></i>
+                                </button>
+                                <button onclick="deletePlayer('${p.player_id}')" class="bg-yellow-500/75 hover:bg-yellow-600 text-white p-2 rounded-lg transition-colors action-button" title="Delete Player">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                                <button onclick="renderPlayerDetail('${p.player_id}')" class="bg-black/70 hover:bg-black text-white p-2 rounded-lg transition-colors action-button" title="View Details">
+                                    <i class="fas fa-info-circle text-sm"></i>
+                                </button>
                             </div>
                         </div>
-                    </td>
-                    <td class="px-5 py-4">
-                        <span class="px-2 py-1 font-semibold leading-tight text-blue-700 bg-blue-100 rounded-full text-xs">
-                            ${p.cluster}
-                        </span>
-                    </td>
-                    <td class="px-5 py-4">
-                        <span class="px-2 py-1 font-semibold leading-tight ${statusColor} rounded-full text-xs">
-                            ${p.status}
-                        </span>
-                    </td>
-                    <td class="px-5 py-4 text-right">
-                        ${actionButtons}
-                    </td>
-                </tr>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-gray-600 text-xs font-['Poppins'] mb-1">Cluster AI</p>
+                                <span class="text-black text-sm font-['Poppins']">${p.cluster || '-'}</span>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-xs font-['Poppins'] mb-1">Status</p>
+                                <span class="inline-block ${statusColor} text-white px-3 py-1 rounded-lg text-sm font-semibold font-['Poppins']">
+                                    ${statusText}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Desktop Layout -->
+                    <div class="hidden md:grid grid-cols-12 gap-4 items-center">
+                        <div class="col-span-4">
+                            <h3 class="text-black text-lg font-bold font-['Poppins'] player-name">${p.name}</h3>
+                            <p class="text-gray-600 text-sm font-['Poppins']">@${p.username}</p>
+                        </div>
+                        
+                        <div class="col-span-3">
+                            <span class="text-black text-base font-['Poppins']">${p.cluster || '-'}</span>
+                        </div>
+                        
+                        <div class="col-span-2">
+                            <span class="inline-block ${statusColor} text-white px-4 py-2 rounded-lg text-base font-semibold font-['Poppins']">
+                                ${statusText}
+                            </span>
+                        </div>
+                        
+                        <div class="col-span-3 flex justify-center gap-2">
+                            <button onclick="banPlayer('${p.player_id}')" class="bg-red-600/70 hover:bg-red-600 text-white p-2 rounded-lg transition-colors action-button" title="Ban Player">
+                                <i class="fas fa-ban text-lg"></i>
+                            </button>
+                            <button onclick="deletePlayer('${p.player_id}')" class="bg-yellow-500/75 hover:bg-yellow-600 text-white p-2 rounded-lg transition-colors action-button" title="Delete Player">
+                                <i class="fas fa-trash text-lg"></i>
+                            </button>
+                            <button onclick="renderPlayerDetail('${p.player_id}')" class="bg-black/70 hover:bg-black text-white p-2 rounded-lg transition-colors action-button" title="View Details">
+                                <i class="fas fa-info-circle text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             `;
         });
 
-        html += `</tbody></table></div>`;
+        html += `</div>`;
         wrapper.innerHTML = html;
 
         // Restore focus input search agar UX nyaman
@@ -120,7 +147,13 @@ async function renderPlayerList(keyword = "") {
             input.value = keyword;
         }
     } catch (e) {
-        wrapper.innerHTML = `<div class="text-red-500 p-4">Error: ${e.message}</div>`;
+        wrapper.innerHTML = `
+            <div class="bg-red-900/50 border border-red-600 rounded-2xl p-6 text-center">
+                <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-4"></i>
+                <p class="text-red-400 font-['Poppins'] font-semibold">Error loading players</p>
+                <p class="text-red-300 font-['Poppins'] text-sm mt-2">${e.message}</p>
+            </div>
+        `;
     }
 }
 
@@ -206,38 +239,34 @@ async function renderPlayerDetail(playerId) {
         };
 
         // --- 2. GENERATE HTML PROFILING ---
-        const answers = ai && Array.isArray(ai.initial_answers)
+        const answers = Array.isArray(ai.initial_answers)
             ? ai.initial_answers
             : [];
-        const profilingHtml =
-            answers.length > 0
-                ? `
-            <div class="mt-4 pt-4 border-t border-gray-100">
-                <span class="text-xs font-bold text-gray-500 uppercase block mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> Profiling Awal:</span>
-                <div class="grid grid-cols-3 gap-2">
-                    ${answers
-                    .map((ans, idx) => {
-                        const map = profilingMap[idx]
-                            ? profilingMap[idx][ans]
-                            : {
-                                text: ans,
-                                class: "bg-gray-100 text-gray-600",
-                            };
-                        return `
-                            <div class="text-center p-2 rounded border ${map.class || "bg-gray-50"
-                            }">
-                                <div class="text-[10px] uppercase opacity-70">Q${idx + 1
-                            }</div>
-                                <div class="font-bold text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis">${map.text || ans
-                            }</div>
+        const profilingHtml = answers.length > 0 ? `
+            <div class="mt-6 p-4 bg-zinc-700/50 rounded-xl border border-zinc-600">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fas fa-clipboard-list text-blue-400"></i>
+                    <span class="text-sm font-bold text-zinc-300 uppercase font-['Poppins']">Profiling Awal</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    ${answers.map((ans, idx) => {
+            const map = profilingMap[idx] ? profilingMap[idx][ans] : { text: ans, class: 'bg-zinc-600 text-zinc-300 border-zinc-500' };
+            return `
+                            <div class="text-center p-3 rounded-lg border ${map.class || 'bg-zinc-600 border-zinc-500'} transition-all hover:scale-105">
+                                <div class="text-xs uppercase opacity-70 font-['Poppins'] mb-2">Question ${idx + 1}</div>
+                                <div class="font-bold text-sm font-['Poppins']">${map.text || ans}</div>
                             </div>
                         `;
-                    })
-                    .join("")}
+        })
+                .join("")}
                 </div>
             </div>
-        `
-                : '<p class="text-xs text-gray-400 mt-2 italic">Belum ada data profiling.</p>';
+        ` : `
+            <div class="mt-6 p-4 bg-zinc-700/30 rounded-xl border border-zinc-600/50 text-center">
+                <i class="fas fa-info-circle text-zinc-500 mb-2"></i>
+                <p class="text-sm text-zinc-400 italic font-['Poppins']">Belum ada data profiling awal</p>
+            </div>
+        `;
 
         // --- 3. GENERATE HTML SKILL MATRIX ---
         const skillHtml = Object.entries(skill)
@@ -260,150 +289,287 @@ async function renderPlayerDetail(playerId) {
 
         // --- 4. BUILD HTML UTAMA ---
         detailWrapper.innerHTML = `
-            <button onclick="renderPlayerList()" class="mb-4 text-gray-600 hover:text-gray-900 flex items-center gap-2 font-medium transition">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar
-            </button>
-
-            <div class="bg-white shadow rounded-lg p-6 mb-6 border-l-4 border-indigo-500 flex flex-col md:flex-row justify-between items-start gap-4">
-                <div class="flex-1 w-full">
-                    <h1 class="text-2xl font-bold text-gray-800">${p.name}</h1>
-                    <p class="text-gray-500 text-sm">@${p.username
-            } • Joined: ${p.join_date?.substring(0, 10)}</p>
-                    
-                    ${profilingHtml}
-                </div>
-                
-                <div class="text-left md:text-right w-full md:w-auto bg-indigo-50 md:bg-transparent p-3 md:p-0 rounded">
-                    <p class="text-xs text-gray-500 uppercase tracking-wide">Cluster AI</p>
-                    <span class="text-lg font-bold text-indigo-600">${ai?.cluster || "Unprofiled"
-            }</span>
-                    <p class="text-xs text-gray-400">Confidence: ${ai?.ai_confidence || "N/A"
-            }</p>
-                    <div class="mt-2 flex flex-wrap justify-end gap-1">
-                        ${ai?.traits
-                ? ai.traits
-                    .map(
-                        (t) =>
-                            `<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded shadow-sm">${t}</span>`
-                    )
-                    .join("")
-                : ""
-            }
+            <!-- Back Button -->
+            <div class="mb-6">
+                <button onclick="renderPlayerList()" class="flex items-center gap-3 text-zinc-300 hover:text-white font-medium font-['Poppins'] transition-colors group">
+                    <div class="bg-zinc-700 hover:bg-zinc-600 p-2 rounded-lg transition-colors group-hover:scale-105">
+                        <i class="fa-solid fa-arrow-left text-lg"></i>
                     </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex gap-3 mb-6 flex-wrap">
-                <button onclick="renderPlayerList()" class="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition">
-                    <i class="fa-solid fa-arrow-left"></i> Kembali
-                </button>
-                <div class="flex-1"></div>
-                ${detail.player_info.status === "Active"
-                ? `
-                    <button onclick="showBanModal('${playerId}', '${p.name}')" class="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition">
-                        <i class="fa-solid fa-ban"></i> Ban Player
-                    </button>
-                `
-                : `
-                    <button onclick="unbanPlayer('${playerId}')" class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition">
-                        <i class="fa-solid fa-check-circle"></i> Unban Player
-                    </button>
-                `
-            }
-                <button onclick="showDeleteModal('${playerId}', '${p.name
-            }')" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
-                    <i class="fa-solid fa-trash"></i> Hapus Player
+                    <span class="text-lg">Kembali ke Daftar Player</span>
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-gray-700 font-bold mb-4 border-b pb-2">Statistik Permainan</h3>
-                    <div class="grid grid-cols-3 gap-2 text-center mb-4">
-                        <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-gray-800">${stats.total_games || 0
-            }</span>
-                            <span class="text-[10px] text-gray-500 uppercase">Games</span>
-                        </div>
-                        <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-gray-800">${stats.avg_score || 0
-            }</span>
-                            <span class="text-[10px] text-gray-500 uppercase">Avg Score</span>
-                        </div>
-                        <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-green-600">${stats.win_rate || "0%"
-            }</span>
-                            <span class="text-[10px] text-gray-500 uppercase">Win Rate</span>
-                        </div>
-                    </div>
-                    
-                    <h4 class="text-sm font-bold text-gray-600 mb-2">Diagnosis Kelemahan:</h4>
-                    <ul class="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-                        ${weaknesses.length > 0
-                ? weaknesses
-                    .map(
-                        (w) => `
-                            <li class="text-sm text-red-600 bg-red-50 px-3 py-2 rounded flex justify-between border border-red-100">
-                                <span>${w.category}</span>
-                                <span class="font-bold text-xs bg-white px-2 py-0.5 rounded border border-red-200">Acc: ${w.accuracy}</span>
-                            </li>
-                        `
-                    )
-                    .join("")
-                : '<li class="text-sm text-green-600 bg-green-50 p-2 rounded"><i class="fa-solid fa-check-circle mr-1"></i> Tidak ada kelemahan signifikan.</li>'
-            }
-                    </ul>
-                </div>
-
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-gray-700 font-bold mb-4 border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-robot text-indigo-500"></i> Rekomendasi AI
-                    </h3>
-                    <div class="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                        ${recommendations.length > 0
-                ? recommendations
-                    .map(
-                        (rec) => `
-                            <div class="p-3 bg-indigo-50 rounded border border-indigo-100 hover:bg-indigo-100 transition">
-                                <div class="text-[10px] font-bold text-indigo-600 uppercase mb-1">${rec.type
-                            }</div>
-                                <div class="text-sm font-semibold text-gray-800">${rec.title
-                            }</div>
-                                ${rec.reason
-                                ? `<div class="text-xs text-gray-500 mt-1 italic">"${rec.reason}"</div>`
-                                : ""
-                            }
+            <!-- Player Header Card -->
+            <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 mb-6 shadow-lg">
+                <div class="flex flex-col lg:flex-row justify-between items-start gap-6">
+                    <!-- Player Basic Info -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-2xl"></i>
                             </div>
-                        `
-                    )
-                    .join("")
-                : '<p class="text-sm text-gray-500 italic">Belum ada rekomendasi khusus saat ini.</p>'
-            }
+                            <div class="flex-1">
+                                <h1 class="text-3xl font-bold text-white font-['Poppins']">${p.name}</h1>
+                                <p class="text-zinc-400 text-lg font-['Poppins']">@${p.username}</p>
+                                <p class="text-zinc-500 text-sm font-['Poppins']">Bergabung: ${p.join_date?.substring(0, 10)}</p>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex gap-3">
+                                <button onclick="banPlayer('${p.player_id || ''}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold font-['Poppins'] transition-all action-button flex items-center gap-2" title="Ban Player">
+                                    <i class="fas fa-ban"></i>
+                                    <span class="hidden sm:inline">Ban</span>
+                                </button>
+                                <button onclick="deletePlayer('${p.player_id || ''}')" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-semibold font-['Poppins'] transition-all action-button flex items-center gap-2" title="Delete Player">
+                                    <i class="fas fa-trash"></i>
+                                    <span class="hidden sm:inline">Delete</span>
+                                </button>
+                                <button onclick="exportPlayerData('${p.player_id || ''}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold font-['Poppins'] transition-all action-button flex items-center gap-2" title="Export Data">
+                                    <i class="fas fa-download"></i>
+                                    <span class="hidden sm:inline">Export</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${profilingHtml}
+                    </div>
+                    
+                    <!-- AI Cluster Info -->
+                    <div class="bg-gradient-to-r from-green-600/20 to-green-700/20 border border-green-500/30 p-6 rounded-xl min-w-[280px]">
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-brain text-white text-xl"></i>
+                            </div>
+                            <p class="text-xs text-zinc-400 uppercase tracking-wide font-['Poppins'] mb-1">AI Cluster</p>
+                            <h3 class="text-2xl font-bold text-green-400 font-['Poppins'] mb-2">${ai.cluster || 'Unprofiled'}</h3>
+                            <p class="text-sm text-zinc-400 font-['Poppins'] mb-4">Confidence: ${ai.ai_confidence || '0%'}</p>
+                            
+                            <!-- AI Traits -->
+                            <div class="flex flex-wrap justify-center gap-2">
+                                ${ai.traits ? ai.traits.map(t => `
+                                    <span class="inline-block bg-zinc-700/70 border border-zinc-600 text-zinc-300 text-xs px-3 py-1 rounded-full font-['Poppins']">
+                                        ${t}
+                                    </span>
+                                `).join('') : '<span class="text-zinc-500 text-sm font-[\'Poppins\']">No traits data</span>'}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-2 bg-white shadow p-6 rounded-lg">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-700">📈 Kurva Pembelajaran</h3>
-                        <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">Akurasi per Sesi</span>
-                    </div>
-                    <div class="h-64">
-                        <canvas id="playerCurveChart"></canvas>
-                    </div>
+            <!-- Stats & Analysis Grid -->
+            <div class="mb-6">
+                <!-- Tab Navigation -->
+                <div class="flex gap-2 mb-6 bg-zinc-800 border border-zinc-700 rounded-xl p-2">
+                    <button onclick="switchTab('overview')" class="tab-btn active flex-1 px-4 py-3 rounded-lg font-semibold font-['Poppins'] transition-all" data-tab="overview">
+                        <i class="fas fa-chart-bar mr-2"></i>Overview
+                    </button>
+                    <button onclick="switchTab('performance')" class="tab-btn flex-1 px-4 py-3 rounded-lg font-semibold font-['Poppins'] transition-all" data-tab="performance">
+                        <i class="fas fa-trophy mr-2"></i>Performance
+                    </button>
+                    <button onclick="switchTab('analysis')" class="tab-btn flex-1 px-4 py-3 rounded-lg font-semibold font-['Poppins'] transition-all" data-tab="analysis">
+                        <i class="fas fa-brain mr-2"></i>Analysis
+                    </button>
                 </div>
 
-                <div class="bg-white shadow p-6 rounded-lg">
-                    <h3 class="font-bold mb-4 text-gray-700">🧠 Skill Matrix</h3>
-                    <div class="border rounded p-4 h-64 overflow-y-auto custom-scrollbar bg-gray-50">
-                        ${skillHtml ||
-            '<div class="flex flex-col items-center justify-center h-full text-gray-400 text-xs"><i class="fa-solid fa-chart-bar text-2xl mb-2"></i>Belum ada data skill</div>'
-            }
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    
+                    <!-- Overview Tab -->
+                    <div class="tab-panel active grid grid-cols-1 xl:grid-cols-2 gap-6" data-panel="overview">
+                        
+                        <!-- Game Statistics -->
+                        <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-gamepad text-white"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-['Poppins']">Game Statistics</h3>
+                            </div>
+                            
+                            <!-- Quick Stats -->
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-gradient-to-r from-blue-600/20 to-blue-700/20 border border-blue-500/30 rounded-xl p-4 text-center">
+                                    <div class="text-2xl font-bold text-blue-400 font-['Poppins'] mb-1">${stats.total_games || 0}</div>
+                                    <div class="text-xs text-zinc-400 uppercase font-['Poppins']">Total Games</div>
+                                </div>
+                                <div class="bg-gradient-to-r from-purple-600/20 to-purple-700/20 border border-purple-500/30 rounded-xl p-4 text-center">
+                                    <div class="text-2xl font-bold text-purple-400 font-['Poppins'] mb-1">${stats.avg_score || 0}</div>
+                                    <div class="text-xs text-zinc-400 uppercase font-['Poppins']">Avg Score</div>
+                                </div>
+                                <div class="bg-gradient-to-r from-green-600/20 to-green-700/20 border border-green-500/30 rounded-xl p-4 text-center">
+                                    <div class="text-2xl font-bold text-green-400 font-['Poppins'] mb-1">${stats.win_rate || '0%'}</div>
+                                    <div class="text-xs text-zinc-400 uppercase font-['Poppins']">Win Rate</div>
+                                </div>
+                                <div class="bg-gradient-to-r from-orange-600/20 to-orange-700/20 border border-orange-500/30 rounded-xl p-4 text-center">
+                                    <div class="text-2xl font-bold text-orange-400 font-['Poppins'] mb-1">${stats.total_playtime || '0h'}</div>
+                                    <div class="text-xs text-zinc-400 uppercase font-['Poppins']">Playtime</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Cluster Info Extended -->
+                        <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-brain text-white"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-['Poppins']">AI Analysis</h3>
+                            </div>
+                            
+                            <div class="text-center mb-6">
+                                <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-user-tie text-white text-2xl"></i>
+                                </div>
+                                <h4 class="text-2xl font-bold text-green-400 font-['Poppins'] mb-2">${ai.cluster || 'Unprofiled'}</h4>
+                                <div class="bg-zinc-700/50 rounded-lg p-3 mb-4">
+                                    <p class="text-sm text-zinc-300 font-['Poppins']">Confidence Level</p>
+                                    <div class="flex items-center gap-3 mt-2">
+                                        <div class="flex-1 bg-zinc-600 rounded-full h-3">
+                                            <div class="bg-green-500 h-3 rounded-full" style="width: ${ai.ai_confidence || '0%'}"></div>
+                                        </div>
+                                        <span class="text-green-400 font-bold font-['Poppins']">${ai.ai_confidence || '0%'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Traits -->
+                            <div class="space-y-2">
+                                <h5 class="text-sm font-bold text-zinc-300 mb-3 font-['Poppins']">Player Traits:</h5>
+                                <div class="flex flex-wrap gap-2">
+                                    ${ai.traits ? ai.traits.map(t => `
+                                        <span class="bg-gradient-to-r from-purple-600/20 to-purple-700/20 border border-purple-500/30 text-purple-200 text-xs px-3 py-2 rounded-full font-['Poppins']">
+                                            ${t}
+                                        </span>
+                                    `).join('') : '<span class="text-zinc-500 text-sm font-[\'Poppins\']">No traits identified yet</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Tab -->
+                    <div class="tab-panel grid grid-cols-1 xl:grid-cols-3 gap-6 hidden" data-panel="performance">
+                        
+                        <!-- Learning Curve Chart -->
+                        <div class="xl:col-span-2 bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-chart-line text-white"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-white font-['Poppins']">Learning Progress</h3>
+                                </div>
+                                <span class="bg-zinc-700 px-3 py-1 rounded-lg text-xs text-zinc-400 font-['Poppins']">
+                                    Accuracy Trend
+                                </span>
+                            </div>
+                            <div class="h-80 bg-zinc-900/50 rounded-lg p-4">
+                                <canvas id="playerCurveChart" class="w-full h-full"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Skill Matrix -->
+                        <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-cogs text-white"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-['Poppins']">Skills</h3>
+                            </div>
+                            
+                            <div class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+                                ${skillHtml || `
+                                    <div class="text-center py-12">
+                                        <i class="fas fa-chart-bar text-zinc-500 text-3xl mb-3"></i>
+                                        <p class="text-zinc-400 text-sm font-['Poppins']">Skill data will appear after more games</p>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Tab -->
+                    <div class="tab-panel grid grid-cols-1 xl:grid-cols-2 gap-6 hidden" data-panel="analysis">
+                        
+                        <!-- Weakness Analysis -->
+                        <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-white"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-['Poppins']">Areas for Improvement</h3>
+                            </div>
+                            
+                            <div class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+                                ${weaknesses.length > 0 ? weaknesses.map((w, index) => `
+                                    <div class="bg-gradient-to-r from-red-900/30 to-red-800/30 border border-red-600/30 rounded-xl p-4 hover:from-red-900/40 hover:to-red-800/40 transition-all">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <span class="text-white text-xs font-bold">${index + 1}</span>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h4 class="text-red-300 font-semibold font-['Poppins']">${w.category}</h4>
+                                            </div>
+                                            <div class="bg-red-600/50 px-3 py-1 rounded-full">
+                                                <span class="text-white text-xs font-bold font-['Poppins']">${w.accuracy}</span>
+                                            </div>
+                                        </div>
+                                        ${w.description ? `<p class="text-zinc-400 text-sm font-['Poppins'] ml-11">${w.description}</p>` : ''}
+                                    </div>
+                                `).join('') : `
+                                    <div class="text-center py-12">
+                                        <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-check text-green-400 text-2xl"></i>
+                                        </div>
+                                        <h4 class="text-green-400 font-semibold font-['Poppins'] mb-2">Great Performance!</h4>
+                                        <p class="text-zinc-400 font-['Poppins']">No significant weaknesses detected</p>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- AI Recommendations -->
+                        <div class="bg-zinc-800 border border-zinc-700 rounded-2xl p-6 shadow-lg">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-lightbulb text-white"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white font-['Poppins']">AI Recommendations</h3>
+                            </div>
+                            
+                            <div class="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
+                                ${recommendations.length > 0 ? recommendations.map((rec, index) => `
+                                    <div class="bg-gradient-to-r from-purple-600/20 to-purple-700/20 border border-purple-500/30 rounded-xl p-4 hover:from-purple-600/30 hover:to-purple-700/30 transition-all duration-200">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                                <span class="text-white text-xs font-bold font-['Poppins']">${index + 1}</span>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span class="bg-purple-500/50 px-2 py-1 rounded text-xs font-bold text-purple-200 uppercase font-['Poppins']">
+                                                        ${rec.type}
+                                                    </span>
+                                                </div>
+                                                <h4 class="text-white font-semibold font-['Poppins'] mb-1">${rec.title}</h4>
+                                                ${rec.reason ? `
+                                                    <p class="text-zinc-400 text-sm font-['Poppins'] italic">"${rec.reason}"</p>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('') : `
+                                    <div class="text-center py-12">
+                                        <i class="fas fa-robot text-zinc-500 text-3xl mb-3"></i>
+                                        <p class="text-zinc-400 font-['Poppins']">AI recommendations will appear as the player progresses</p>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Charts Section - Removed since moved to Performance tab -->
         `;
 
         // --- 5. RENDER CHART ---
@@ -442,16 +608,18 @@ async function renderPlayerDetail(playerId) {
                 },
             });
         } else {
-            document.getElementById("playerCurveChart").parentNode.innerHTML =
-                '<div class="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50 rounded border border-dashed border-gray-300"><i class="fa-solid fa-chart-line text-3xl mb-2 opacity-50"></i><span class="text-sm">Belum cukup data grafik.</span></div>';
+            document.getElementById('playerCurveChart').parentNode.innerHTML =
+                '<div class="flex flex-col items-center justify-center h-full text-zinc-400 bg-zinc-700 rounded border border-dashed border-zinc-600"><i class="fa-solid fa-chart-line text-3xl mb-2 opacity-50"></i><span class="text-sm font-[\'Poppins\']">Belum cukup data grafik.</span></div>';
         }
     } catch (e) {
         console.error(e);
-        detailWrapper.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative m-4 shadow">
-            <strong class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Gagal memuat detail!</strong>
-            <span class="block sm:inline mt-1 text-sm">${e.message}</span>
-            <button onclick="renderPlayerList()" class="mt-3 bg-red-200 hover:bg-red-300 text-red-800 px-3 py-1 rounded text-xs font-bold">Kembali</button>
-        </div>`;
+        detailWrapper.innerHTML = `
+            <div class="bg-red-900/50 border border-red-600 text-red-300 px-4 py-3 rounded relative m-4 shadow">
+                <strong class="font-bold font-['Poppins']"><i class="fa-solid fa-triangle-exclamation"></i> Gagal memuat detail!</strong>
+                <span class="block sm:inline mt-1 text-sm font-['Poppins']">${e.message}</span>
+                <button onclick="renderPlayerList()" class="mt-3 bg-red-600/50 hover:bg-red-600 text-red-300 px-3 py-1 rounded text-xs font-bold font-['Poppins'] transition-colors">Kembali</button>
+            </div>
+        `;
     }
 }
 
@@ -462,209 +630,227 @@ function handleSearch(val) {
     timeout = setTimeout(() => renderPlayerList(val), 500);
 }
 
-// --- MODAL DELETE ---
-function showDeleteModal(playerId, playerName) {
-    const modal = document.createElement("div");
-    modal.id = "deleteModal";
-    modal.className =
-        "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
-    modal.innerHTML = `
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-                <i class="fa-solid fa-trash text-red-600 text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Hapus Player</h3>
-            <p class="text-gray-600 text-center mb-6">
-                Apakah Anda yakin ingin menghapus <strong>${playerName}</strong>? 
-                <br><span class="text-sm text-red-600">Semua data akan terhapus permanen termasuk stats, decisions, dan profiling.</span>
-            </p>
-            <div class="flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition">
-                    Batal
-                </button>
-                <button onclick="confirmDelete('${playerId}')" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
-                    <i class="fa-solid fa-check"></i> Hapus
-                </button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-}
+// --- BAN PLAYER FUNCTION ---
+let currentPlayerToBan = null;
 
-function closeDeleteModal() {
-    const modal = document.getElementById("deleteModal");
-    if (modal) modal.remove();
-}
+function banPlayer(playerId) {
+    // Cari nama player untuk ditampilkan di modal
+    const playerCard = document.querySelector(`[data-player-id="${playerId}"]`);
+    const playerName = playerCard ? playerCard.getAttribute('data-player-name') : 'Player';
 
-async function confirmDelete(playerId) {
-    closeDeleteModal();
-    const wrapper =
-        document.getElementById("detail-wrapper") ||
-        document.getElementById("table-wrapper");
+    currentPlayerToBan = playerId;
+    document.getElementById('ban-player-name').textContent = `Player: ${playerName}`;
 
-    try {
-        const response = await fetch(`${BASE_API}/players/${playerId}`, {
-            method: "DELETE",
-            headers,
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            // Show success notification
-            showNotification("Player berhasil dihapus", "success");
-            // Refresh both player list and overview
-            setTimeout(() => {
-                renderPlayerList();
-                refreshOverview();
-            }, 1500);
-        } else {
-            showNotification(
-                result.message || "Gagal menghapus player",
-                "error"
-            );
-        }
-    } catch (e) {
-        showNotification(`Error: ${e.message}`, "error");
-    }
-}
-
-// --- MODAL BAN ---
-function showBanModal(playerId, playerName) {
-    const modal = document.createElement("div");
-    modal.id = "banModal";
-    modal.className =
-        "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
-    modal.innerHTML = `
-        <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-orange-100 rounded-full mb-4">
-                <i class="fa-solid fa-ban text-orange-600 text-xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Ban Player</h3>
-            <p class="text-gray-600 text-center mb-4">
-                Apakah Anda yakin ingin mem-ban <strong>${playerName}</strong>? 
-                <br><span class="text-sm text-gray-500">Player tidak akan bisa login tapi data tetap tersimpan.</span>
-            </p>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Ban (Opsional)</label>
-                <textarea id="banReason" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-orange-500" placeholder="Contoh: Cheating, Harassment, etc." rows="3"></textarea>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeBanModal()" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition">
-                    Batal
-                </button>
-                <button onclick="confirmBan('${playerId}')" class="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition">
-                    <i class="fa-solid fa-check"></i> Ban
-                </button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
+    const modal = document.getElementById('ban-modal');
+    modal.classList.remove('hidden');
+    modal.querySelector('.bg-zinc-800').classList.add('modal-enter');
 }
 
 function closeBanModal() {
-    const modal = document.getElementById("banModal");
-    if (modal) modal.remove();
+    const modal = document.getElementById('ban-modal');
+    const modalContent = modal.querySelector('.bg-zinc-800');
+
+    modalContent.classList.remove('modal-enter');
+    modalContent.classList.add('modal-exit');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modalContent.classList.remove('modal-exit');
+        currentPlayerToBan = null;
+    }, 300);
 }
 
-async function confirmBan(playerId) {
+async function confirmBanPlayer() {
+    if (!currentPlayerToBan) return;
+
+    // Show loading
+    showLoading('Memblokir player...');
     closeBanModal();
-    const reason = document.getElementById("banReason")?.value || "";
 
     try {
-        const response = await fetch(`${BASE_API}/players/${playerId}/ban`, {
-            method: "POST",
-            headers: {
-                ...headers,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ ban_reason: reason }),
+        const response = await fetch(`${BASE_API}/players/${currentPlayerToBan}/ban`, {
+            method: 'POST',
+            headers: headers
         });
 
-        const result = await response.json();
+        hideLoading();
 
-        if (response.ok && result.success) {
-            showNotification("Player berhasil di-ban", "success");
-            setTimeout(() => {
-                renderPlayerList();
-                refreshOverview();
-            }, 1500);
+        if (response.ok) {
+            showNotification('Player berhasil diblokir', 'success');
+            renderPlayerList(); // Refresh the list
         } else {
-            showNotification(result.message || "Gagal mem-ban player", "error");
+            const error = await response.json();
+            showNotification(error.message || 'Gagal memblokir player', 'error');
         }
     } catch (e) {
-        showNotification(`Error: ${e.message}`, "error");
+        hideLoading();
+        showNotification('Error: ' + e.message, 'error');
     }
+
+    currentPlayerToBan = null;
 }
 
-// --- UNBAN PLAYER ---
-async function unbanPlayer(playerId) {
-    if (!confirm("Apakah Anda yakin ingin mem-unban player ini?")) return;
+// --- DELETE PLAYER FUNCTION ---
+let currentPlayerToDelete = null;
+
+function deletePlayer(playerId) {
+    // Cari nama player untuk ditampilkan di modal
+    const playerCard = document.querySelector(`[data-player-id="${playerId}"]`);
+    const playerName = playerCard ? playerCard.getAttribute('data-player-name') : 'Player';
+
+    currentPlayerToDelete = playerId;
+    document.getElementById('delete-player-name').textContent = `Player: ${playerName}`;
+
+    const modal = document.getElementById('delete-modal');
+    modal.classList.remove('hidden');
+    modal.querySelector('.bg-zinc-800').classList.add('modal-enter');
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('delete-modal');
+    const modalContent = modal.querySelector('.bg-zinc-800');
+
+    modalContent.classList.remove('modal-enter');
+    modalContent.classList.add('modal-exit');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modalContent.classList.remove('modal-exit');
+        currentPlayerToDelete = null;
+    }, 300);
+}
+
+async function confirmDeletePlayer() {
+    if (!currentPlayerToDelete) return;
+
+    // Show loading
+    showLoading('Menghapus player...');
+    closeDeleteModal();
 
     try {
-        const response = await fetch(`${BASE_API}/players/${playerId}/unban`, {
-            method: "POST",
-            headers,
+        const response = await fetch(`${BASE_API}/players/${currentPlayerToDelete}`, {
+            method: 'DELETE',
+            headers: headers
         });
 
-        const result = await response.json();
+        hideLoading();
 
-        if (response.ok && result.success) {
-            showNotification("Player berhasil di-unban", "success");
-            setTimeout(() => {
-                renderPlayerList();
-                refreshOverview();
-            }, 1500);
+        if (response.ok) {
+            showNotification('Player berhasil dihapus', 'success');
+            renderPlayerList(); // Refresh the list
         } else {
-            showNotification(
-                result.message || "Gagal mem-unban player",
-                "error"
-            );
+            const error = await response.json();
+            showNotification(error.message || 'Gagal menghapus player', 'error');
         }
     } catch (e) {
-        showNotification(`Error: ${e.message}`, "error");
+        hideLoading();
+        showNotification('Error: ' + e.message, 'error');
     }
+
+    currentPlayerToDelete = null;
 }
 
-// --- REFRESH OVERVIEW ---
-function refreshOverview() {
+// --- EXPORT PLAYER DATA FUNCTION ---
+async function exportPlayerData(playerId) {
+    showLoading('Mengexport data player...');
+
     try {
-        // Cari parent window jika di iframe, atau gunakan window saat ini
-        const parentWindow = window.parent || window;
+        const response = await fetch(`${BASE_API}/players/${playerId}/export`, {
+            method: 'GET',
+            headers: headers
+        });
 
-        // Panggil function loadOverviewStats jika ada di parent
-        if (typeof parentWindow.loadOverviewStats === "function") {
-            parentWindow.loadOverviewStats();
+        hideLoading();
+
+        if (response.ok) {
+            // Create download link
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `player_${playerId}_data.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showNotification('Data player berhasil diexport', 'success');
+        } else {
+            const error = await response.json();
+            showNotification(error.message || 'Gagal mengexport data player', 'error');
         }
-
-        // Atau trigger custom event untuk update overview
-        const event = new CustomEvent("playerListUpdated");
-        document.dispatchEvent(event);
     } catch (e) {
-        console.log("Note: Overview akan ter-refresh otomatis");
+        hideLoading();
+        showNotification('Error: ' + e.message, 'error');
     }
 }
 
-// --- NOTIFICATION HELPER ---
-function showNotification(message, type = "info") {
-    const notification = document.createElement("div");
-    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition z-40 ${type === "success"
-            ? "bg-green-500"
-            : type === "error"
-                ? "bg-red-500"
-                : "bg-blue-500"
-        }`;
-    notification.innerHTML = `
-        ${type === "success"
-            ? '<i class="fa-solid fa-check-circle mr-2"></i>'
-            : ""
-        }
-        ${type === "error"
-            ? '<i class="fa-solid fa-exclamation-circle mr-2"></i>'
-            : ""
-        }
-        ${message}
-    `;
+// --- TAB SWITCHING FUNCTION ---
+function switchTab(tabName) {
+    // Remove active class from all tabs and panels
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-green-600', 'text-white');
+        btn.classList.add('text-zinc-400', 'hover:text-white', 'hover:bg-zinc-700');
+    });
+
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.add('hidden');
+        panel.classList.remove('active');
+    });
+
+    // Add active class to selected tab and panel
+    const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+    const activePanel = document.querySelector(`[data-panel="${tabName}"]`);
+
+    if (activeTab && activePanel) {
+        activeTab.classList.add('active', 'bg-green-600', 'text-white');
+        activeTab.classList.remove('text-zinc-400', 'hover:text-white', 'hover:bg-zinc-700');
+
+        activePanel.classList.remove('hidden');
+        activePanel.classList.add('active');
+    }
+}
+
+// --- UTILITY FUNCTIONS ---
+function showLoading(text = 'Memproses...') {
+    document.getElementById('loading-text').textContent = text;
+    document.getElementById('loading-overlay').classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.add('hidden');
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0 max-w-sm`;
+
+    if (type === 'success') {
+        notification.className += ' bg-green-600 text-white';
+        notification.innerHTML = `<div class="flex items-center"><i class="fas fa-check-circle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
+    } else if (type === 'error') {
+        notification.className += ' bg-red-600 text-white';
+        notification.innerHTML = `<div class="flex items-center"><i class="fas fa-exclamation-triangle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
+    } else {
+        notification.className += ' bg-blue-600 text-white';
+        notification.innerHTML = `<div class="flex items-center"><i class="fas fa-info-circle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
+    }
+
     document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
+
+    // Show notification
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full', 'opacity-0');
+    }, 100);
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 }

@@ -8,8 +8,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+
     /* Custom Scrollbar */
     ::-webkit-scrollbar {
         width: 6px;
@@ -17,77 +24,73 @@
     }
 
     ::-webkit-scrollbar-track {
-        background: #f1f1f1;
+        background: #1e293b;
     }
 
     ::-webkit-scrollbar-thumb {
-        background: #888;
+        background: #16a34a;
         border-radius: 3px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: #555;
+        background: #15803d;
     }
 
     .loader {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #16a34a;
         border-radius: 50%;
-        width: 30px;
-        height: 30px;
+        width: 40px;
+        height: 40px;
         animation: spin 1s linear infinite;
         margin: 20px auto;
     }
 
     @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
-    /* Agar tabel bisa discroll di HP */
+    /* Sidebar hover effects */
+    .sidebar-item {
+        transition: all 0.2s ease-in-out;
+    }
+
+    .sidebar-item:hover {
+        background-color: rgba(139, 69, 19, 0.1);
+        transform: translateX(4px);
+    }
+
+    .sidebar-item.active {
+        background-color: rgba(139, 69, 19, 0.2);
+        border-left: 4px solid #a855f7;
+    }
+
     .custom-scrollbar {
         overflow-x: auto;
     }
     </style>
+
+    @stack('styles')
 </head>
 
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-800 font-['Poppins'] antialiased">
 
-    <div class="flex h-screen overflow-hidden">
-
-        <div id="sidebar-overlay" onclick="toggleSidebar()"
-            class="fixed inset-0 z-20 bg-black opacity-50 hidden md:hidden transition-opacity lg:hidden"></div>
-
+    <div class="w-full h-screen relative overflow-hidden">
+        
         @include('components.sidebar')
 
-        <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
-
-            <header class="h-16 bg-white shadow flex items-center justify-between px-4 md:px-6 z-10 shrink-0">
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleSidebar()"
-                        class="text-gray-500 hover:text-gray-700 focus:outline-none md:hidden">
-                        <i class="fa-solid fa-bars text-xl"></i>
-                    </button>
-                    <h2 class="text-lg font-semibold text-gray-700 truncate">@yield('header', 'Dashboard')</h2>
+        <!-- Main Content Area -->
+        <div class="absolute left-72 top-0 right-0 bottom-0">
+            <!-- Header -->
+            <div class="w-full h-20 bg-green-600 rounded-bl-2xl rounded-br-2xl relative">
+                <div class="absolute left-12 top-[19px]">
+                    <div class="text-black text-2xl font-normal font-['Poppins']">@yield('header', 'Dashboard')</div>
                 </div>
+            </div>
 
-                <div class="flex items-center gap-3">
-                    <div class="text-right hidden sm:block">
-                        <span class="block text-sm font-bold text-gray-700" id="adminNameDisplay">Admin</span>
-                        <span class="block text-xs text-gray-500">Administrator</span>
-                    </div>
-                    <div
-                        class="h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md">
-                        A</div>
-                </div>
-            </header>
-
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6">
+            <!-- Content -->
+            <main class="p-6 h-[calc(100vh-80px)] overflow-y-auto">
                 @yield('content')
             </main>
         </div>
@@ -99,7 +102,40 @@
 
     if (!token) window.location.href = '/login';
 
-    document.getElementById('adminNameDisplay').innerText = localStorage.getItem('admin_name') || 'Admin';
+    // Update admin names
+    const adminName = localStorage.getItem('admin_name') || 'Admin GLK';
+    const adminDisplayElement = document.getElementById('adminNameDisplay');
+    if (adminDisplayElement) {
+        adminDisplayElement.innerText = adminName;
+    }
+
+    // Real-time clock
+    function updateClock() {
+        const clockElement = document.getElementById('current-time');
+        if (clockElement) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('id-ID', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short'
+            });
+            clockElement.innerHTML = `
+                <div>
+                    <div class="font-semibold">${timeString}</div>
+                    <div class="text-xs opacity-80">${dateString}</div>
+                </div>
+            `;
+        }
+    }
+
+    // Update clock every second
+    updateClock();
+    setInterval(updateClock, 1000);
 
     function handleLogout() {
         if (confirm('Yakin ingin keluar?')) {
@@ -108,20 +144,11 @@
         }
     }
 
-    // --- LOGIC RESPONSIVE SIDEBAR ---
+    // Mobile sidebar toggle (if needed)
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-
-        // Toggle kelas translate untuk animasi slide
-        if (sidebar.classList.contains('-translate-x-full')) {
-            // Buka Menu
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
-        } else {
-            // Tutup Menu
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
+        if (sidebar) {
+            sidebar.classList.toggle('hidden');
         }
     }
     </script>
