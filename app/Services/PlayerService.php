@@ -103,4 +103,71 @@ class PlayerService
             ])
         ];
     }
+
+    public function deletePlayer($id)
+    {
+        $player = $this->repo->findById($id);
+        if (!$player) {
+            return null;
+        }
+
+        $deleted = $this->repo->deletePlayer($id);
+        if ($deleted) {
+            return [
+                'success' => true,
+                'message' => 'Player berhasil dihapus',
+                'player_id' => $id
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Gagal menghapus player'
+        ];
+    }
+
+    public function banPlayer($id, $banReason = null)
+    {
+        $player = $this->repo->findById($id);
+        if (!$player) {
+            return null;
+        }
+
+        $banned = $this->repo->banPlayer($id, $banReason);
+        if ($banned) {
+            return [
+                'success' => true,
+                'message' => 'Player berhasil di-ban',
+                'player_id' => $id,
+                'reason' => $banReason ?? 'Banned by admin'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Gagal mem-ban player'
+        ];
+    }
+
+    public function unbanPlayer($id)
+    {
+        $player = $this->repo->findById($id);
+        if (!$player) {
+            return null;
+        }
+
+        $unbanned = $this->repo->unbanPlayer($id);
+        if ($unbanned) {
+            return [
+                'success' => true,
+                'message' => 'Player berhasil di-unban',
+                'player_id' => $id
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => 'Gagal mem-unban player'
+        ];
+    }
 }

@@ -60,4 +60,63 @@ class PlayerRepository
             ->selectRaw('SUM(CASE WHEN `rank` = 1 THEN 1 ELSE 0 END) as wins')
             ->first();
     }
+
+    public function deletePlayer($playerId)
+    {
+        $player = $this->findById($playerId);
+        if (!$player) {
+            return false;
+        }
+
+        // Delete player dan related data
+        DB::transaction(function () use ($player) {
+            // Delete dari participatesin
+            DB::table('participatesin')->where('playerId', $player->PlayerId)->delete();
+            
+            // Delete dari player_decisions
+            DB::table('player_decisions')->where('player_id', $player->PlayerId)->delete();
+            
+            // Delete dari player_profile
+            if ($player->profile) {
+                $player->profile->delete();
+            }
+            
+            // Delete player
+            $player->delete();
+        });
+
+        return true;
+    }
+
+    public function banPlayer($playerId, $banReason = null)
+    {
+        $player = $this->findById($playerId);
+        if (!$player || !$player->user) {
+            return false;
+        }
+
+        // Update status banned di auth_users
+        $player->user->update([
+            'is_active' => false,
+            'ban_reason' => $banReason ?? 'Banned by admin'
+        ]);
+
+        return true;
+    }
+
+    public function unbanPlayer($playerId)
+    {
+        $player = $this->findById($playerId);
+        if (!$player || !$player->user) {
+            return false;
+        }
+
+        // Update status active di auth_users
+        $player->user->update([
+            'is_active' => true,
+            'ban_reason' => null
+        ]);
+
+        return true;
+    }
 }

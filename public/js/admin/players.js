@@ -1,29 +1,31 @@
 const headers = {
-    'Authorization': `Bearer ${token}`, // token diambil dari layout utama
-    'Accept': 'application/json'
+    Authorization: `Bearer ${token}`, // token diambil dari layout utama
+    Accept: "application/json",
 };
 
 // --- INIT ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     renderPlayerList();
 });
 
 // --- 1. RENDER LIST PLAYERS ---
-async function renderPlayerList(keyword = '') {
-    const wrapper = document.getElementById('table-wrapper');
-    const detailWrapper = document.getElementById('detail-wrapper');
-    const container = document.getElementById('player-container');
+async function renderPlayerList(keyword = "") {
+    const wrapper = document.getElementById("table-wrapper");
+    const detailWrapper = document.getElementById("detail-wrapper");
+    const container = document.getElementById("player-container");
 
     // Tampilkan container list, sembunyikan detail
-    container.classList.remove('hidden');
-    detailWrapper.classList.add('hidden');
-    
-    if(!keyword) wrapper.innerHTML = '<div class="loader"></div>';
+    container.classList.remove("hidden");
+    detailWrapper.classList.add("hidden");
+
+    if (!keyword) wrapper.innerHTML = '<div class="loader"></div>';
 
     try {
-        const url = `${BASE_API}/players?limit=20&search=${encodeURIComponent(keyword)}`;
+        const url = `${BASE_API}/players?limit=20&search=${encodeURIComponent(
+            keyword
+        )}`;
         const response = await fetch(url, { headers });
-        
+
         if (response.status === 401) {
             wrapper.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Sesi habis. Silakan login ulang.</div>`;
             return;
@@ -51,7 +53,39 @@ async function renderPlayerList(keyword = '') {
                     <tbody>
         `;
 
-        players.forEach(p => {
+        players.forEach((p) => {
+            const statusColor =
+                p.status === "Active"
+                    ? "text-green-700 bg-green-100"
+                    : "text-red-700 bg-red-100";
+            const actionButtons = `
+                <div class="flex gap-2 justify-end">
+                    <button onclick="renderPlayerDetail('${
+                        p.player_id
+                    }')" class="text-indigo-600 hover:text-indigo-900 text-sm font-bold border border-indigo-200 px-2 py-1 rounded hover:bg-indigo-50 transition">
+                        <i class="fa-solid fa-info-circle"></i> Detail
+                    </button>
+                    ${
+                        p.status === "Active"
+                            ? `
+                        <button onclick="showBanModal('${p.player_id}', '${p.name}')" class="text-orange-600 hover:text-orange-900 text-sm font-bold border border-orange-200 px-2 py-1 rounded hover:bg-orange-50 transition" title="Ban pemain">
+                            <i class="fa-solid fa-ban"></i> Ban
+                        </button>
+                    `
+                            : `
+                        <button onclick="unbanPlayer('${p.player_id}')" class="text-green-600 hover:text-green-900 text-sm font-bold border border-green-200 px-2 py-1 rounded hover:bg-green-50 transition" title="Unban pemain">
+                            <i class="fa-solid fa-check-circle"></i> Unban
+                        </button>
+                    `
+                    }
+                    <button onclick="showDeleteModal('${p.player_id}', '${
+                p.name
+            }')" class="text-red-600 hover:text-red-900 text-sm font-bold border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition" title="Hapus pemain">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
             html += `
                 <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
                     <td class="px-5 py-4">
@@ -68,14 +102,12 @@ async function renderPlayerList(keyword = '') {
                         </span>
                     </td>
                     <td class="px-5 py-4">
-                        <span class="px-2 py-1 font-semibold leading-tight ${p.status === 'Active' ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'} rounded-full text-xs">
+                        <span class="px-2 py-1 font-semibold leading-tight ${statusColor} rounded-full text-xs">
                             ${p.status}
                         </span>
                     </td>
                     <td class="px-5 py-4 text-right">
-                        <button onclick="renderPlayerDetail('${p.player_id}')" class="text-indigo-600 hover:text-indigo-900 text-sm font-bold border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-50">
-                            Detail
-                        </button>
+                        ${actionButtons}
                     </td>
                 </tr>
             `;
@@ -85,9 +117,11 @@ async function renderPlayerList(keyword = '') {
         wrapper.innerHTML = html;
 
         // Restore focus input search agar UX nyaman
-        const input = document.getElementById('searchInput');
-        if(input) { input.focus(); input.value = keyword; }
-
+        const input = document.getElementById("searchInput");
+        if (input) {
+            input.focus();
+            input.value = keyword;
+        }
     } catch (e) {
         wrapper.innerHTML = `<div class="text-red-500 p-4">Error: ${e.message}</div>`;
     }
@@ -95,12 +129,12 @@ async function renderPlayerList(keyword = '') {
 
 // --- 2. RENDER DETAIL PLAYER (FULL VERSION WITH PROFILING) ---
 async function renderPlayerDetail(playerId) {
-    const container = document.getElementById('player-container');
-    const detailWrapper = document.getElementById('detail-wrapper');
-    
+    const container = document.getElementById("player-container");
+    const detailWrapper = document.getElementById("detail-wrapper");
+
     // Switch View ke Detail
-    container.classList.add('hidden');
-    detailWrapper.classList.remove('hidden');
+    container.classList.add("hidden");
+    detailWrapper.classList.remove("hidden");
     detailWrapper.innerHTML = '<div class="loader"></div>';
 
     try {
@@ -108,8 +142,13 @@ async function renderPlayerDetail(playerId) {
         const [resDetail, resAnalysis, resCurve, resSkill] = await Promise.all([
             fetch(`${BASE_API}/players/${playerId}`, { headers }),
             fetch(`${BASE_API}/players/${playerId}/analysis`, { headers }),
-            fetch(`${BASE_API}/analytics/learning-curve?player_id=${playerId}`, { headers }),
-            fetch(`${BASE_API}/analytics/skill-matrix?player_id=${playerId}`, { headers })
+            fetch(
+                `${BASE_API}/analytics/learning-curve?player_id=${playerId}`,
+                { headers }
+            ),
+            fetch(`${BASE_API}/analytics/skill-matrix?player_id=${playerId}`, {
+                headers,
+            }),
         ]);
 
         const detail = await resDetail.json();
@@ -125,56 +164,106 @@ async function renderPlayerDetail(playerId) {
 
         // --- 1. DEFINISI KAMUS JAWABAN PROFILING ---
         const profilingMap = {
-            0: { // Gaji Pertama
-                'A': { text: '50% Tabungan', class: 'bg-green-100 text-green-800' },
-                'B': { text: 'Seimbang', class: 'bg-blue-100 text-blue-800' },
-                'C': { text: 'Gaya Hidup', class: 'bg-red-100 text-red-800' },
-                'D': { text: 'Investasi', class: 'bg-orange-100 text-orange-800' }
+            0: {
+                // Gaji Pertama
+                A: {
+                    text: "50% Tabungan",
+                    class: "bg-green-100 text-green-800",
+                },
+                B: { text: "Seimbang", class: "bg-blue-100 text-blue-800" },
+                C: { text: "Gaya Hidup", class: "bg-red-100 text-red-800" },
+                D: {
+                    text: "Investasi",
+                    class: "bg-orange-100 text-orange-800",
+                },
             },
-            1: { // Modal Bisnis
-                'A': { text: 'Tolak (Aman)', class: 'bg-green-100 text-green-800' },
-                'B': { text: 'Ambil Pinjol', class: 'bg-red-100 text-red-800' },
-                'C': { text: 'Pinjam Ortu', class: 'bg-yellow-100 text-yellow-800' },
-                'D': { text: 'Pakai Tabungan', class: 'bg-orange-100 text-orange-800' }
+            1: {
+                // Modal Bisnis
+                A: {
+                    text: "Tolak (Aman)",
+                    class: "bg-green-100 text-green-800",
+                },
+                B: { text: "Ambil Pinjol", class: "bg-red-100 text-red-800" },
+                C: {
+                    text: "Pinjam Ortu",
+                    class: "bg-yellow-100 text-yellow-800",
+                },
+                D: {
+                    text: "Pakai Tabungan",
+                    class: "bg-orange-100 text-orange-800",
+                },
             },
-            2: { // Crypto FOMO
-                'A': { text: 'Riset Dulu', class: 'bg-green-100 text-green-800' },
-                'B': { text: 'All-in (FOMO)', class: 'bg-red-100 text-red-800' },
-                'C': { text: 'Ikut Teman', class: 'bg-yellow-100 text-yellow-800' },
-                'D': { text: 'Tidak Tertarik', class: 'bg-gray-100 text-gray-800' }
-            }
+            2: {
+                // Crypto FOMO
+                A: { text: "Riset Dulu", class: "bg-green-100 text-green-800" },
+                B: { text: "All-in (FOMO)", class: "bg-red-100 text-red-800" },
+                C: {
+                    text: "Ikut Teman",
+                    class: "bg-yellow-100 text-yellow-800",
+                },
+                D: {
+                    text: "Tidak Tertarik",
+                    class: "bg-gray-100 text-gray-800",
+                },
+            },
         };
 
         // --- 2. GENERATE HTML PROFILING ---
-        const answers = Array.isArray(ai.initial_answers) 
-    ? ai.initial_answers 
-    : []; 
-        const profilingHtml = answers.length > 0 ? `
+        const answers = Array.isArray(ai.initial_answers)
+            ? ai.initial_answers
+            : [];
+        const profilingHtml =
+            answers.length > 0
+                ? `
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <span class="text-xs font-bold text-gray-500 uppercase block mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> Profiling Awal:</span>
                 <div class="grid grid-cols-3 gap-2">
-                    ${answers.map((ans, idx) => {
-                        const map = profilingMap[idx] ? profilingMap[idx][ans] : { text: ans, class: 'bg-gray-100 text-gray-600' };
-                        return `
-                            <div class="text-center p-2 rounded border ${map.class || 'bg-gray-50'}">
-                                <div class="text-[10px] uppercase opacity-70">Q${idx + 1}</div>
-                                <div class="font-bold text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis">${map.text || ans}</div>
+                    ${answers
+                        .map((ans, idx) => {
+                            const map = profilingMap[idx]
+                                ? profilingMap[idx][ans]
+                                : {
+                                      text: ans,
+                                      class: "bg-gray-100 text-gray-600",
+                                  };
+                            return `
+                            <div class="text-center p-2 rounded border ${
+                                map.class || "bg-gray-50"
+                            }">
+                                <div class="text-[10px] uppercase opacity-70">Q${
+                                    idx + 1
+                                }</div>
+                                <div class="font-bold text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis">${
+                                    map.text || ans
+                                }</div>
                             </div>
                         `;
-                    }).join('')}
+                        })
+                        .join("")}
                 </div>
             </div>
-        ` : '<p class="text-xs text-gray-400 mt-2 italic">Belum ada data profiling.</p>';
+        `
+                : '<p class="text-xs text-gray-400 mt-2 italic">Belum ada data profiling.</p>';
 
         // --- 3. GENERATE HTML SKILL MATRIX ---
-        const skillHtml = Object.entries(skill).map(([k, v]) => `
+        const skillHtml = Object.entries(skill)
+            .map(
+                ([k, v]) => `
             <div class="flex justify-between items-center bg-gray-50 p-2 rounded mb-1 border border-gray-100">
                 <span class="text-sm font-medium text-gray-700">${k}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${v==='Expert'?'bg-green-500':(v==='Intermediate'?'bg-yellow-500':'bg-red-500')}">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${
+                    v === "Expert"
+                        ? "bg-green-500"
+                        : v === "Intermediate"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                }">
                     ${v}
                 </span>
             </div>
-        `).join('');
+        `
+            )
+            .join("");
 
         // --- 4. BUILD HTML UTAMA ---
         detailWrapper.innerHTML = `
@@ -185,19 +274,60 @@ async function renderPlayerDetail(playerId) {
             <div class="bg-white shadow rounded-lg p-6 mb-6 border-l-4 border-indigo-500 flex flex-col md:flex-row justify-between items-start gap-4">
                 <div class="flex-1 w-full">
                     <h1 class="text-2xl font-bold text-gray-800">${p.name}</h1>
-                    <p class="text-gray-500 text-sm">@${p.username} • Joined: ${p.join_date?.substring(0,10)}</p>
+                    <p class="text-gray-500 text-sm">@${
+                        p.username
+                    } • Joined: ${p.join_date?.substring(0, 10)}</p>
                     
                     ${profilingHtml}
                 </div>
                 
                 <div class="text-left md:text-right w-full md:w-auto bg-indigo-50 md:bg-transparent p-3 md:p-0 rounded">
                     <p class="text-xs text-gray-500 uppercase tracking-wide">Cluster AI</p>
-                    <span class="text-lg font-bold text-indigo-600">${ai.cluster || 'Unprofiled'}</span>
-                    <p class="text-xs text-gray-400">Confidence: ${ai.ai_confidence}</p>
+                    <span class="text-lg font-bold text-indigo-600">${
+                        ai.cluster || "Unprofiled"
+                    }</span>
+                    <p class="text-xs text-gray-400">Confidence: ${
+                        ai.ai_confidence
+                    }</p>
                     <div class="mt-2 flex flex-wrap justify-end gap-1">
-                        ${ai.traits ? ai.traits.map(t => `<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded shadow-sm">${t}</span>`).join('') : ''}
+                        ${
+                            ai.traits
+                                ? ai.traits
+                                      .map(
+                                          (t) =>
+                                              `<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded shadow-sm">${t}</span>`
+                                      )
+                                      .join("")
+                                : ""
+                        }
                     </div>
                 </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 mb-6 flex-wrap">
+                <button onclick="renderPlayerList()" class="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali
+                </button>
+                <div class="flex-1"></div>
+                ${
+                    detail.player_info.status === "Active"
+                        ? `
+                    <button onclick="showBanModal('${playerId}', '${p.name}')" class="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition">
+                        <i class="fa-solid fa-ban"></i> Ban Player
+                    </button>
+                `
+                        : `
+                    <button onclick="unbanPlayer('${playerId}')" class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition">
+                        <i class="fa-solid fa-check-circle"></i> Unban Player
+                    </button>
+                `
+                }
+                <button onclick="showDeleteModal('${playerId}', '${
+            p.name
+        }')" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
+                    <i class="fa-solid fa-trash"></i> Hapus Player
+                </button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -205,27 +335,41 @@ async function renderPlayerDetail(playerId) {
                     <h3 class="text-gray-700 font-bold mb-4 border-b pb-2">Statistik Permainan</h3>
                     <div class="grid grid-cols-3 gap-2 text-center mb-4">
                         <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-gray-800">${stats.total_games || 0}</span>
+                            <span class="block text-xl font-bold text-gray-800">${
+                                stats.total_games || 0
+                            }</span>
                             <span class="text-[10px] text-gray-500 uppercase">Games</span>
                         </div>
                         <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-gray-800">${stats.avg_score || 0}</span>
+                            <span class="block text-xl font-bold text-gray-800">${
+                                stats.avg_score || 0
+                            }</span>
                             <span class="text-[10px] text-gray-500 uppercase">Avg Score</span>
                         </div>
                         <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-green-600">${stats.win_rate || '0%'}</span>
+                            <span class="block text-xl font-bold text-green-600">${
+                                stats.win_rate || "0%"
+                            }</span>
                             <span class="text-[10px] text-gray-500 uppercase">Win Rate</span>
                         </div>
                     </div>
                     
                     <h4 class="text-sm font-bold text-gray-600 mb-2">Diagnosis Kelemahan:</h4>
                     <ul class="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-                        ${weaknesses.length > 0 ? weaknesses.map(w => `
+                        ${
+                            weaknesses.length > 0
+                                ? weaknesses
+                                      .map(
+                                          (w) => `
                             <li class="text-sm text-red-600 bg-red-50 px-3 py-2 rounded flex justify-between border border-red-100">
                                 <span>${w.category}</span>
                                 <span class="font-bold text-xs bg-white px-2 py-0.5 rounded border border-red-200">Acc: ${w.accuracy}</span>
                             </li>
-                        `).join('') : '<li class="text-sm text-green-600 bg-green-50 p-2 rounded"><i class="fa-solid fa-check-circle mr-1"></i> Tidak ada kelemahan signifikan.</li>'}
+                        `
+                                      )
+                                      .join("")
+                                : '<li class="text-sm text-green-600 bg-green-50 p-2 rounded"><i class="fa-solid fa-check-circle mr-1"></i> Tidak ada kelemahan signifikan.</li>'
+                        }
                     </ul>
                 </div>
 
@@ -234,13 +378,29 @@ async function renderPlayerDetail(playerId) {
                         <i class="fa-solid fa-robot text-indigo-500"></i> Rekomendasi AI
                     </h3>
                     <div class="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                        ${recommendations.length > 0 ? recommendations.map(rec => `
+                        ${
+                            recommendations.length > 0
+                                ? recommendations
+                                      .map(
+                                          (rec) => `
                             <div class="p-3 bg-indigo-50 rounded border border-indigo-100 hover:bg-indigo-100 transition">
-                                <div class="text-[10px] font-bold text-indigo-600 uppercase mb-1">${rec.type}</div>
-                                <div class="text-sm font-semibold text-gray-800">${rec.title}</div>
-                                ${rec.reason ? `<div class="text-xs text-gray-500 mt-1 italic">"${rec.reason}"</div>` : ''}
+                                <div class="text-[10px] font-bold text-indigo-600 uppercase mb-1">${
+                                    rec.type
+                                }</div>
+                                <div class="text-sm font-semibold text-gray-800">${
+                                    rec.title
+                                }</div>
+                                ${
+                                    rec.reason
+                                        ? `<div class="text-xs text-gray-500 mt-1 italic">"${rec.reason}"</div>`
+                                        : ""
+                                }
                             </div>
-                        `).join('') : '<p class="text-sm text-gray-500 italic">Belum ada rekomendasi khusus saat ini.</p>'}
+                        `
+                                      )
+                                      .join("")
+                                : '<p class="text-sm text-gray-500 italic">Belum ada rekomendasi khusus saat ini.</p>'
+                        }
                     </div>
                 </div>
             </div>
@@ -259,7 +419,10 @@ async function renderPlayerDetail(playerId) {
                 <div class="bg-white shadow p-6 rounded-lg">
                     <h3 class="font-bold mb-4 text-gray-700">🧠 Skill Matrix</h3>
                     <div class="border rounded p-4 h-64 overflow-y-auto custom-scrollbar bg-gray-50">
-                        ${skillHtml || '<div class="flex flex-col items-center justify-center h-full text-gray-400 text-xs"><i class="fa-solid fa-chart-bar text-2xl mb-2"></i>Belum ada data skill</div>'}
+                        ${
+                            skillHtml ||
+                            '<div class="flex flex-col items-center justify-center h-full text-gray-400 text-xs"><i class="fa-solid fa-chart-bar text-2xl mb-2"></i>Belum ada data skill</div>'
+                        }
                     </div>
                 </div>
             </div>
@@ -267,38 +430,43 @@ async function renderPlayerDetail(playerId) {
 
         // --- 5. RENDER CHART ---
         if (curve.accuracy_trend && curve.accuracy_trend.length > 0) {
-            new Chart(document.getElementById('playerCurveChart'), {
-                type: 'line',
+            new Chart(document.getElementById("playerCurveChart"), {
+                type: "line",
                 data: {
-                    labels: curve.accuracy_trend.map((_, i) => `Sesi ${i+1}`),
-                    datasets: [{
-                        label: 'Akurasi (%)',
-                        data: curve.accuracy_trend,
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#4f46e5',
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.3
-                    }]
+                    labels: curve.accuracy_trend.map((_, i) => `Sesi ${i + 1}`),
+                    datasets: [
+                        {
+                            label: "Akurasi (%)",
+                            data: curve.accuracy_trend,
+                            borderColor: "#4f46e5",
+                            backgroundColor: "rgba(79, 70, 229, 0.1)",
+                            borderWidth: 2,
+                            pointBackgroundColor: "#fff",
+                            pointBorderColor: "#4f46e5",
+                            pointRadius: 4,
+                            fill: true,
+                            tension: 0.3,
+                        },
+                    ],
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, max: 100, grid: { borderDash: [2, 4] } },
-                        x: { grid: { display: false } }
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { borderDash: [2, 4] },
+                        },
+                        x: { grid: { display: false } },
                     },
-                    plugins: { legend: { display: false } }
-                }
+                    plugins: { legend: { display: false } },
+                },
             });
         } else {
-            document.getElementById('playerCurveChart').parentNode.innerHTML = 
+            document.getElementById("playerCurveChart").parentNode.innerHTML =
                 '<div class="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50 rounded border border-dashed border-gray-300"><i class="fa-solid fa-chart-line text-3xl mb-2 opacity-50"></i><span class="text-sm">Belum cukup data grafik.</span></div>';
         }
-
     } catch (e) {
         console.error(e);
         detailWrapper.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative m-4 shadow">
@@ -314,4 +482,214 @@ let timeout;
 function handleSearch(val) {
     clearTimeout(timeout);
     timeout = setTimeout(() => renderPlayerList(val), 500);
+}
+
+// --- MODAL DELETE ---
+function showDeleteModal(playerId, playerName) {
+    const modal = document.createElement("div");
+    modal.id = "deleteModal";
+    modal.className =
+        "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+                <i class="fa-solid fa-trash text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Hapus Player</h3>
+            <p class="text-gray-600 text-center mb-6">
+                Apakah Anda yakin ingin menghapus <strong>${playerName}</strong>? 
+                <br><span class="text-sm text-red-600">Semua data akan terhapus permanen termasuk stats, decisions, dan profiling.</span>
+            </p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition">
+                    Batal
+                </button>
+                <button onclick="confirmDelete('${playerId}')" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
+                    <i class="fa-solid fa-check"></i> Hapus
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById("deleteModal");
+    if (modal) modal.remove();
+}
+
+async function confirmDelete(playerId) {
+    closeDeleteModal();
+    const wrapper =
+        document.getElementById("detail-wrapper") ||
+        document.getElementById("table-wrapper");
+
+    try {
+        const response = await fetch(`${BASE_API}/players/${playerId}`, {
+            method: "DELETE",
+            headers,
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Show success notification
+            showNotification("Player berhasil dihapus", "success");
+            // Refresh both player list and overview
+            setTimeout(() => {
+                renderPlayerList();
+                refreshOverview();
+            }, 1500);
+        } else {
+            showNotification(
+                result.message || "Gagal menghapus player",
+                "error"
+            );
+        }
+    } catch (e) {
+        showNotification(`Error: ${e.message}`, "error");
+    }
+}
+
+// --- MODAL BAN ---
+function showBanModal(playerId, playerName) {
+    const modal = document.createElement("div");
+    modal.id = "banModal";
+    modal.className =
+        "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-orange-100 rounded-full mb-4">
+                <i class="fa-solid fa-ban text-orange-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Ban Player</h3>
+            <p class="text-gray-600 text-center mb-4">
+                Apakah Anda yakin ingin mem-ban <strong>${playerName}</strong>? 
+                <br><span class="text-sm text-gray-500">Player tidak akan bisa login tapi data tetap tersimpan.</span>
+            </p>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Ban (Opsional)</label>
+                <textarea id="banReason" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-orange-500" placeholder="Contoh: Cheating, Harassment, etc." rows="3"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeBanModal()" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition">
+                    Batal
+                </button>
+                <button onclick="confirmBan('${playerId}')" class="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition">
+                    <i class="fa-solid fa-check"></i> Ban
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeBanModal() {
+    const modal = document.getElementById("banModal");
+    if (modal) modal.remove();
+}
+
+async function confirmBan(playerId) {
+    closeBanModal();
+    const reason = document.getElementById("banReason")?.value || "";
+
+    try {
+        const response = await fetch(`${BASE_API}/players/${playerId}/ban`, {
+            method: "POST",
+            headers: {
+                ...headers,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ban_reason: reason }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showNotification("Player berhasil di-ban", "success");
+            setTimeout(() => {
+                renderPlayerList();
+                refreshOverview();
+            }, 1500);
+        } else {
+            showNotification(result.message || "Gagal mem-ban player", "error");
+        }
+    } catch (e) {
+        showNotification(`Error: ${e.message}`, "error");
+    }
+}
+
+// --- UNBAN PLAYER ---
+async function unbanPlayer(playerId) {
+    if (!confirm("Apakah Anda yakin ingin mem-unban player ini?")) return;
+
+    try {
+        const response = await fetch(`${BASE_API}/players/${playerId}/unban`, {
+            method: "POST",
+            headers,
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showNotification("Player berhasil di-unban", "success");
+            setTimeout(() => {
+                renderPlayerList();
+                refreshOverview();
+            }, 1500);
+        } else {
+            showNotification(
+                result.message || "Gagal mem-unban player",
+                "error"
+            );
+        }
+    } catch (e) {
+        showNotification(`Error: ${e.message}`, "error");
+    }
+}
+
+// --- REFRESH OVERVIEW ---
+function refreshOverview() {
+    try {
+        // Cari parent window jika di iframe, atau gunakan window saat ini
+        const parentWindow = window.parent || window;
+        
+        // Panggil function loadOverviewStats jika ada di parent
+        if (typeof parentWindow.loadOverviewStats === 'function') {
+            parentWindow.loadOverviewStats();
+        }
+        
+        // Atau trigger custom event untuk update overview
+        const event = new CustomEvent('playerListUpdated');
+        document.dispatchEvent(event);
+    } catch (e) {
+        console.log('Note: Overview akan ter-refresh otomatis');
+    }
+}
+
+// --- NOTIFICATION HELPER ---
+function showNotification(message, type = "info") {
+    const notification = document.createElement("div");
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition z-40 ${
+        type === "success"
+            ? "bg-green-500"
+            : type === "error"
+            ? "bg-red-500"
+            : "bg-blue-500"
+    }`;
+    notification.innerHTML = `
+        ${
+            type === "success"
+                ? '<i class="fa-solid fa-check-circle mr-2"></i>'
+                : ""
+        }
+        ${
+            type === "error"
+                ? '<i class="fa-solid fa-exclamation-circle mr-2"></i>'
+                : ""
+        }
+        ${message}
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
 }

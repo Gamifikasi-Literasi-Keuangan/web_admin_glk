@@ -5,6 +5,12 @@ const headers = {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadOverviewStats();
+    
+    // Listen untuk update dari players page
+    document.addEventListener('playerListUpdated', () => {
+        console.log('Player list updated, refreshing overview...');
+        loadOverviewStats();
+    });
 });
 
 async function loadOverviewStats() {

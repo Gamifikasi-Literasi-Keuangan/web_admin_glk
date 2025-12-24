@@ -33,4 +33,35 @@ class AdminPlayerController extends Controller
         if (!$data) return response()->json(['message' => 'Not Found'], 404);
         return response()->json($data);
     }
+
+    public function destroy($id)
+    {
+        $result = $this->service->deletePlayer($id);
+        if (!$result) {
+            return response()->json(['message' => 'Player not found'], 404);
+        }
+        return response()->json($result);
+    }
+
+    public function ban(Request $request, $id)
+    {
+        $request->validate([
+            'ban_reason' => 'nullable|string|max:500'
+        ]);
+
+        $result = $this->service->banPlayer($id, $request->input('ban_reason'));
+        if (!$result) {
+            return response()->json(['message' => 'Player not found'], 404);
+        }
+        return response()->json($result);
+    }
+
+    public function unban($id)
+    {
+        $result = $this->service->unbanPlayer($id);
+        if (!$result) {
+            return response()->json(['message' => 'Player not found'], 404);
+        }
+        return response()->json($result);
+    }
 }
