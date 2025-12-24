@@ -60,27 +60,24 @@ async function renderPlayerList(keyword = "") {
                     : "text-red-700 bg-red-100";
             const actionButtons = `
                 <div class="flex gap-2 justify-end">
-                    <button onclick="renderPlayerDetail('${
-                        p.player_id
-                    }')" class="text-indigo-600 hover:text-indigo-900 text-sm font-bold border border-indigo-200 px-2 py-1 rounded hover:bg-indigo-50 transition">
+                    <button onclick="renderPlayerDetail('${p.player_id
+                }')" class="text-indigo-600 hover:text-indigo-900 text-sm font-bold border border-indigo-200 px-2 py-1 rounded hover:bg-indigo-50 transition">
                         <i class="fa-solid fa-info-circle"></i> Detail
                     </button>
-                    ${
-                        p.status === "Active"
-                            ? `
+                    ${p.status === "Active"
+                    ? `
                         <button onclick="showBanModal('${p.player_id}', '${p.name}')" class="text-orange-600 hover:text-orange-900 text-sm font-bold border border-orange-200 px-2 py-1 rounded hover:bg-orange-50 transition" title="Ban pemain">
                             <i class="fa-solid fa-ban"></i> Ban
                         </button>
                     `
-                            : `
+                    : `
                         <button onclick="unbanPlayer('${p.player_id}')" class="text-green-600 hover:text-green-900 text-sm font-bold border border-green-200 px-2 py-1 rounded hover:bg-green-50 transition" title="Unban pemain">
                             <i class="fa-solid fa-check-circle"></i> Unban
                         </button>
                     `
-                    }
-                    <button onclick="showDeleteModal('${p.player_id}', '${
-                p.name
-            }')" class="text-red-600 hover:text-red-900 text-sm font-bold border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition" title="Hapus pemain">
+                }
+                    <button onclick="showDeleteModal('${p.player_id}', '${p.name
+                }')" class="text-red-600 hover:text-red-900 text-sm font-bold border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition" title="Hapus pemain">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -209,7 +206,7 @@ async function renderPlayerDetail(playerId) {
         };
 
         // --- 2. GENERATE HTML PROFILING ---
-        const answers = Array.isArray(ai.initial_answers)
+        const answers = ai && Array.isArray(ai.initial_answers)
             ? ai.initial_answers
             : [];
         const profilingHtml =
@@ -219,27 +216,24 @@ async function renderPlayerDetail(playerId) {
                 <span class="text-xs font-bold text-gray-500 uppercase block mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> Profiling Awal:</span>
                 <div class="grid grid-cols-3 gap-2">
                     ${answers
-                        .map((ans, idx) => {
-                            const map = profilingMap[idx]
-                                ? profilingMap[idx][ans]
-                                : {
-                                      text: ans,
-                                      class: "bg-gray-100 text-gray-600",
-                                  };
-                            return `
-                            <div class="text-center p-2 rounded border ${
-                                map.class || "bg-gray-50"
+                    .map((ans, idx) => {
+                        const map = profilingMap[idx]
+                            ? profilingMap[idx][ans]
+                            : {
+                                text: ans,
+                                class: "bg-gray-100 text-gray-600",
+                            };
+                        return `
+                            <div class="text-center p-2 rounded border ${map.class || "bg-gray-50"
                             }">
-                                <div class="text-[10px] uppercase opacity-70">Q${
-                                    idx + 1
-                                }</div>
-                                <div class="font-bold text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis">${
-                                    map.text || ans
-                                }</div>
+                                <div class="text-[10px] uppercase opacity-70">Q${idx + 1
+                            }</div>
+                                <div class="font-bold text-xs mt-1 whitespace-nowrap overflow-hidden text-ellipsis">${map.text || ans
+                            }</div>
                             </div>
                         `;
-                        })
-                        .join("")}
+                    })
+                    .join("")}
                 </div>
             </div>
         `
@@ -251,13 +245,12 @@ async function renderPlayerDetail(playerId) {
                 ([k, v]) => `
             <div class="flex justify-between items-center bg-gray-50 p-2 rounded mb-1 border border-gray-100">
                 <span class="text-sm font-medium text-gray-700">${k}</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${
-                    v === "Expert"
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase ${v === "Expert"
                         ? "bg-green-500"
                         : v === "Intermediate"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                }">
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                    }">
                     ${v}
                 </span>
             </div>
@@ -274,32 +267,28 @@ async function renderPlayerDetail(playerId) {
             <div class="bg-white shadow rounded-lg p-6 mb-6 border-l-4 border-indigo-500 flex flex-col md:flex-row justify-between items-start gap-4">
                 <div class="flex-1 w-full">
                     <h1 class="text-2xl font-bold text-gray-800">${p.name}</h1>
-                    <p class="text-gray-500 text-sm">@${
-                        p.username
-                    } • Joined: ${p.join_date?.substring(0, 10)}</p>
+                    <p class="text-gray-500 text-sm">@${p.username
+            } • Joined: ${p.join_date?.substring(0, 10)}</p>
                     
                     ${profilingHtml}
                 </div>
                 
                 <div class="text-left md:text-right w-full md:w-auto bg-indigo-50 md:bg-transparent p-3 md:p-0 rounded">
                     <p class="text-xs text-gray-500 uppercase tracking-wide">Cluster AI</p>
-                    <span class="text-lg font-bold text-indigo-600">${
-                        ai.cluster || "Unprofiled"
-                    }</span>
-                    <p class="text-xs text-gray-400">Confidence: ${
-                        ai.ai_confidence
-                    }</p>
+                    <span class="text-lg font-bold text-indigo-600">${ai?.cluster || "Unprofiled"
+            }</span>
+                    <p class="text-xs text-gray-400">Confidence: ${ai?.ai_confidence || "N/A"
+            }</p>
                     <div class="mt-2 flex flex-wrap justify-end gap-1">
-                        ${
-                            ai.traits
-                                ? ai.traits
-                                      .map(
-                                          (t) =>
-                                              `<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded shadow-sm">${t}</span>`
-                                      )
-                                      .join("")
-                                : ""
-                        }
+                        ${ai?.traits
+                ? ai.traits
+                    .map(
+                        (t) =>
+                            `<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded shadow-sm">${t}</span>`
+                    )
+                    .join("")
+                : ""
+            }
                     </div>
                 </div>
             </div>
@@ -310,22 +299,20 @@ async function renderPlayerDetail(playerId) {
                     <i class="fa-solid fa-arrow-left"></i> Kembali
                 </button>
                 <div class="flex-1"></div>
-                ${
-                    detail.player_info.status === "Active"
-                        ? `
+                ${detail.player_info.status === "Active"
+                ? `
                     <button onclick="showBanModal('${playerId}', '${p.name}')" class="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition">
                         <i class="fa-solid fa-ban"></i> Ban Player
                     </button>
                 `
-                        : `
+                : `
                     <button onclick="unbanPlayer('${playerId}')" class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition">
                         <i class="fa-solid fa-check-circle"></i> Unban Player
                     </button>
                 `
-                }
-                <button onclick="showDeleteModal('${playerId}', '${
-            p.name
-        }')" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
+            }
+                <button onclick="showDeleteModal('${playerId}', '${p.name
+            }')" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition">
                     <i class="fa-solid fa-trash"></i> Hapus Player
                 </button>
             </div>
@@ -335,41 +322,37 @@ async function renderPlayerDetail(playerId) {
                     <h3 class="text-gray-700 font-bold mb-4 border-b pb-2">Statistik Permainan</h3>
                     <div class="grid grid-cols-3 gap-2 text-center mb-4">
                         <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-gray-800">${
-                                stats.total_games || 0
-                            }</span>
+                            <span class="block text-xl font-bold text-gray-800">${stats.total_games || 0
+            }</span>
                             <span class="text-[10px] text-gray-500 uppercase">Games</span>
                         </div>
                         <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-gray-800">${
-                                stats.avg_score || 0
-                            }</span>
+                            <span class="block text-xl font-bold text-gray-800">${stats.avg_score || 0
+            }</span>
                             <span class="text-[10px] text-gray-500 uppercase">Avg Score</span>
                         </div>
                         <div class="p-2 bg-gray-50 rounded border border-gray-100">
-                            <span class="block text-xl font-bold text-green-600">${
-                                stats.win_rate || "0%"
-                            }</span>
+                            <span class="block text-xl font-bold text-green-600">${stats.win_rate || "0%"
+            }</span>
                             <span class="text-[10px] text-gray-500 uppercase">Win Rate</span>
                         </div>
                     </div>
                     
                     <h4 class="text-sm font-bold text-gray-600 mb-2">Diagnosis Kelemahan:</h4>
                     <ul class="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-                        ${
-                            weaknesses.length > 0
-                                ? weaknesses
-                                      .map(
-                                          (w) => `
+                        ${weaknesses.length > 0
+                ? weaknesses
+                    .map(
+                        (w) => `
                             <li class="text-sm text-red-600 bg-red-50 px-3 py-2 rounded flex justify-between border border-red-100">
                                 <span>${w.category}</span>
                                 <span class="font-bold text-xs bg-white px-2 py-0.5 rounded border border-red-200">Acc: ${w.accuracy}</span>
                             </li>
                         `
-                                      )
-                                      .join("")
-                                : '<li class="text-sm text-green-600 bg-green-50 p-2 rounded"><i class="fa-solid fa-check-circle mr-1"></i> Tidak ada kelemahan signifikan.</li>'
-                        }
+                    )
+                    .join("")
+                : '<li class="text-sm text-green-600 bg-green-50 p-2 rounded"><i class="fa-solid fa-check-circle mr-1"></i> Tidak ada kelemahan signifikan.</li>'
+            }
                     </ul>
                 </div>
 
@@ -378,29 +361,25 @@ async function renderPlayerDetail(playerId) {
                         <i class="fa-solid fa-robot text-indigo-500"></i> Rekomendasi AI
                     </h3>
                     <div class="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                        ${
-                            recommendations.length > 0
-                                ? recommendations
-                                      .map(
-                                          (rec) => `
+                        ${recommendations.length > 0
+                ? recommendations
+                    .map(
+                        (rec) => `
                             <div class="p-3 bg-indigo-50 rounded border border-indigo-100 hover:bg-indigo-100 transition">
-                                <div class="text-[10px] font-bold text-indigo-600 uppercase mb-1">${
-                                    rec.type
-                                }</div>
-                                <div class="text-sm font-semibold text-gray-800">${
-                                    rec.title
-                                }</div>
-                                ${
-                                    rec.reason
-                                        ? `<div class="text-xs text-gray-500 mt-1 italic">"${rec.reason}"</div>`
-                                        : ""
-                                }
+                                <div class="text-[10px] font-bold text-indigo-600 uppercase mb-1">${rec.type
+                            }</div>
+                                <div class="text-sm font-semibold text-gray-800">${rec.title
+                            }</div>
+                                ${rec.reason
+                                ? `<div class="text-xs text-gray-500 mt-1 italic">"${rec.reason}"</div>`
+                                : ""
+                            }
                             </div>
                         `
-                                      )
-                                      .join("")
-                                : '<p class="text-sm text-gray-500 italic">Belum ada rekomendasi khusus saat ini.</p>'
-                        }
+                    )
+                    .join("")
+                : '<p class="text-sm text-gray-500 italic">Belum ada rekomendasi khusus saat ini.</p>'
+            }
                     </div>
                 </div>
             </div>
@@ -419,10 +398,9 @@ async function renderPlayerDetail(playerId) {
                 <div class="bg-white shadow p-6 rounded-lg">
                     <h3 class="font-bold mb-4 text-gray-700">🧠 Skill Matrix</h3>
                     <div class="border rounded p-4 h-64 overflow-y-auto custom-scrollbar bg-gray-50">
-                        ${
-                            skillHtml ||
-                            '<div class="flex flex-col items-center justify-center h-full text-gray-400 text-xs"><i class="fa-solid fa-chart-bar text-2xl mb-2"></i>Belum ada data skill</div>'
-                        }
+                        ${skillHtml ||
+            '<div class="flex flex-col items-center justify-center h-full text-gray-400 text-xs"><i class="fa-solid fa-chart-bar text-2xl mb-2"></i>Belum ada data skill</div>'
+            }
                     </div>
                 </div>
             </div>
@@ -670,23 +648,20 @@ function refreshOverview() {
 // --- NOTIFICATION HELPER ---
 function showNotification(message, type = "info") {
     const notification = document.createElement("div");
-    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition z-40 ${
-        type === "success"
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition z-40 ${type === "success"
             ? "bg-green-500"
             : type === "error"
-            ? "bg-red-500"
-            : "bg-blue-500"
-    }`;
+                ? "bg-red-500"
+                : "bg-blue-500"
+        }`;
     notification.innerHTML = `
-        ${
-            type === "success"
-                ? '<i class="fa-solid fa-check-circle mr-2"></i>'
-                : ""
+        ${type === "success"
+            ? '<i class="fa-solid fa-check-circle mr-2"></i>'
+            : ""
         }
-        ${
-            type === "error"
-                ? '<i class="fa-solid fa-exclamation-circle mr-2"></i>'
-                : ""
+        ${type === "error"
+            ? '<i class="fa-solid fa-exclamation-circle mr-2"></i>'
+            : ""
         }
         ${message}
     `;
