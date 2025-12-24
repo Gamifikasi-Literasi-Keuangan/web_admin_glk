@@ -5,55 +5,65 @@
 
 @section('content')
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500 flex items-center">
-        <div class="p-4 rounded-full bg-blue-50 text-blue-500">
-            <i class="fa-solid fa-users text-3xl"></i>
-        </div>
-        <div class="ml-6">
-            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Pemain</p>
-            <h3 class="text-3xl font-bold text-gray-800" id="stat-players">-</h3>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500 flex items-center">
-        <div class="p-4 rounded-full bg-green-50 text-green-500">
-            <i class="fa-solid fa-gamepad text-3xl"></i>
-        </div>
-        <div class="ml-6">
-            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Sesi Aktif</p>
-            <h3 class="text-3xl font-bold text-gray-800" id="stat-sessions">-</h3>
+    <div class="bg-white border border-zinc-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow enhanced-shadow">
+        <div class="flex items-center">
+            <div class="bg-green-100 p-4 rounded-xl mr-6">
+                <i class="fa-solid fa-users text-green-600 text-3xl"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-zinc-500 text-sm font-semibold uppercase tracking-wide mb-2">Total Pemain</p>
+                <h3 class="text-3xl font-bold text-zinc-800" id="stat-players">-</h3>
+                <div class="w-full bg-zinc-100 rounded-full h-2 mt-3">
+                    <div class="bg-green-500 h-2 rounded-full w-3/4"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500 flex items-center">
-        <div class="p-4 rounded-full bg-purple-50 text-purple-500">
-            <i class="fa-solid fa-brain text-3xl"></i>
+    <div class="bg-white border border-zinc-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow enhanced-shadow">
+        <div class="flex items-center">
+            <div class="bg-emerald-100 p-4 rounded-xl mr-6">
+                <i class="fa-solid fa-gamepad text-emerald-600 text-3xl"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-zinc-500 text-sm font-semibold uppercase tracking-wide mb-2">Sesi Aktif</p>
+                <h3 class="text-3xl font-bold text-zinc-800" id="stat-sessions">-</h3>
+                <div class="w-full bg-zinc-100 rounded-full h-2 mt-3">
+                    <div class="bg-emerald-500 h-2 rounded-full w-1/2"></div>
+                </div>
+            </div>
         </div>
-        <div class="ml-6">
-            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Keputusan</p>
-            <h3 class="text-3xl font-bold text-gray-800" id="stat-decisions">-</h3>
+    </div>
+
+    <div class="bg-white border border-zinc-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow enhanced-shadow">
+        <div class="flex items-center">
+            <div class="bg-green-100 p-4 rounded-xl mr-6">
+                <i class="fa-solid fa-brain text-green-600 text-3xl"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-zinc-500 text-sm font-semibold uppercase tracking-wide mb-2">Total Keputusan</p>
+                <h3 class="text-3xl font-bold text-zinc-800" id="stat-decisions">-</h3>
+                <div class="w-full bg-zinc-100 rounded-full h-2 mt-3">
+                    <div class="bg-green-500 h-2 rounded-full w-5/6"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="bg-white rounded-lg shadow-md p-8 text-center">
-    <img src="https://cdn-icons-png.flaticon.com/512/2942/2942813.png" alt="Dashboard"
-        class="w-32 h-32 mx-auto mb-4 opacity-80">
-    <h2 class="text-2xl font-bold text-gray-800 mb-2">Selamat Datang di Panel Admin Gamifikasi!</h2>
-    <p class="text-gray-600 max-w-2xl mx-auto">
-        Sistem ini membantu Anda memantau perkembangan literasi keuangan pemain secara real-time.
-        Gunakan menu di samping untuk mengelola konten, memantau pemain, atau melihat analisis mendalam.
-    </p>
-
-    <div class="mt-8 flex justify-center gap-4">
-        <a href="{{ route('admin.players') }}"
-            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow">
-            <i class="fa-solid fa-users mr-2"></i> Kelola Pemain
-        </a>
-        <a href="{{ route('admin.content') }}"
-            class="px-6 py-2 bg-white text-indigo-600 border border-indigo-600 rounded-lg hover:bg-indigo-50 transition">
-            <i class="fa-solid fa-book mr-2"></i> Kelola Konten
-        </a>
+<div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-sm p-8 text-center enhanced-shadow">
+    <div class="bg-white p-6 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center shadow-md border border-zinc-200">
+        <i class="fa-solid fa-chart-line text-green-600 text-4xl"></i>
+    </div>
+    
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-zinc-800 mb-4">Selamat Datang di Panel Admin</h2>
+        <div class="bg-green-500 h-1 w-24 mx-auto rounded-full mb-4"></div>
+        <h3 class="text-xl font-semibold text-green-700 mb-3">Gamifikasi Literasi Keuangan</h3>
+        <p class="text-zinc-600 max-w-2xl mx-auto leading-relaxed">
+            Sistem monitoring dan manajemen komprehensif untuk menganalisis perkembangan literasi keuangan pemain secara real-time.
+            Kelola konten, pantau progres pemain, dan analisis data pembelajaran dengan mudah melalui menu navigasi di sebelah kiri.
+        </p>
     </div>
 </div>
 @endsection

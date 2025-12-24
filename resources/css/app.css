@@ -1,11 +1,123 @@
-@import 'tailwindcss';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/* Custom Admin Layout Styles */
+.main-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+.content-area {
+    flex: 1;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Responsive sidebar overlay */
+@media (max-width: 1024px) {
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 40;
+    }
+}
+
+/* Mobile menu improvements */
+@media (max-width: 768px) {
+    .responsive-card {
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .mobile-optimized {
+        padding: 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Consistent loader styles */
+.loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 8rem;
+    flex-direction: column;
+}
+
+.loader::before {
+    content: '';
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 2px solid #059669;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.75rem;
+}
+
+.loader::after {
+    content: 'Memuat data...';
+    color: #71717a;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhanced tab styles */
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.tab-btn:hover:before {
+    left: 100%;
+}
+
+/* Smooth gradient backgrounds */
+.gradient-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #bbf7d0;
+}
+
+.gradient-card-secondary {
+    background: linear-gradient(135deg, #fafafa 0%, #f4f4f5 100%);
+    border: 1px solid #e4e4e7;
+}
+
+/* Enhanced shadows */
+.enhanced-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.enhanced-shadow:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+    transition: all 0.2s ease-in-out;
 }

@@ -8,7 +8,7 @@
     <!-- Game Sessions Grid Container -->
     <div class="max-w-7xl mx-auto px-6">      
         <div id="games-content">
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6" id="session-grid">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto" id="session-grid">
                 <!-- Loading State -->
                 <div class="col-span-full flex justify-center items-center py-12">
                     <div class="loader"></div>
@@ -65,7 +65,7 @@
             </button>
         </div>
 
-        <div class="p-8 overflow-y-auto flex-1 space-y-6 bg-zinc-900" id="modal-body">
+        <div class="p-8 overflow-y-auto flex-1 space-y-6 bg-gray-800" id="modal-body">
             <div class="flex justify-center items-center py-12">
                 <div class="loader"></div>
             </div>
