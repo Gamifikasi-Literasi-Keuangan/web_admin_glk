@@ -14,13 +14,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function switchTab(tab) {
     currentTab = tab;
 
-    // Update UI Tab Active
+    // Reset semua tab ke state inactive
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-indigo-500', 'text-indigo-600');
-        btn.classList.add('border-transparent', 'text-gray-500');
+        // Reset ke state inactive: background putih, text zinc, border zinc
+        btn.className = 'tab-btn flex items-center px-6 py-3 rounded-md font-semibold text-sm transition-all duration-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-800 border border-zinc-200 hover:border-zinc-300 whitespace-nowrap';
     });
-    document.getElementById(`tab-${tab}`).classList.remove('border-transparent', 'text-gray-500');
-    document.getElementById(`tab-${tab}`).classList.add('border-indigo-500', 'text-indigo-600');
+
+    // Set tab aktif dengan style hijau
+    const activeTab = document.getElementById(`tab-${tab}`);
+    if (activeTab) {
+        activeTab.className = 'tab-btn flex items-center px-6 py-3 rounded-md font-semibold text-sm transition-all duration-200 bg-green-500 text-white shadow-md whitespace-nowrap';
+    }
 
     // Reset Search & Load Data
     document.getElementById('searchInput').value = '';
@@ -30,7 +34,14 @@ function switchTab(tab) {
 // --- DATA LOADING ---
 async function loadData(keyword = '') {
     const wrapper = document.getElementById('table-wrapper');
-    wrapper.innerHTML = '<div class="loader mt-10"></div>';
+    wrapper.innerHTML = `
+        <div class="flex items-center justify-center py-16">
+            <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mb-3"></div>
+                <p class="text-zinc-500">Memuat data konten...</p>
+            </div>
+        </div>
+    `;
 
     try {
         let url;
@@ -46,7 +57,16 @@ async function loadData(keyword = '') {
         renderTable(json.data || []);
 
     } catch (e) {
-        wrapper.innerHTML = `<div class="text-red-500 p-10 text-center">Error: ${e.message}</div>`;
+        wrapper.innerHTML = `
+            <div class="text-center py-16">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                    <div class="bg-red-100 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                        <i class="fa-solid fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                    <p class="text-red-600 font-medium">Error: ${e.message}</p>
+                </div>
+            </div>
+        `;
     }
 }
 
@@ -55,7 +75,15 @@ function renderTable(data) {
     const wrapper = document.getElementById('table-wrapper');
 
     if (data.length === 0) {
-        wrapper.innerHTML = `<div class="p-10 text-center text-gray-500">Data tidak ditemukan.</div>`;
+        wrapper.innerHTML = `
+            <div class="text-center py-16">
+                <div class="bg-zinc-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fa-solid fa-inbox text-zinc-400 text-xl"></i>
+                </div>
+                <p class="text-zinc-500 font-medium">Data tidak ditemukan</p>
+                <p class="text-zinc-400 text-sm mt-1">Coba gunakan kata kunci pencarian yang berbeda</p>
+            </div>
+        `;
         return;
     }
 
@@ -67,22 +95,22 @@ function renderTable(data) {
         columns = ['Pertanyaan', 'Kategori', 'Bobot', 'Skor', 'Opsi', 'Aksi'];
         data.forEach(item => {
             rows += `
-                <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-5 py-4 text-sm text-gray-800 max-w-xs truncate">${item.title}</td>
-                    <td class="px-5 py-4"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${item.category}</span></td>
-                    <td class="px-5 py-4 text-sm">${renderDifficulty(item.difficulty)}</td>
-                    <td class="px-5 py-4 text-sm font-bold text-indigo-600">${item.score || '-'}</td>
-                    <td class="px-5 py-4 text-sm text-gray-500">${item.options_count} Pilihan</td>
-                    <td class="px-5 py-4">
+                <tr class="hover:bg-green-50 border-b border-zinc-100 transition-colors">
+                    <td class="px-6 py-4 font-semibold text-zinc-800">${item.title}</td>
+                    <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full border border-blue-200 font-medium">${item.category}</span></td>
+                    <td class="px-6 py-4">${renderDifficulty(item.difficulty)}</td>
+                    <td class="px-6 py-4 text-indigo-600 font-bold">${item.score || '-'}</td>
+                    <td class="px-6 py-4 text-zinc-600 font-medium">${item.options_count} Pilihan</td>
+                    <td class="px-6 py-4">
                         <div class="flex gap-2">
-                            <button onclick="showDetail('${item.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-sm">
-                                <i class="fa-solid fa-eye mr-1"></i>Lihat
+                            <button onclick="showDetail('${item.id}')" class="bg-black/70 hover:bg-black text-white p-2 rounded-lg transition-colors" title="Lihat Detail">
+                                <i class="fas fa-info-circle"></i>
                             </button>
-                            <button onclick="editItem('${item.id}')" class="text-yellow-600 hover:text-yellow-900 font-bold text-sm">
-                                <i class="fa-solid fa-edit mr-1"></i>Edit
+                            <button onclick="editItem('${item.id}')" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-800 p-2 rounded-lg transition-colors border border-yellow-200 hover:border-yellow-300" title="Edit">
+                                <i class="fa-solid fa-edit"></i>
                             </button>
-                            <button onclick="deleteItem('${item.id}')" class="text-red-600 hover:text-red-900 font-bold text-sm">
-                                <i class="fa-solid fa-trash mr-1"></i>Hapus
+                            <button onclick="deleteItem('${item.id}')" class="bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 p-2 rounded-lg transition-colors border border-red-200 hover:border-red-300" title="Hapus">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
                     </td>
@@ -93,20 +121,22 @@ function renderTable(data) {
         columns = ['Pertanyaan', 'Akurasi', 'Total Main', 'Aksi'];
         data.forEach(item => {
             rows += `
-                <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-5 py-4 text-sm text-gray-800 max-w-md truncate">${item.question}</td>
-                    <td class="px-5 py-4"><span class="text-green-600 font-bold">${item.accuracy}</span></td>
-                    <td class="px-5 py-4 text-sm">${item.total_attempts}x</td>
-                    <td class="px-5 py-4">
+                <tr class="hover:bg-green-50 border-b border-zinc-100 transition-colors">
+                    <td class="px-6 py-4 text-zinc-800 max-w-md">
+                        <div class="truncate font-medium">${item.question}</div>
+                    </td>
+                    <td class="px-6 py-4"><span class="text-green-600 font-bold">${item.accuracy}</span></td>
+                    <td class="px-6 py-4 text-zinc-600 font-medium">${item.total_attempts}x</td>
+                    <td class="px-6 py-4">
                         <div class="flex gap-2">
-                            <button onclick="showDetail('${item.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-sm">
-                                <i class="fa-solid fa-eye mr-1"></i>Lihat
+                            <button onclick="showDetail('${item.id}')" class="bg-black/70 hover:bg-black text-white p-2 rounded-lg transition-colors" title="Lihat Detail">
+                                <i class="fas fa-info-circle"></i>
                             </button>
-                            <button onclick="editItem('${item.id}')" class="text-yellow-600 hover:text-yellow-900 font-bold text-sm">
-                                <i class="fa-solid fa-edit mr-1"></i>Edit
+                            <button onclick="editItem('${item.id}')" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-800 p-2 rounded-lg transition-colors border border-yellow-200 hover:border-yellow-300" title="Edit">
+                                <i class="fa-solid fa-edit"></i>
                             </button>
-                            <button onclick="deleteItem('${item.id}')" class="text-red-600 hover:text-red-900 font-bold text-sm">
-                                <i class="fa-solid fa-trash mr-1"></i>Hapus
+                            <button onclick="deleteItem('${item.id}')" class="bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 p-2 rounded-lg transition-colors border border-red-200 hover:border-red-300" title="Hapus">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
                     </td>
@@ -119,21 +149,21 @@ function renderTable(data) {
             const effect = currentTab === 'risk' ? item.impact : item.benefit;
             const color = currentTab === 'risk' ? 'text-red-600' : 'text-green-600';
             rows += `
-                <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-5 py-4 font-bold text-gray-800">${item.title}</td>
-                    <td class="px-5 py-4 ${color} font-bold">${effect > 0 ? '+' + effect : effect}</td>
-                    <td class="px-5 py-4 text-sm">${renderDifficulty(item.difficulty)}</td>
-                    <td class="px-5 py-4 text-sm">${item.usage}x</td>
-                    <td class="px-5 py-4">
+                <tr class="hover:bg-green-50 border-b border-zinc-100 transition-colors">
+                    <td class="px-6 py-4 font-semibold text-zinc-800">${item.title}</td>
+                    <td class="px-6 py-4 ${color} font-bold">${effect > 0 ? '+' + effect : effect}</td>
+                    <td class="px-6 py-4">${renderDifficulty(item.difficulty)}</td>
+                    <td class="px-6 py-4 text-zinc-600 font-medium">${item.usage}x</td>
+                    <td class="px-6 py-4">
                         <div class="flex gap-2">
-                            <button onclick="showDetail('${item.id}')" class="text-indigo-600 hover:text-indigo-900 font-bold text-sm">
-                                <i class="fa-solid fa-eye mr-1"></i>Lihat
+                            <button onclick="showDetail('${item.id}')" class="bg-black/70 hover:bg-black text-white p-2 rounded-lg transition-colors" title="Lihat Detail">
+                                <i class="fas fa-info-circle"></i>
                             </button>
-                            <button onclick="editItem('${item.id}')" class="text-yellow-600 hover:text-yellow-900 font-bold text-sm">
-                                <i class="fa-solid fa-edit mr-1"></i>Edit
+                            <button onclick="editItem('${item.id}')" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-800 p-2 rounded-lg transition-colors border border-yellow-200 hover:border-yellow-300" title="Edit">
+                                <i class="fa-solid fa-edit"></i>
                             </button>
-                            <button onclick="deleteItem('${item.id}')" class="text-red-600 hover:text-red-900 font-bold text-sm">
-                                <i class="fa-solid fa-trash mr-1"></i>Hapus
+                            <button onclick="deleteItem('${item.id}')" class="bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 p-2 rounded-lg transition-colors border border-red-200 hover:border-red-300" title="Hapus">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
                     </td>
@@ -142,13 +172,13 @@ function renderTable(data) {
         });
     }
 
-    let headerHtml = columns.map(c => `<th class="px-5 py-3 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase">${c}</th>`).join('');
+    let headerHtml = columns.map(c => `<th class="px-6 py-4 bg-zinc-50 text-left text-xs font-bold text-zinc-600 uppercase tracking-wide border-b border-zinc-200">${c}</th>`).join('');
 
     wrapper.innerHTML = `
         <div class="overflow-x-auto">
-            <table class="min-w-full leading-normal">
+            <table class="min-w-full">
                 <thead><tr>${headerHtml}</tr></thead>
-                <tbody class="bg-white divide-y divide-gray-200">${rows}</tbody>
+                <tbody class="bg-white">${rows}</tbody>
             </table>
         </div>
     `;
@@ -156,11 +186,11 @@ function renderTable(data) {
 
 // --- UTILS ---
 function renderDifficulty(level) {
-    if (level === 1) return '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Sangat Mudah</span>';
-    if (level === 2) return '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold">Mudah</span>';
-    if (level === 3) return '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-bold">Sedang</span>';
-    if (level === 4) return '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-bold">Sulit</span>';
-    return '<span class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">Sangat Sulit</span>';
+    if (level === 1) return '<span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full border border-green-200 font-semibold">Sangat Mudah</span>';
+    if (level === 2) return '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full border border-blue-200 font-semibold">Mudah</span>';
+    if (level === 3) return '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-full border border-yellow-200 font-semibold">Sedang</span>';
+    if (level === 4) return '<span class="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full border border-orange-200 font-semibold">Sulit</span>';
+    return '<span class="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full border border-red-200 font-semibold">Sangat Sulit</span>';
 }
 
 // Score ranges berdasarkan Bobot
