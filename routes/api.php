@@ -49,7 +49,12 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     Route::get('/tiles', [AdminTileController::class, 'index']);
     Route::get('/tiles/{id}', [AdminTileController::class, 'show']);
     Route::get('/interventions', [AdminInterventionController::class, 'index']);
+    Route::get('/interventions/{id}', [AdminInterventionController::class, 'show']);
+    Route::post('/interventions', [AdminInterventionController::class, 'store']);
+    Route::put('/interventions/{id}', [AdminInterventionController::class, 'update']);
+    Route::delete('/interventions/{id}', [AdminInterventionController::class, 'destroy']);
     Route::get('/config/game', [AdminConfigController::class, 'show']);
+    Route::put('/config/game', [AdminConfigController::class, 'update']);
     Route::prefix('cards')->group(function () {
         // Risk
         Route::get('/risk', [AdminCardController::class, 'indexRisk']);
