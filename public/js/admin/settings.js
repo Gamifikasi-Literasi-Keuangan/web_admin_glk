@@ -72,66 +72,87 @@ async function loadData() {
 function renderConfig(data) {
     const container = document.getElementById("settings-content");
     container.innerHTML = `
-        <div class="max-w-2xl">
+        <div class="max-w-4xl">
             <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-6">
                 <div class="flex items-center mb-4">
                     <div class="bg-green-100 p-3 rounded-full mr-4">
                         <i class="fa-solid fa-cog text-green-600 text-xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-zinc-800">Aturan Dasar Permainan</h3>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex items-center mb-3">
-                        <div class="bg-zinc-100 p-2 rounded-lg mr-3">
-                            <i class="fa-solid fa-users text-zinc-600"></i>
-                        </div>
-                        <label class="block text-zinc-700 font-semibold">Maksimal Pemain</label>
-                    </div>
-                    <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-3">
-                        <span class="text-2xl font-bold text-green-600">${data.maxPlayers || 4}</span>
-                        <span class="text-zinc-500 ml-2">pemain</span>
-                    </div>
-                </div>
-                
-                <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="flex items-center mb-3">
-                        <div class="bg-zinc-100 p-2 rounded-lg mr-3">
-                            <i class="fa-solid fa-clock text-zinc-600"></i>
-                        </div>
-                        <label class="block text-zinc-700 font-semibold">Batas Giliran</label>
-                    </div>
-                    <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-3">
-                        <span class="text-2xl font-bold text-green-600">${data.max_turns || 50}</span>
-                        <span class="text-zinc-500 ml-2">turn</span>
-                    </div>
-                </div>
-                
-                <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow md:col-span-2">
-                    <div class="flex items-center mb-3">
-                        <div class="bg-zinc-100 p-2 rounded-lg mr-3">
-                            <i class="fa-solid fa-code-branch text-zinc-600"></i>
-                        </div>
-                        <label class="block text-zinc-700 font-semibold">Versi Konfigurasi</label>
-                    </div>
-                    <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-3">
-                        <span class="text-xl font-mono font-bold text-green-600">v${data.version || 1}</span>
-                        <span class="text-zinc-500 ml-2">• Aktif</span>
+                    <div>
+                        <h3 class="text-xl font-bold text-zinc-800">Aturan Dasar Permainan</h3>
+                        <p class="text-sm text-zinc-600">Konfigurasi batasan jumlah pemain dan durasi permainan.</p>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
-                <div class="flex items-center">
-                    <i class="fa-solid fa-info-circle text-yellow-600 mr-2"></i>
-                    <p class="text-sm text-yellow-700">
-                        <strong>Read-Only Configuration</strong> - Hubungi developer untuk melakukan perubahan pengaturan.
-                    </p>
+            <form id="configForm" onsubmit="saveConfig(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Min Players -->
+                    <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-zinc-100 p-2 rounded-lg mr-3">
+                                <i class="fa-solid fa-user-minus text-zinc-600"></i>
+                            </div>
+                            <label class="block text-zinc-700 font-semibold">Minimal Pemain</label>
+                        </div>
+                        <input type="number" id="minPlayers" value="${data.minPlayers || 1}" min="1" max="100"
+                            class="w-full bg-zinc-50 border border-zinc-300 text-zinc-800 text-lg font-bold rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5">
+                        <p class="mt-2 text-xs text-zinc-500">Jumlah minimum pemain untuk memulai game.</p>
+                    </div>
+
+                    <!-- Max Players -->
+                    <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-zinc-100 p-2 rounded-lg mr-3">
+                                <i class="fa-solid fa-users text-zinc-600"></i>
+                            </div>
+                            <label class="block text-zinc-700 font-semibold">Maksimal Pemain</label>
+                        </div>
+                        <input type="number" id="maxPlayers" value="${data.maxPlayers || 4}" min="1" max="100"
+                            class="w-full bg-zinc-50 border border-zinc-300 text-zinc-800 text-lg font-bold rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5">
+                        <p class="mt-2 text-xs text-zinc-500">Batas maksimum pemain dalam satu room.</p>
+                    </div>
+                    
+                    <!-- Max Turns -->
+                    <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-zinc-100 p-2 rounded-lg mr-3">
+                                <i class="fa-solid fa-clock text-zinc-600"></i>
+                            </div>
+                            <label class="block text-zinc-700 font-semibold">Batas Giliran (Turns)</label>
+                        </div>
+                        <input type="number" id="max_turns" value="${data.max_turns || 50}" min="1" max="500"
+                            class="w-full bg-zinc-50 border border-zinc-300 text-zinc-800 text-lg font-bold rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5">
+                        <p class="mt-2 text-xs text-zinc-500">Maksimal putaran sebelum game berakhir otomatis.</p>
+                    </div>
+
+                    <!-- Version Info -->
+                    <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-zinc-100 p-2 rounded-lg mr-3">
+                                <i class="fa-solid fa-code-branch text-zinc-600"></i>
+                            </div>
+                            <label class="block text-zinc-700 font-semibold">Versi Konfigurasi</label>
+                        </div>
+                        <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-3">
+                            <span class="text-xl font-mono font-bold text-green-600">v${data.version || 1}</span>
+                            <span class="text-zinc-500 ml-2">• Aktif</span>
+                        </div>
+                        <p class="mt-4 text-xs text-zinc-500">Versi konfigurasi saat ini.</p>
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                <div class="flex items-center justify-end border-t border-zinc-200 pt-6">
+                    <button type="button" onclick="resetConfigForm()" 
+                        class="text-zinc-600 hover:text-zinc-800 font-medium px-6 py-2.5 mr-4 transition-colors">
+                        <i class="fa-solid fa-rotate-right mr-2"></i>Reset
+                    </button>
+                    <button type="submit" 
+                        class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-8 py-3 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-save mr-2"></i>Simpan Perubahan
+                    </button>
+                </div>
+            </form>
         </div>
     `;
 }
@@ -232,40 +253,77 @@ function renderTiles(tiles) {
 // --- 3. RENDER INTERVENTIONS (AI) ---
 function renderInterventions(items) {
     const container = document.getElementById('settings-content');
+
+    // Header with Add Button
+    const headerHtml = `
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 flex justify-between items-center mb-6">
+                <div>
+                    <div class="flex items-center mb-2">
+                        <div class="bg-green-100 p-3 rounded-full mr-4">
+                            <i class="fa-solid fa-robot text-green-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-zinc-800">Template Pesan AI (Intervensi)</h3>
+                    </div>
+                    <p class="text-zinc-600 ml-16">
+                        <i class="fa-solid fa-info-circle text-green-600 mr-2"></i>
+                        Konfigurasi pesan otomatis yang akan ditampilkan AI berdasarkan kondisi permainan
+                    </p>
+                </div>
+                <button onclick="showAddInterventionModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-colors flex items-center transform hover:scale-105">
+                    <i class="fa-solid fa-plus mr-2"></i>Tambah Template
+                </button>
+            </div>`;
+
     if (!items.length) {
         container.innerHTML = `
-        <div class="text-center py-12">
-                <div class="bg-zinc-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <i class="fa-solid fa-robot text-zinc-400 text-xl"></i>
+            <div class="space-y-6">
+                ${headerHtml}
+                <div class="text-center py-12 border-2 border-dashed border-zinc-300 rounded-lg bg-zinc-50">
+                    <div class="bg-white p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-robot text-zinc-400 text-3xl"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-zinc-700 mb-2">Belum ada template intervensi</h4>
+                    <p class="text-zinc-500 mb-6 max-w-md mx-auto">Tambahkan template intervensi untuk memberikan pesan otomatis dari AI kepada pemain.</p>
+                    <button onclick="showAddInterventionModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold transition-colors">
+                        <i class="fa-solid fa-plus mr-2"></i>Buat Template Baru
+                    </button>
                 </div>
-                <p class="text-zinc-500">Template AI kosong.</p>
             </div>
         `;
         return;
     }
 
     let cards = items.map(i => `
-        <div class="bg-white border border-zinc-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+        <div class="bg-white border border-zinc-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative group">
+            <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white p-1 rounded-lg shadow-sm border border-zinc-100">
+                <button onclick="editIntervention('${i.id}')" class="text-yellow-600 hover:bg-yellow-50 p-2 rounded-lg transition-colors border border-transparent hover:border-yellow-200" title="Edit">
+                    <i class="fa-solid fa-edit"></i>
+                </button>
+                <button onclick="deleteIntervention('${i.id}')" class="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors border border-transparent hover:border-red-200" title="Hapus">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
             <div class="border-l-4 ${i.ui_color === 'red' ? 'border-red-500' : (i.ui_color === 'orange' ? 'border-orange-500' : 'border-yellow-500')} p-6">
                 <div class="flex justify-between items-start mb-4">
                     <div class="flex-1">
                         <div class="flex items-center mb-2">
-                            <span class="bg-zinc-100 text-zinc-600 text-xs font-semibold px-2 py-1 rounded-full mr-3">
+                            <span class="bg-zinc-100 text-zinc-600 text-xs font-semibold px-2 py-1 rounded-full mr-3 border border-zinc-200">
                                 Level ${i.level_id}
                             </span>
-                            <span class="bg-${i.ui_color === 'red' ? 'red' : (i.ui_color === 'orange' ? 'orange' : 'yellow')}-100 text-${i.ui_color === 'red' ? 'red' : (i.ui_color === 'orange' ? 'orange' : 'yellow')}-700 text-xs font-semibold px-2 py-1 rounded-full">
+                            <span class="bg-${i.ui_color === 'red' ? 'red' : (i.ui_color === 'orange' ? 'orange' : 'yellow')}-100 text-${i.ui_color === 'red' ? 'red' : (i.ui_color === 'orange' ? 'orange' : 'yellow')}-700 text-xs font-semibold px-2 py-1 rounded-full border border-${i.ui_color === 'red' ? 'red' : (i.ui_color === 'orange' ? 'orange' : 'yellow')}-200">
                                 ${i.risk_label}
                             </span>
                         </div>
                         <h4 class="text-lg font-bold text-zinc-800 mb-3">${i.title}</h4>
-                        <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-4">
-                            <p class="text-zinc-700 italic leading-relaxed">"${i.message}"</p>
+                        <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 relative">
+                            <i class="fa-solid fa-quote-left text-zinc-300 absolute top-2 left-2 text-xl"></i>
+                            <p class="text-zinc-700 italic leading-relaxed pl-6 relative z-10">"${i.message}"</p>
                         </div>
                     </div>
                     ${i.is_mandatory ? `
                         <div class="ml-4">
-                            <span class="bg-red-100 border border-red-200 text-red-800 text-xs px-3 py-1 rounded-full font-semibold">
-                                <i class="fa-solid fa-lock mr-1"></i>WAJIB
+                            <span class="bg-red-100 border border-red-200 text-red-800 text-xs px-3 py-1 rounded-full font-semibold flex items-center">
+                                <i class="fa-solid fa-lock mr-1.5"></i>WAJIB
                             </span>
                         </div>
                     ` : ''}
@@ -273,17 +331,17 @@ function renderInterventions(items) {
                 
                 <div class="pt-4 border-t border-zinc-100">
                     <div class="flex items-center gap-2 mb-3">
-                        <div class="bg-green-100 p-2 rounded-lg">
-                            <i class="fa-solid fa-mouse-pointer text-green-600"></i>
+                        <div class="bg-green-100 p-1.5 rounded-lg">
+                            <i class="fa-solid fa-mouse-pointer text-green-600 text-xs"></i>
                         </div>
                         <span class="text-sm font-semibold text-zinc-700">Tombol Aksi:</span>
                     </div>
                     <div class="flex gap-2 flex-wrap">
                         ${i.actions ? i.actions.map(a => `
-                            <span class="bg-green-50 border border-green-200 text-green-700 text-sm px-3 py-2 rounded-lg font-medium">
+                            <span class="bg-white border border-green-200 text-green-700 text-sm px-3 py-1.5 rounded-lg font-medium shadow-sm flex items-center">
                                 ${a.text}
                             </span>
-                        `).join('') : '<span class="text-zinc-400 text-sm">Tidak ada aksi</span>'}
+                        `).join('') : '<span class="text-zinc-400 text-sm italic">Tidak ada aksi</span>'}
                     </div>
                 </div>
             </div>
@@ -294,19 +352,7 @@ function renderInterventions(items) {
 
     container.innerHTML = `
         <div class="space-y-6">
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-                <div class="flex items-center mb-2">
-                    <div class="bg-green-100 p-3 rounded-full mr-4">
-                        <i class="fa-solid fa-robot text-green-600 text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-zinc-800">Template Pesan AI (Intervensi)</h3>
-                </div>
-                <p class="text-zinc-600 ml-16">
-                    <i class="fa-solid fa-info-circle text-green-600 mr-2"></i>
-                    Konfigurasi pesan otomatis yang akan ditampilkan AI berdasarkan kondisi permainan
-                </p>
-            </div>
-            
+            ${headerHtml}
             <div class="grid grid-cols-1 gap-6">
                 ${cards}
             </div>
@@ -478,10 +524,10 @@ function resetConfigForm() {
 function showNotification(message, type = "info") {
     const notification = document.createElement("div");
     notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition z-40 ${type === "success"
-            ? "bg-green-500"
-            : type === "error"
-                ? "bg-red-500"
-                : "bg-blue-500"
+        ? "bg-green-500"
+        : type === "error"
+            ? "bg-red-500"
+            : "bg-blue-500"
         }`;
     notification.innerHTML = `
         ${type === "success"
