@@ -1,31 +1,41 @@
 const headers = {
-    'Authorization': `Bearer ${token}`, // token diambil dari layout utama
-    'Accept': 'application/json'
+    Authorization: `Bearer ${token}`, // token diambil dari layout utama
+    Accept: "application/json",
 };
 
 // --- INIT ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     renderPlayerList();
 });
 
 // --- 1. RENDER LIST PLAYERS ---
-async function renderPlayerList(keyword = '') {
-    const wrapper = document.getElementById('table-wrapper');
-    const detailWrapper = document.getElementById('detail-wrapper');
-    const container = document.getElementById('player-container');
+async function renderPlayerList(keyword = "") {
+    const wrapper = document.getElementById("table-wrapper");
+    const detailWrapper = document.getElementById("detail-wrapper");
+    const container = document.getElementById("player-container");
 
     // Tampilkan container list, sembunyikan detail
-    container.classList.remove('hidden');
-    detailWrapper.classList.add('hidden');
-    
-    if(!keyword) wrapper.innerHTML = '<div class="loader"></div>';
+    container.classList.remove("hidden");
+    detailWrapper.classList.add("hidden");
+
+    if (!keyword) wrapper.innerHTML = '<div class="loader"></div>';
 
     try {
-        const url = `${BASE_API}/players?limit=20&search=${encodeURIComponent(keyword)}`;
+        const url = `${BASE_API}/players?limit=20&search=${encodeURIComponent(
+            keyword
+        )}`;
         const response = await fetch(url, { headers });
-        
+
         if (response.status === 401) {
-            wrapper.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Sesi habis. Silakan login ulang.</div>`;
+            // Token expired or invalid - global interceptor will handle redirect
+            // Just show message and return
+            wrapper.innerHTML = `
+                <div class="bg-red-900/50 border border-red-600 rounded-2xl p-6 text-center">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-3xl mb-4"></i>
+                    <p class="text-red-400 font-['Poppins'] font-semibold">Session Expired</p>
+                    <p class="text-red-300 font-['Poppins'] text-sm mt-2">Redirecting to login...</p>
+                </div>
+            `;
             return;
         }
 
@@ -151,9 +161,11 @@ async function renderPlayerList(keyword = '') {
         wrapper.innerHTML = html;
 
         // Restore focus input search agar UX nyaman
-        const input = document.getElementById('searchInput');
-        if(input) { input.focus(); input.value = keyword; }
-
+        const input = document.getElementById("searchInput");
+        if (input) {
+            input.focus();
+            input.value = keyword;
+        }
     } catch (e) {
         wrapper.innerHTML = `
             <div class="bg-red-900/50 border border-red-600 rounded-2xl p-6 text-center">
@@ -167,12 +179,12 @@ async function renderPlayerList(keyword = '') {
 
 // --- 2. RENDER DETAIL PLAYER (FULL VERSION WITH PROFILING) ---
 async function renderPlayerDetail(playerId) {
-    const container = document.getElementById('player-container');
-    const detailWrapper = document.getElementById('detail-wrapper');
-    
+    const container = document.getElementById("player-container");
+    const detailWrapper = document.getElementById("detail-wrapper");
+
     // Switch View ke Detail
-    container.classList.add('hidden');
-    detailWrapper.classList.remove('hidden');
+    container.classList.add("hidden");
+    detailWrapper.classList.remove("hidden");
     detailWrapper.innerHTML = '<div class="loader"></div>';
 
     try {
@@ -180,8 +192,13 @@ async function renderPlayerDetail(playerId) {
         const [resDetail, resAnalysis, resCurve, resSkill] = await Promise.allSettled([
             fetch(`${BASE_API}/players/${playerId}`, { headers }),
             fetch(`${BASE_API}/players/${playerId}/analysis`, { headers }),
-            fetch(`${BASE_API}/analytics/learning-curve?player_id=${playerId}`, { headers }),
-            fetch(`${BASE_API}/analytics/skill-matrix?player_id=${playerId}`, { headers })
+            fetch(
+                `${BASE_API}/analytics/learning-curve?player_id=${playerId}`,
+                { headers }
+            ),
+            fetch(`${BASE_API}/analytics/skill-matrix?player_id=${playerId}`, {
+                headers,
+            }),
         ]);
 
         // Handle API responses with proper error checking
@@ -256,30 +273,54 @@ async function renderPlayerDetail(playerId) {
 
         // --- 1. DEFINISI KAMUS JAWABAN PROFILING ---
         const profilingMap = {
-            0: { // Gaji Pertama
-                'A': { text: '50% Tabungan', class: 'bg-green-100 text-green-800' },
-                'B': { text: 'Seimbang', class: 'bg-blue-100 text-blue-800' },
-                'C': { text: 'Gaya Hidup', class: 'bg-red-100 text-red-800' },
-                'D': { text: 'Investasi', class: 'bg-orange-100 text-orange-800' }
+            0: {
+                // Gaji Pertama
+                A: {
+                    text: "50% Tabungan",
+                    class: "bg-green-100 text-green-800",
+                },
+                B: { text: "Seimbang", class: "bg-blue-100 text-blue-800" },
+                C: { text: "Gaya Hidup", class: "bg-red-100 text-red-800" },
+                D: {
+                    text: "Investasi",
+                    class: "bg-orange-100 text-orange-800",
+                },
             },
-            1: { // Modal Bisnis
-                'A': { text: 'Tolak (Aman)', class: 'bg-green-100 text-green-800' },
-                'B': { text: 'Ambil Pinjol', class: 'bg-red-100 text-red-800' },
-                'C': { text: 'Pinjam Ortu', class: 'bg-yellow-100 text-yellow-800' },
-                'D': { text: 'Pakai Tabungan', class: 'bg-orange-100 text-orange-800' }
+            1: {
+                // Modal Bisnis
+                A: {
+                    text: "Tolak (Aman)",
+                    class: "bg-green-100 text-green-800",
+                },
+                B: { text: "Ambil Pinjol", class: "bg-red-100 text-red-800" },
+                C: {
+                    text: "Pinjam Ortu",
+                    class: "bg-yellow-100 text-yellow-800",
+                },
+                D: {
+                    text: "Pakai Tabungan",
+                    class: "bg-orange-100 text-orange-800",
+                },
             },
-            2: { // Crypto FOMO
-                'A': { text: 'Riset Dulu', class: 'bg-green-100 text-green-800' },
-                'B': { text: 'All-in (FOMO)', class: 'bg-red-100 text-red-800' },
-                'C': { text: 'Ikut Teman', class: 'bg-yellow-100 text-yellow-800' },
-                'D': { text: 'Tidak Tertarik', class: 'bg-gray-100 text-gray-800' }
-            }
+            2: {
+                // Crypto FOMO
+                A: { text: "Riset Dulu", class: "bg-green-100 text-green-800" },
+                B: { text: "All-in (FOMO)", class: "bg-red-100 text-red-800" },
+                C: {
+                    text: "Ikut Teman",
+                    class: "bg-yellow-100 text-yellow-800",
+                },
+                D: {
+                    text: "Tidak Tertarik",
+                    class: "bg-gray-100 text-gray-800",
+                },
+            },
         };
 
         // --- 2. GENERATE HTML PROFILING ---
-        const answers = Array.isArray(ai.initial_answers) 
-    ? ai.initial_answers 
-    : []; 
+        const answers = Array.isArray(ai.initial_answers)
+            ? ai.initial_answers
+            : [];
         const profilingHtml = answers.length > 0 ? `
             <div class="mt-6 p-4 bg-zinc-400/30 rounded-xl border border-zinc-600/50">
                 <div class="flex items-center gap-2 mb-4">
@@ -296,7 +337,8 @@ async function renderPlayerDetail(playerId) {
                                 <div class="font-bold text-sm font-['Poppins']">${answerData.text || ans}</div>
                             </div>
                         `;
-                    }).join('')}
+        })
+                .join("")}
                 </div>
             </div>
         ` : `
@@ -675,38 +717,43 @@ async function renderPlayerDetail(playerId) {
 
         // --- 5. RENDER CHART ---
         if (curve.accuracy_trend && curve.accuracy_trend.length > 0) {
-            new Chart(document.getElementById('playerCurveChart'), {
-                type: 'line',
+            new Chart(document.getElementById("playerCurveChart"), {
+                type: "line",
                 data: {
-                    labels: curve.accuracy_trend.map((_, i) => `Sesi ${i+1}`),
-                    datasets: [{
-                        label: 'Akurasi (%)',
-                        data: curve.accuracy_trend,
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#4f46e5',
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.3
-                    }]
+                    labels: curve.accuracy_trend.map((_, i) => `Sesi ${i + 1}`),
+                    datasets: [
+                        {
+                            label: "Akurasi (%)",
+                            data: curve.accuracy_trend,
+                            borderColor: "#4f46e5",
+                            backgroundColor: "rgba(79, 70, 229, 0.1)",
+                            borderWidth: 2,
+                            pointBackgroundColor: "#fff",
+                            pointBorderColor: "#4f46e5",
+                            pointRadius: 4,
+                            fill: true,
+                            tension: 0.3,
+                        },
+                    ],
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, max: 100, grid: { borderDash: [2, 4] } },
-                        x: { grid: { display: false } }
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { borderDash: [2, 4] },
+                        },
+                        x: { grid: { display: false } },
                     },
-                    plugins: { legend: { display: false } }
-                }
+                    plugins: { legend: { display: false } },
+                },
             });
         } else {
             document.getElementById('playerCurveChart').parentNode.innerHTML = 
                 '<div class="flex flex-col items-center justify-center h-full text-gray-600 bg-zinc-300 rounded border border-dashed border-zinc-400"><i class="fa-solid fa-chart-line text-3xl mb-2 opacity-50"></i><span class="text-sm font-[\'Poppins\']">Belum cukup data grafik.</span></div>';
         }
-
     } catch (e) {
         console.error(e);
         detailWrapper.innerHTML = `
@@ -733,10 +780,10 @@ function banPlayer(playerId) {
     // Cari nama player untuk ditampilkan di modal
     const playerCard = document.querySelector(`[data-player-id="${playerId}"]`);
     const playerName = playerCard ? playerCard.getAttribute('data-player-name') : 'Player';
-    
+
     currentPlayerToBan = playerId;
     document.getElementById('ban-player-name').textContent = `Player: ${playerName}`;
-    
+
     const modal = document.getElementById('ban-modal');
     modal.classList.remove('hidden');
     modal.querySelector('.bg-zinc-800').classList.add('modal-enter');
@@ -821,10 +868,10 @@ async function confirmUnbanPlayer() {
 function closeBanModal() {
     const modal = document.getElementById('ban-modal');
     const modalContent = modal.querySelector('.bg-zinc-800');
-    
+
     modalContent.classList.remove('modal-enter');
     modalContent.classList.add('modal-exit');
-    
+
     setTimeout(() => {
         modal.classList.add('hidden');
         modalContent.classList.remove('modal-exit');
@@ -834,11 +881,11 @@ function closeBanModal() {
 
 async function confirmBanPlayer() {
     if (!currentPlayerToBan) return;
-    
+
     // Show loading
     showLoading('Memblokir player...');
     closeBanModal();
-    
+
     try {
         const response = await fetch(`${BASE_API}/players/${currentPlayerToBan}/ban`, {
             method: 'POST',
@@ -853,7 +900,7 @@ async function confirmBanPlayer() {
         });
 
         hideLoading();
-        
+
         if (response.ok) {
             showNotification('Player berhasil diblokir', 'success');
             // Refresh the current view
@@ -874,7 +921,7 @@ async function confirmBanPlayer() {
         showNotification('Error: ' + e.message, 'error');
         console.error('Ban player error:', e);
     }
-    
+
     currentPlayerToBan = null;
 }
 
@@ -885,10 +932,10 @@ function deletePlayer(playerId) {
     // Cari nama player untuk ditampilkan di modal
     const playerCard = document.querySelector(`[data-player-id="${playerId}"]`);
     const playerName = playerCard ? playerCard.getAttribute('data-player-name') : 'Player';
-    
+
     currentPlayerToDelete = playerId;
     document.getElementById('delete-player-name').textContent = `Player: ${playerName}`;
-    
+
     const modal = document.getElementById('delete-modal');
     modal.classList.remove('hidden');
     modal.querySelector('.bg-zinc-800').classList.add('modal-enter');
@@ -897,10 +944,10 @@ function deletePlayer(playerId) {
 function closeDeleteModal() {
     const modal = document.getElementById('delete-modal');
     const modalContent = modal.querySelector('.bg-zinc-800');
-    
+
     modalContent.classList.remove('modal-enter');
     modalContent.classList.add('modal-exit');
-    
+
     setTimeout(() => {
         modal.classList.add('hidden');
         modalContent.classList.remove('modal-exit');
@@ -910,11 +957,11 @@ function closeDeleteModal() {
 
 async function confirmDeletePlayer() {
     if (!currentPlayerToDelete) return;
-    
+
     // Show loading
     showLoading('Menghapus player...');
     closeDeleteModal();
-    
+
     try {
         const response = await fetch(`${BASE_API}/players/${currentPlayerToDelete}`, {
             method: 'DELETE',
@@ -925,7 +972,7 @@ async function confirmDeletePlayer() {
         });
 
         hideLoading();
-        
+
         if (response.ok) {
             showNotification('Player berhasil dihapus', 'success');
             
@@ -946,14 +993,14 @@ async function confirmDeletePlayer() {
         showNotification('Error: ' + e.message, 'error');
         console.error('Delete player error:', e);
     }
-    
+
     currentPlayerToDelete = null;
 }
 
 // --- EXPORT PLAYER DATA FUNCTION ---
 async function exportPlayerData(playerId) {
     showLoading('Mengexport data player...');
-    
+
     try {
         const response = await fetch(`${BASE_API}/players/${playerId}/export`, {
             method: 'GET',
@@ -961,7 +1008,7 @@ async function exportPlayerData(playerId) {
         });
 
         hideLoading();
-        
+
         if (response.ok) {
             // Create download link
             const blob = await response.blob();
@@ -973,7 +1020,7 @@ async function exportPlayerData(playerId) {
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            
+
             showNotification('Data player berhasil diexport', 'success');
         } else {
             const error = await response.json();
@@ -992,16 +1039,16 @@ function switchTab(tabName) {
         btn.classList.remove('active', 'bg-green-600', 'text-white');
         btn.classList.add('text-gray-600', 'hover:text-black', 'hover:bg-zinc-400');
     });
-    
+
     document.querySelectorAll('.tab-panel').forEach(panel => {
         panel.classList.add('hidden');
         panel.classList.remove('active');
     });
-    
+
     // Add active class to selected tab and panel
     const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
     const activePanel = document.querySelector(`[data-panel="${tabName}"]`);
-    
+
     if (activeTab && activePanel) {
         activeTab.classList.add('active', 'bg-green-600', 'text-white');
         activeTab.classList.remove('text-gray-600', 'hover:text-black', 'hover:bg-zinc-400');
@@ -1025,7 +1072,7 @@ function showNotification(message, type = 'info') {
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0 max-w-sm`;
-    
+
     if (type === 'success') {
         notification.className += ' bg-green-600 text-white';
         notification.innerHTML = `<div class="flex items-center"><i class="fas fa-check-circle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
@@ -1036,14 +1083,14 @@ function showNotification(message, type = 'info') {
         notification.className += ' bg-blue-600 text-white';
         notification.innerHTML = `<div class="flex items-center"><i class="fas fa-info-circle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
     }
-    
+
     document.body.appendChild(notification);
-    
+
     // Show notification
     setTimeout(() => {
         notification.classList.remove('translate-x-full', 'opacity-0');
     }, 100);
-    
+
     // Hide after 3 seconds
     setTimeout(() => {
         notification.classList.add('translate-x-full', 'opacity-0');

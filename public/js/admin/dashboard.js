@@ -1,10 +1,16 @@
 const headers = {
-    'Authorization': `Bearer ${token}`,
-    'Accept': 'application/json'
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     loadOverviewStats();
+
+    // Listen untuk update dari players page
+    document.addEventListener("playerListUpdated", () => {
+        console.log("Player list updated, refreshing overview...");
+        loadOverviewStats();
+    });
 });
 
 async function loadOverviewStats() {
@@ -21,9 +27,9 @@ async function loadOverviewStats() {
     try {
         // Panggil API Overview
         const res = await fetch(`${BASE_API}/analytics/overview`, { headers });
-        
+
         if (res.status === 401) {
-            window.location.href = '/login';
+            window.location.href = "/login";
             return;
         }
 
@@ -35,7 +41,6 @@ async function loadOverviewStats() {
         animateValue("stat-players", 0, data.total_players || 0, 1000);
         animateValue("stat-sessions", 0, data.active_sessions || 0, 1000);
         animateValue("stat-decisions", 0, data.total_decisions || 0, 1000);
-
     } catch (e) {
         console.error(e);
         ['stat-players', 'stat-sessions', 'stat-decisions'].forEach(id => {
@@ -57,13 +62,13 @@ function animateValue(id, start, end, duration) {
         obj.innerHTML = `<span class="text-green-600">${end.toLocaleString()}</span>`;
         return;
     }
-    
+
     const range = end - start;
     let current = start;
     const increment = end > start ? 1 : -1;
     const stepTime = Math.abs(Math.floor(duration / range));
-    
-    const timer = setInterval(function() {
+
+    const timer = setInterval(function () {
         current += increment;
         obj.innerHTML = `<span class="text-green-600">${current.toLocaleString()}</span>`;
         

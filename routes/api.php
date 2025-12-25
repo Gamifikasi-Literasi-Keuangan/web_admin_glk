@@ -37,6 +37,9 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     Route::get('/players', [AdminPlayerController::class, 'index']);
     Route::get('/players/{id}', [AdminPlayerController::class, 'show']);
     Route::get('/players/{id}/analysis', [AdminPlayerController::class, 'analysis']);
+    Route::delete('/players/{id}', [AdminPlayerController::class, 'destroy']);
+    Route::post('/players/{id}/ban', [AdminPlayerController::class, 'ban']);
+    Route::post('/players/{id}/unban', [AdminPlayerController::class, 'unban']);
     // Paket 2: Content Management
     Route::get('/scenarios', [AdminScenarioController::class, 'index']);
     Route::get('/scenarios/{id}', [AdminScenarioController::class, 'show']);

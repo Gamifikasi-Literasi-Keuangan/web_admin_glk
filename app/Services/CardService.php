@@ -125,6 +125,7 @@ class CardService
             'action' => $data['action'] ?? 'instant',
             'difficulty' => $data['difficulty'],
             'scoreChange' => $data['scoreChange'] ?? 0,
+            'categories' => $data['categories'] ?? [],
         ];
         return $this->repo->createCard($cardData);
     }

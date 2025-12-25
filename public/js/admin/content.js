@@ -572,10 +572,12 @@ async function handleSubmit(e) {
         let i = 0;
         while (formData.has(`quiz_label_${i}`)) {
             const label = formData.get(`quiz_label_${i}`);
-            if (formData.has(`quiz_correct_${i}`)) correctOption = label;
+            const isCorrect = formData.has(`quiz_correct_${i}`);
+            if (isCorrect) correctOption = label;
             options.push({
                 optionId: label,
-                text: formData.get(`quiz_text_${i}`)
+                text: formData.get(`quiz_text_${i}`),
+                is_correct: isCorrect
             });
             i++;
         }

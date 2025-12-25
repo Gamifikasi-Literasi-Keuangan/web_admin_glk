@@ -5,126 +5,143 @@
 
 @section('content')
 <style>
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: #27272a;
-        border-radius: 10px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #52525b;
-        border-radius: 10px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #71717a;
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #27272a;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #52525b;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #71717a;
+}
+
+.loader {
+    border: 4px solid #27272a;
+    border-top: 4px solid #10b981;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
     }
 
-    .loader {
-        border: 4px solid #27272a;
-        border-top: 4px solid #10b981;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Modal animations */
+.modal-enter {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-exit {
+    animation: modalFadeOut 0.3s ease-in;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
     }
 
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
     }
 
-    /* Modal animations */
-    .modal-enter {
-        animation: modalFadeIn 0.3s ease-out;
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+/* Button hover effects */
+.action-button {
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Tab styling */
+.tab-btn {
+    @apply text-zinc-400 hover: text-white hover:bg-zinc-700;
+}
+
+.tab-btn.active {
+    @apply bg-green-600 text-white;
+}
+
+.tab-panel {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
-    .modal-exit {
-        animation: modalFadeOut 0.3s ease-in;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
 
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
+/* Enhanced scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
 
-    @keyframes modalFadeOut {
-        from {
-            opacity: 1;
-            transform: scale(1);
-        }
-        to {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-    }
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #27272a;
+    border-radius: 4px;
+}
 
-    /* Button hover effects */
-    .action-button {
-        transition: all 0.2s ease;
-    }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #52525b;
+    border-radius: 4px;
+}
 
-    .action-button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #71717a;
+}
 
-    /* Tab styling */
-    .tab-btn {
-        @apply text-zinc-400 hover:text-white hover:bg-zinc-700;
-    }
+/* Gradient backgrounds */
+.gradient-bg-blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
+}
 
-    .tab-btn.active {
-        @apply bg-green-600 text-white;
-    }
+.gradient-bg-purple {
+    background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(126, 34, 206, 0.05));
+}
 
-    .tab-panel {
-        animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Enhanced scrollbar */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: #27272a;
-        border-radius: 4px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #52525b;
-        border-radius: 4px;
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #71717a;
-    }
-
-    /* Gradient backgrounds */
-    .gradient-bg-blue {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
-    }
-
-    .gradient-bg-purple {
-        background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(126, 34, 206, 0.05));
-    }
-
-    .gradient-bg-green {
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(21, 128, 61, 0.05));
-    }
+.gradient-bg-green {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(21, 128, 61, 0.05));
+}
 </style>
 
 <div class="w-full">

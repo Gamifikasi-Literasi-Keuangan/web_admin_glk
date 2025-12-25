@@ -10,7 +10,7 @@ class AnalyticsRepository
     public function getCounts()
     {
         return [
-            'players' => DB::table('auth_users')->where('role', 'player')->count(),
+            'players' => DB::table('players')->count(),
             'sessions' => DB::table('game_sessions')->where('status', 'active')->count(),
             'decisions' => DB::table('player_decisions')->count()
         ];
