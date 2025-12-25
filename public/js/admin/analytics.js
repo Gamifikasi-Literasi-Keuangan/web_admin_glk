@@ -205,92 +205,331 @@ async function renderLearningTab(container) {
         const hPost = Math.max(post, 5);
 
     container.innerHTML = `
+        <!-- Warning Banner (jika tidak ada data) -->
         ${!hasData ? `
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <div class="flex items-center">
-                <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
-                <div>
-                    <h4 class="font-semibold text-yellow-800">Tidak Ada Data Pembelajaran</h4>
-                    <p class="text-yellow-700 text-sm">Belum ada data keputusan pemain (player_decisions) di database. Data di bawah adalah contoh simulasi.</p>
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-xl p-5 mb-6 shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mt-1"></i>
+                </div>
+                <div class="ml-4">
+                    <h4 class="font-bold text-yellow-800 text-lg mb-1">Tidak Ada Data Pembelajaran</h4>
+                    <p class="text-yellow-700 text-sm leading-relaxed">
+                        Belum ada data keputusan pemain (player_decisions) di database. Data di bawah adalah contoh simulasi.
+                    </p>
                 </div>
             </div>
         </div>
         ` : ''}
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- Card Hasil Belajar -->
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h4 class="font-bold text-zinc-700 mb-4">Hasil Belajar (Pre vs Post)</h4>
-                <div class="flex items-end justify-center h-48 gap-12 mb-4 border-b border-zinc-100 pb-4">
-                    <!-- BAR PRE-TEST -->
-                    <div class="text-center group relative w-16">
-                        <div class="bg-zinc-300 w-full rounded-t transition-all duration-500" style="height: ${hPre}%"></div>
-                        <p class="font-bold mt-2 text-zinc-700">${pre}${!hasData ? '*' : ''}</p> 
-                        <p class="text-xs text-zinc-500 uppercase tracking-wider">Awal</p>
+        <!-- Summary Cards Row -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-gradient-to-br from-zinc-50 to-zinc-100 p-5 rounded-xl shadow-sm border border-zinc-200 hover:shadow-md transition-shadow duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-zinc-500 text-xs uppercase font-semibold tracking-wide mb-1">Pre-Test</p>
+                        <h3 class="text-3xl font-bold text-zinc-700">${pre}${!hasData ? '*' : ''}</h3>
+                        <p class="text-xs text-zinc-400 mt-1">Nilai Awal</p>
                     </div>
-
-                    <!-- BAR POST-TEST -->
-                    <div class="text-center group relative w-16">
-                        <div class="bg-green-500 w-full rounded-t transition-all duration-500" style="height: ${hPost}%"></div>
-                        <p class="font-bold mt-2 text-green-600">${post}${!hasData ? '*' : ''}</p> 
-                        <p class="text-xs text-zinc-500 uppercase tracking-wider">Akhir</p>
+                    <div class="bg-zinc-200 p-3 rounded-lg">
+                        <i class="fas fa-clipboard-list text-zinc-600 text-xl"></i>
                     </div>
                 </div>
-                <div class="text-center">
-                    <p class="text-xs text-zinc-400 mb-1">${hasData ? `Data dari ${studentCount} pemain` : 'Tingkat Peningkatan (Simulasi)'}</p>
-                    <p class="text-lg font-bold text-green-600 bg-green-50 inline-block px-4 py-1 rounded-full border border-green-200">
-                        ${rate} 🚀
-                    </p>
-                    ${!hasData ? '<p class="text-xs text-yellow-600 mt-2">* Data simulasi</p>' : ''}
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-50 to-emerald-100 p-5 rounded-xl shadow-sm border border-green-200 hover:shadow-md transition-shadow duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-600 text-xs uppercase font-semibold tracking-wide mb-1">Post-Test</p>
+                        <h3 class="text-3xl font-bold text-green-700">${post}${!hasData ? '*' : ''}</h3>
+                        <p class="text-xs text-green-500 mt-1">Nilai Akhir</p>
+                    </div>
+                    <div class="bg-green-200 p-3 rounded-lg">
+                        <i class="fas fa-chart-line text-green-700 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-100 to-green-200 p-5 rounded-xl shadow-sm border border-green-300 hover:shadow-md transition-shadow duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-700 text-xs uppercase font-semibold tracking-wide mb-1">Peningkatan</p>
+                        <h3 class="text-3xl font-bold text-green-800">${rate}</h3>
+                        <p class="text-xs text-green-600 mt-1">Improvement</p>
+                    </div>
+                    <div class="bg-green-300 p-3 rounded-lg">
+                        <i class="fas fa-arrow-trend-up text-green-800 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-zinc-50 to-slate-100 p-5 rounded-xl shadow-sm border border-zinc-200 hover:shadow-md transition-shadow duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-zinc-500 text-xs uppercase font-semibold tracking-wide mb-1">Total Pemain</p>
+                        <h3 class="text-3xl font-bold text-zinc-700">${studentCount}${!hasData ? '*' : ''}</h3>
+                        <p class="text-xs text-zinc-400 mt-1">Participants</p>
+                    </div>
+                    <div class="bg-zinc-200 p-3 rounded-lg">
+                        <i class="fas fa-users text-zinc-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Card Hasil Belajar (Pre vs Post) -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-md border border-zinc-100 hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-between mb-5">
+                    <h4 class="font-bold text-zinc-700 text-lg flex items-center">
+                        <i class="fas fa-chart-bar text-green-500 mr-2"></i>
+                        Hasil Belajar
+                    </h4>
+                    ${!hasData ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">Simulasi</span>' : ''}
+                </div>
+                
+                <!-- Bar Chart Container -->
+                <div class="bg-gradient-to-b from-zinc-50 to-white rounded-lg p-4 mb-4">
+                    <div class="flex items-end justify-center h-56 gap-16">
+                        <!-- BAR PRE-TEST -->
+                        <div class="text-center group relative flex-1 max-w-[80px]">
+                            <div class="relative h-48 bg-zinc-100 rounded-lg overflow-hidden">
+                                <div class="absolute bottom-0 w-full bg-gradient-to-t from-zinc-400 to-zinc-300 rounded-t-lg transition-all duration-700 ease-out shadow-inner" 
+                                     style="height: ${hPre}%">
+                                </div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-white drop-shadow-lg">${pre}</span>
+                                </div>
+                            </div>
+                            <p class="font-semibold mt-3 text-zinc-600 text-sm">PRE-TEST</p>
+                            <p class="text-xs text-zinc-400 uppercase tracking-wider">Awal</p>
+                        </div>
+
+                        <!-- Arrow Icon -->
+                        <div class="mb-8 text-green-500 animate-pulse">
+                            <i class="fas fa-arrow-right text-3xl"></i>
+                        </div>
+
+                        <!-- BAR POST-TEST -->
+                        <div class="text-center group relative flex-1 max-w-[80px]">
+                            <div class="relative h-48 bg-green-50 rounded-lg overflow-hidden">
+                                <div class="absolute bottom-0 w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t-lg transition-all duration-700 ease-out shadow-lg" 
+                                     style="height: ${hPost}%">
+                                </div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-white drop-shadow-lg">${post}</span>
+                                </div>
+                            </div>
+                            <p class="font-semibold mt-3 text-green-600 text-sm">POST-TEST</p>
+                            <p class="text-xs text-green-500 uppercase tracking-wider">Akhir</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Improvement Badge -->
+                <div class="text-center bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                    <p class="text-xs text-zinc-500 mb-2 font-medium uppercase tracking-wide">Tingkat Peningkatan</p>
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="text-2xl font-bold text-green-600">${rate}</span>
+                        <span class="text-2xl">🚀</span>
+                    </div>
+                    ${!hasData ? '<p class="text-xs text-yellow-600 mt-2 font-medium">* Data simulasi</p>' : 
+                                 `<p class="text-xs text-zinc-400 mt-2">Dari ${studentCount} pemain</p>`}
                 </div>
             </div>
 
             <!-- Card Penguasaan Materi -->
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <h4 class="font-bold text-zinc-700 mb-4">Penguasaan Materi${!hasData ? ' (Simulasi)' : ''}</h4>
-                <div class="h-56 flex justify-center items-center">
-                    <canvas id="chartMastery"></canvas>
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border border-zinc-100 hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-between mb-5">
+                    <h4 class="font-bold text-zinc-700 text-lg flex items-center">
+                        <i class="fas fa-graduation-cap text-green-500 mr-2"></i>
+                        Penguasaan Materi
+                    </h4>
+                    ${!hasData ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">Simulasi</span>' : ''}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Chart Section -->
+                    <div class="flex justify-center items-center bg-gradient-to-br from-zinc-50 to-slate-50 rounded-lg p-4">
+                        <div class="h-64 w-full max-w-[280px]">
+                            <canvas id="chartMastery"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Section -->
+                    <div class="flex flex-col justify-center space-y-4">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border-l-4 border-green-500 hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-green-700 font-semibold uppercase tracking-wide mb-1">Mastered</p>
+                                    <h3 class="text-3xl font-bold text-green-700">${hasData ? safeNum(mastery.mastered) : 12}</h3>
+                                    <p class="text-xs text-green-600 mt-1">Sudah Menguasai</p>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-full">
+                                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-zinc-50 to-slate-50 p-4 rounded-lg border-l-4 border-zinc-400 hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-zinc-600 font-semibold uppercase tracking-wide mb-1">Learning</p>
+                                    <h3 class="text-3xl font-bold text-zinc-700">${hasData ? safeNum(mastery.learning) : 8}</h3>
+                                    <p class="text-xs text-zinc-500 mt-1">Sedang Belajar</p>
+                                </div>
+                                <div class="bg-zinc-200 p-3 rounded-full">
+                                    <i class="fas fa-book-reader text-zinc-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-lg border-l-4 border-red-400 hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-red-700 font-semibold uppercase tracking-wide mb-1">Struggling</p>
+                                    <h3 class="text-3xl font-bold text-red-700">${hasData ? safeNum(mastery.struggling) : 3}</h3>
+                                    <p class="text-xs text-red-600 mt-1">Perlu Bantuan</p>
+                                </div>
+                                <div class="bg-red-100 p-3 rounded-full">
+                                    <i class="fas fa-exclamation-circle text-red-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Tabel Analisis Kesulitan -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h4 class="font-bold text-zinc-700 mb-4 text-red-600">⚠️ Analisis Kesulitan${!hasData ? ' (Simulasi)' : ''}</h4>
-            <div class="overflow-x-auto">
+        <div class="bg-white p-6 rounded-xl shadow-md border border-zinc-100 hover:shadow-lg transition-shadow duration-300">
+            <div class="flex items-center justify-between mb-5">
+                <h4 class="font-bold text-zinc-700 text-lg flex items-center">
+                    <i class="fas fa-triangle-exclamation text-orange-500 mr-2"></i>
+                    Analisis Kesulitan Konten
+                </h4>
+                ${!hasData ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">Simulasi</span>' : ''}
+            </div>
+            
+            <div class="overflow-x-auto rounded-lg border border-zinc-200">
                 <table class="w-full text-sm">
-                    <thead class="bg-zinc-100">
+                    <thead class="bg-gradient-to-r from-zinc-100 to-slate-100">
                         <tr>
-                            <th class="p-3 text-left text-zinc-700">Konten</th>
-                            <th class="p-3 text-center text-zinc-700">Akurasi</th>
-                            <th class="p-3 text-left text-zinc-700">Status</th>
+                            <th class="p-4 text-left text-zinc-700 font-bold uppercase tracking-wide text-xs">
+                                <i class="fas fa-file-alt mr-2 text-zinc-500"></i>Konten
+                            </th>
+                            <th class="p-4 text-center text-zinc-700 font-bold uppercase tracking-wide text-xs">
+                                <i class="fas fa-percentage mr-2 text-zinc-500"></i>Akurasi
+                            </th>
+                            <th class="p-4 text-center text-zinc-700 font-bold uppercase tracking-wide text-xs">
+                                <i class="fas fa-signal mr-2 text-zinc-500"></i>Tingkat Kesulitan
+                            </th>
+                            <th class="p-4 text-left text-zinc-700 font-bold uppercase tracking-wide text-xs">
+                                <i class="fas fa-flag mr-2 text-zinc-500"></i>Status
+                            </th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white divide-y divide-zinc-100">
                         ${hasData && difficulty.anomalies.length > 0 ? 
-                            difficulty.anomalies.map(d => `
-                                <tr class="border-b border-zinc-100">
-                                    <td class="p-3 font-medium text-zinc-800">${safeStr(d.title)}</td>
-                                    <td class="p-3 text-center font-bold">${safePercent(d.acc)}</td>
-                                    <td class="p-3"><span class="px-2 py-1 rounded text-xs text-white ${d.acc < 30 ? 'bg-red-500' : 'bg-green-500'}">${d.acc < 30 ? 'Terlalu Sulit' : 'Terlalu Mudah'}</span></td>
+                            difficulty.anomalies.map((d, index) => `
+                                <tr class="hover:bg-zinc-50 transition-colors duration-150">
+                                    <td class="p-4 font-medium text-zinc-800">
+                                        <div class="flex items-center">
+                                            <span class="bg-zinc-100 text-zinc-600 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mr-3">${index + 1}</span>
+                                            ${safeStr(d.title)}
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <span class="text-lg font-bold ${d.acc < 30 ? 'text-red-600' : d.acc > 80 ? 'text-green-600' : 'text-zinc-600'}">${safePercent(d.acc)}</span>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <div class="flex items-center justify-center">
+                                            <div class="w-32 h-2 bg-zinc-200 rounded-full overflow-hidden">
+                                                <div class="h-full ${d.acc < 30 ? 'bg-red-500' : d.acc > 80 ? 'bg-green-500' : 'bg-yellow-500'} transition-all duration-500" 
+                                                     style="width: ${d.acc}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+                                            d.acc < 30 
+                                                ? 'bg-red-100 text-red-700 border border-red-300' 
+                                                : 'bg-green-100 text-green-700 border border-green-300'
+                                        }">
+                                            <i class="fas ${d.acc < 30 ? 'fa-arrow-up' : 'fa-arrow-down'} mr-1.5"></i>
+                                            ${d.acc < 30 ? 'Terlalu Sulit' : 'Terlalu Mudah'}
+                                        </span>
+                                    </td>
                                 </tr>
                             `).join('') 
                             : 
                             `${!hasData ? `
-                                <tr class="border-b border-zinc-100">
-                                    <td class="p-3 font-medium text-zinc-800">Skenario Investasi Saham</td>
-                                    <td class="p-3 text-center font-bold">25%</td>
-                                    <td class="p-3"><span class="px-2 py-1 rounded text-xs text-white bg-red-500">Terlalu Sulit</span></td>
+                                <tr class="hover:bg-zinc-50 transition-colors duration-150">
+                                    <td class="p-4 font-medium text-zinc-800">
+                                        <div class="flex items-center">
+                                            <span class="bg-zinc-100 text-zinc-600 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mr-3">1</span>
+                                            Skenario Investasi Saham
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <span class="text-lg font-bold text-red-600">25%</span>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <div class="flex items-center justify-center">
+                                            <div class="w-32 h-2 bg-zinc-200 rounded-full overflow-hidden">
+                                                <div class="h-full bg-red-500 transition-all duration-500" style="width: 25%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
+                                            <i class="fas fa-arrow-up mr-1.5"></i>Terlalu Sulit
+                                        </span>
+                                    </td>
                                 </tr>
-                                <tr class="border-b border-zinc-100">
-                                    <td class="p-3 font-medium text-zinc-800">Kuis Bunga Bank</td>
-                                    <td class="p-3 text-center font-bold">95%</td>
-                                    <td class="p-3"><span class="px-2 py-1 rounded text-xs text-white bg-green-500">Terlalu Mudah</span></td>
+                                <tr class="hover:bg-zinc-50 transition-colors duration-150">
+                                    <td class="p-4 font-medium text-zinc-800">
+                                        <div class="flex items-center">
+                                            <span class="bg-zinc-100 text-zinc-600 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mr-3">2</span>
+                                            Kuis Bunga Bank
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <span class="text-lg font-bold text-green-600">95%</span>
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <div class="flex items-center justify-center">
+                                            <div class="w-32 h-2 bg-zinc-200 rounded-full overflow-hidden">
+                                                <div class="h-full bg-green-500 transition-all duration-500" style="width: 95%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-300">
+                                            <i class="fas fa-arrow-down mr-1.5"></i>Terlalu Mudah
+                                        </span>
+                                    </td>
                                 </tr>
-                            ` : '<tr><td colspan="3" class="p-4 text-center text-zinc-500">Semua soal seimbang.</td></tr>'}`
+                            ` : '<tr><td colspan="4" class="p-6 text-center text-zinc-500 bg-zinc-50"><i class="fas fa-check-circle text-green-500 mr-2"></i>Semua soal memiliki tingkat kesulitan yang seimbang.</td></tr>'}`
                         }
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Info Footer -->
+            <div class="mt-4 bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-lg border border-blue-200">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                    <div class="text-xs text-blue-700">
+                        <p class="font-semibold mb-1">Interpretasi:</p>
+                        <ul class="list-disc list-inside space-y-1 text-blue-600">
+                            <li><strong>Akurasi &lt; 30%</strong>: Konten terlalu sulit, pertimbangkan untuk menyederhanakan atau memberikan lebih banyak petunjuk.</li>
+                            <li><strong>Akurasi &gt; 80%</strong>: Konten terlalu mudah, pertimbangkan untuk meningkatkan kompleksitas.</li>
+                            <li><strong>Akurasi 30-80%</strong>: Tingkat kesulitan optimal untuk pembelajaran efektif.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -312,7 +551,11 @@ async function renderLearningTab(container) {
             labels: ['Mastered', 'Learning', 'Struggling'],
             datasets: [{
                 data: [masteryData.mastered, masteryData.learning, masteryData.struggling],
-                backgroundColor: ['#10b981', '#71717a', '#ef4444']
+                backgroundColor: ['#10b981', '#71717a', '#ef4444'],
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverOffset: 15,
+                hoverBorderWidth: 4
             }]
         },
         options: {
@@ -323,16 +566,35 @@ async function renderLearningTab(container) {
                     position: 'bottom',
                     labels: {
                         color: '#71717a',
-                        padding: 15
+                        padding: 20,
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        },
+                        usePointStyle: true,
+                        pointStyle: 'circle'
                     }
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#10b981',
+                    borderWidth: 2,
                     callbacks: {
                         label: function(context) {
                             const label = context.label || '';
                             const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
                             const suffix = hasData ? ' pemain' : ' (simulasi)';
-                            return label + ': ' + value + suffix;
+                            return label + ': ' + value + suffix + ' (' + percentage + '%)';
                         }
                     }
                 }
@@ -343,7 +605,7 @@ async function renderLearningTab(container) {
         console.error('Learning Tab Error:', error);
         throw error;
     }
-}
+} 
 
 // --- 3. TAB PERILAKU ---
 async function renderBehaviorTab(container) {
