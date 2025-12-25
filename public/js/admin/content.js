@@ -64,13 +64,14 @@ function renderTable(data) {
 
     // Tentukan Kolom berdasarkan Tab
     if (currentTab === 'scenarios') {
-        columns = ['Judul', 'Kategori', 'Kesulitan', 'Opsi', 'Aksi'];
+        columns = ['Pertanyaan', 'Kategori', 'Bobot', 'Skor', 'Opsi', 'Aksi'];
         data.forEach(item => {
             rows += `
                 <tr class="hover:bg-gray-50 border-b">
-                    <td class="px-5 py-4 font-bold text-gray-800">${item.title}</td>
+                    <td class="px-5 py-4 text-sm text-gray-800 max-w-xs truncate">${item.title}</td>
                     <td class="px-5 py-4"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${item.category}</span></td>
                     <td class="px-5 py-4 text-sm">${renderDifficulty(item.difficulty)}</td>
+                    <td class="px-5 py-4 text-sm font-bold text-indigo-600">${item.score || '-'}</td>
                     <td class="px-5 py-4 text-sm text-gray-500">${item.options_count} Pilihan</td>
                     <td class="px-5 py-4">
                         <div class="flex gap-2">
@@ -155,9 +156,46 @@ function renderTable(data) {
 
 // --- UTILS ---
 function renderDifficulty(level) {
-    if (level === 1) return '<span class="text-green-500 font-bold">Easy</span>';
-    if (level === 2) return '<span class="text-yellow-500 font-bold">Medium</span>';
-    return '<span class="text-red-500 font-bold">Hard</span>';
+    if (level === 1) return '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Sangat Mudah</span>';
+    if (level === 2) return '<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold">Mudah</span>';
+    if (level === 3) return '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-bold">Sedang</span>';
+    if (level === 4) return '<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-bold">Sulit</span>';
+    return '<span class="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">Sangat Sulit</span>';
+}
+
+// Score ranges berdasarkan Bobot
+const scoreRanges = {
+    1: { min: 6, max: 15, default: 10 },    // Sangat Mudah
+    2: { min: 21, max: 35, default: 28 },   // Mudah
+    3: { min: 41, max: 60, default: 50 },   // Sedang
+    4: { min: 67, max: 85, default: 76 },   // Sulit
+    5: { min: 88, max: 100, default: 94 }   // Sangat Sulit
+};
+
+function updateScoreRange() {
+    const bobotSelect = document.getElementById('bobot-select');
+    const scoreInput = document.getElementById('score-input');
+    const scoreRangeLabel = document.getElementById('score-range-label');
+
+    if (!bobotSelect || !scoreInput) return;
+
+    const bobot = parseInt(bobotSelect.value);
+    const range = scoreRanges[bobot] || scoreRanges[1];
+
+    // Update label
+    if (scoreRangeLabel) {
+        scoreRangeLabel.textContent = `(${range.min}-${range.max})`;
+    }
+
+    // Update input constraints
+    scoreInput.min = range.min;
+    scoreInput.max = range.max;
+
+    // Set default value if current value is out of range
+    const currentValue = parseInt(scoreInput.value) || 0;
+    if (currentValue < range.min || currentValue > range.max) {
+        scoreInput.value = range.default;
+    }
 }
 
 let timeout;
@@ -296,6 +334,10 @@ function openCreateModal() {
     document.getElementById('form-modal-title').innerText = `Tambah ${getContentTypeName()}`;
     renderForm();
     document.getElementById('form-modal').classList.remove('hidden');
+    // Set initial score based on default Bobot
+    if (currentTab === 'scenarios') {
+        setTimeout(() => updateScoreRange(), 100);
+    }
 }
 
 function openEditModal() {
@@ -341,63 +383,76 @@ async function renderForm(loadData = false) {
 
     if (currentTab === 'scenarios') {
         const diffValue = data?.content?.difficulty || 1;
+        const scoreValue = data?.content?.score || 10;
         formHtml = `
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Judul</label>
-                <input type="text" name="title" value="${data?.content?.title || ''}" required
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
-            </div>
             <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">Pertanyaan</label>
+                    <input type="text" name="title" value="${data?.content?.title || ''}" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Judul/Pertanyaan singkat">
+                </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">Kategori</label>
                     <input type="text" name="category" value="${data?.content?.category || ''}" required
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Contoh: Pendapatan, Anggaran">
                 </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-gray-700 font-bold mb-2">Kesulitan</label>
-                    <select name="difficulty" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
-                        <option value="1" ${diffValue == 1 ? 'selected' : ''}>Easy</option>
-                        <option value="2" ${diffValue == 2 ? 'selected' : ''}>Medium</option>
-                        <option value="3" ${diffValue == 3 ? 'selected' : ''}>Hard</option>
+                    <label class="block text-gray-700 font-bold mb-2">Bobot</label>
+                    <select name="difficulty" id="bobot-select" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" onchange="updateScoreRange()">
+                        <option value="1" ${diffValue == 1 ? 'selected' : ''}>Sangat Mudah (6-15)</option>
+                        <option value="2" ${diffValue == 2 ? 'selected' : ''}>Mudah (21-35)</option>
+                        <option value="3" ${diffValue == 3 ? 'selected' : ''}>Sedang (41-60)</option>
+                        <option value="4" ${diffValue == 4 ? 'selected' : ''}>Sulit (67-85)</option>
+                        <option value="5" ${diffValue == 5 ? 'selected' : ''}>Sangat Sulit (88-100)</option>
                     </select>
                 </div>
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">Skor <span id="score-range-label" class="text-sm text-gray-500">(6-15)</span></label>
+                    <input type="number" name="score" id="score-input" value="${scoreValue}" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Skor pertanyaan">
+                </div>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Pertanyaan</label>
-                <textarea name="question" rows="3" required
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">${data?.content?.question || ''}</textarea>
+                <label class="block text-gray-700 font-bold mb-2">Detail Pertanyaan</label>
+                <textarea name="question" rows="2" required
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Deskripsi lengkap pertanyaan">${data?.content?.question || ''}</textarea>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (Min 2)</label>
-                <div id="options-container">
+                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (5 Pilihan: A-E)</label>
+                <div id="options-container" class="space-y-2">
                     ${data?.options ? data.options.map((opt, i) => `
-                        <div class="border p-3 rounded mb-2 bg-gray-50">
-                            <input type="text" name="option_label_${i}" value="${opt.label}" placeholder="Label (A/B/C)" required class="w-20 px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_text_${i}" value="${opt.text}" placeholder="Teks opsi" required class="w-full px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_feedback_${i}" value="${opt.feedback}" placeholder="Feedback" class="w-full px-2 py-1 border rounded mb-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="option_correct_${i}" ${opt.is_correct ? 'checked' : ''} class="mr-2">
-                                <span class="text-sm">Jawaban benar</span>
-                            </label>
+                        <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
+                            <span class="font-bold text-indigo-600 w-8">${opt.label}.</span>
+                            <input type="hidden" name="option_label_${i}" value="${opt.label}">
+                            <input type="text" name="option_text_${i}" value="${opt.text}" placeholder="Teks opsi ${opt.label}" required class="flex-1 px-2 py-1 border rounded">
                         </div>
                     `).join('') : `
-                        <div class="border p-3 rounded mb-2 bg-gray-50">
-                            <input type="text" name="option_label_0" placeholder="Label (A)" required class="w-20 px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_text_0" placeholder="Teks opsi" required class="w-full px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_feedback_0" placeholder="Feedback" class="w-full px-2 py-1 border rounded mb-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="option_correct_0" class="mr-2">
-                                <span class="text-sm">Jawaban benar</span>
-                            </label>
+                        <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
+                            <span class="font-bold text-indigo-600 w-8">A.</span>
+                            <input type="hidden" name="option_label_0" value="A">
+                            <input type="text" name="option_text_0" placeholder="Teks opsi A" required class="flex-1 px-2 py-1 border rounded">
                         </div>
-                        <div class="border p-3 rounded mb-2 bg-gray-50">
-                            <input type="text" name="option_label_1" placeholder="Label (B)" required class="w-20 px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_text_1" placeholder="Teks opsi" required class="w-full px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_feedback_1" placeholder="Feedback" class="w-full px-2 py-1 border rounded mb-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="option_correct_1" class="mr-2">
-                                <span class="text-sm">Jawaban benar</span>
-                            </label>
+                        <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
+                            <span class="font-bold text-indigo-600 w-8">B.</span>
+                            <input type="hidden" name="option_label_1" value="B">
+                            <input type="text" name="option_text_1" placeholder="Teks opsi B" required class="flex-1 px-2 py-1 border rounded">
+                        </div>
+                        <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
+                            <span class="font-bold text-indigo-600 w-8">C.</span>
+                            <input type="hidden" name="option_label_2" value="C">
+                            <input type="text" name="option_text_2" placeholder="Teks opsi C" required class="flex-1 px-2 py-1 border rounded">
+                        </div>
+                        <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
+                            <span class="font-bold text-indigo-600 w-8">D.</span>
+                            <input type="hidden" name="option_label_3" value="D">
+                            <input type="text" name="option_text_3" placeholder="Teks opsi D" required class="flex-1 px-2 py-1 border rounded">
+                        </div>
+                        <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
+                            <span class="font-bold text-indigo-600 w-8">E.</span>
+                            <input type="hidden" name="option_label_4" value="E">
+                            <input type="text" name="option_text_4" placeholder="Teks opsi E" required class="flex-1 px-2 py-1 border rounded">
                         </div>
                     `}
                 </div>
@@ -515,24 +570,25 @@ async function handleSubmit(e) {
         const options = [];
         let i = 0;
         while (formData.has(`option_label_${i}`)) {
-            const responseText = formData.get(`option_feedback_${i}`);
             options.push({
                 optionId: formData.get(`option_label_${i}`),
                 text: formData.get(`option_text_${i}`),
-                response: responseText && responseText.trim() !== '' ? responseText : 'No feedback',
-                is_correct: formData.has(`option_correct_${i}`),
+                response: '-',
+                is_correct: false,
                 scoreChange: {}
             });
             i++;
         }
 
         const diffValue = formData.get('difficulty');
-        const difficulty = diffValue ? getDifficultyValue(diffValue) : 1;
+        const difficulty = diffValue ? parseInt(diffValue) : 1;
+        const score = parseInt(formData.get('score') || 10);
 
         payload = {
             title: formData.get('title'),
             category: formData.get('category'),
             difficulty: difficulty,
+            expected_benefit: score,
             question: formData.get('question'),
             options: options
         };

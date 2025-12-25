@@ -39,11 +39,12 @@ class AdminScenarioController extends Controller
             'title' => 'required|string|max:255',
             'category' => 'required|string',
             'question' => 'required|string',
-            'difficulty' => 'required|integer|between:1,3',
+            'difficulty' => 'required|integer|between:1,5',
+            'expected_benefit' => 'sometimes|integer|min:1|max:100',
             'options' => 'required|array|min:2',
             'options.*.optionId' => 'required|string',
             'options.*.text' => 'required|string',
-            'options.*.is_correct' => 'required|boolean',
+            'options.*.is_correct' => 'sometimes|boolean',
         ]);
 
         $scenario = $this->service->create($request->all());
@@ -56,7 +57,7 @@ class AdminScenarioController extends Controller
             'title' => 'sometimes|string|max:255',
             'category' => 'sometimes|string',
             'question' => 'sometimes|string',
-            'difficulty' => 'sometimes|nullable|integer|between:1,3',
+            'difficulty' => 'sometimes|nullable|integer|between:1,5',
             'options' => 'sometimes|array|min:2',
             'options.*.optionId' => 'sometimes|string',
             'options.*.text' => 'sometimes|string',

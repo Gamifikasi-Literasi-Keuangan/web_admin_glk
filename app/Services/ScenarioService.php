@@ -58,6 +58,7 @@ class ScenarioService
                 'title' => $scenario->title,
                 'category' => $scenario->category,
                 'difficulty' => $scenario->difficulty,
+                'score' => $scenario->expected_benefit,
                 'options_count' => $scenario->options->count(),
                 'created_at' => $scenario->created_at ? $scenario->created_at->format('Y-m-d H:i') : '-',
             ];
@@ -87,6 +88,7 @@ class ScenarioService
                 'category' => $scenario->category,
                 'question' => $scenario->question,
                 'difficulty' => $scenario->difficulty,
+                'score' => $scenario->expected_benefit,
                 'learning_objective' => $scenario->learning_objective,
             ],
             'ai_config' => [
@@ -120,6 +122,7 @@ class ScenarioService
             'category' => $data['category'],
             'question' => $data['question'],
             'difficulty' => $data['difficulty'],
+            'expected_benefit' => $data['expected_benefit'] ?? 10,
             'learning_objective' => $data['learning_objective'] ?? null,
             'tags' => $data['tags'] ?? [],
             'weak_area_relevance' => $data['weak_area_relevance'] ?? [],
@@ -141,6 +144,7 @@ class ScenarioService
             'category' => $data['category'] ?? $scenario->category,
             'question' => $data['question'] ?? $scenario->question,
             'difficulty' => $data['difficulty'] ?? $scenario->difficulty,
+            'expected_benefit' => $data['expected_benefit'] ?? $scenario->expected_benefit,
             'learning_objective' => $data['learning_objective'] ?? $scenario->learning_objective,
             'tags' => $data['tags'] ?? $scenario->tags,
             'weak_area_relevance' => $data['weak_area_relevance'] ?? $scenario->weak_area_relevance,

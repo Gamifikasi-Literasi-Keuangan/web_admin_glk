@@ -28,6 +28,14 @@ class ScenarioOption extends Model
     ];
 
     /**
+     * Mutator: Ensure response is never null
+     */
+    public function setResponseAttribute($value)
+    {
+        $this->attributes['response'] = $value ?: '-';
+    }
+
+    /**
      * Otomatis cast kolom JSON (MySQL)
      */
     protected $casts = [

@@ -21,9 +21,10 @@ class Scenario extends Model
         'question',
         'tags',
         'difficulty',
+        'expected_benefit',
         'learning_objective',
-        'weak_area_relevance', // <--- Baru
-        'cluster_relevance',   // <--- Baru
+        'weak_area_relevance',
+        'cluster_relevance',
         'historical_success_rate'
     ];
 
