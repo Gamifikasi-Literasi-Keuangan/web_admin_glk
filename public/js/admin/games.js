@@ -265,7 +265,7 @@ async function showSessionDetail(sessionId) {
                     <div class="bg-zinc-400 hover:bg-zinc-500 p-2 rounded-lg transition-colors group-hover:scale-105">
                         <i class="fa-solid fa-arrow-left text-base md:text-lg"></i>
                     </div>
-                    <span class="text-base md:text-lg">Kembali ke Daftar Session</span>
+                    <span class="text-white md:text-lg">Kembali ke Daftar Session</span>
                 </button>
             </div>
             <div class="bg-red-900/50 border border-red-600 rounded-xl md:rounded-2xl p-4 md:p-6 text-center max-w-2xl mx-auto">

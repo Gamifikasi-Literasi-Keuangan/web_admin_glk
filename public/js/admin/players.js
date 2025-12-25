@@ -388,7 +388,7 @@ async function renderPlayerDetail(playerId) {
                 <div class="bg-zinc-400 hover:bg-zinc-500 p-2 rounded-lg transition-colors group-hover:scale-105">
                 <i class="fa-solid fa-arrow-left text-base md:text-lg"></i>
                 </div>
-                <span class="text-base md:text-lg">Kembali ke Daftar Player</span>
+                <span class="text-white md:text-lg">Kembali ke Daftar Player</span>
             </button>
             </div>
 
@@ -441,9 +441,9 @@ async function renderPlayerDetail(playerId) {
                     <div class="w-10 h-10 md:w-12 md:h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-brain text-white text-lg md:text-xl"></i>
                     </div>
-                    <p class="text-xs text-gray-600 uppercase tracking-wide font-['Poppins'] mb-1">AI Cluster</p>
+                    <p class="text-xs text-white uppercase tracking-wide font-['Poppins'] mb-1">AI Cluster</p>
                     <h3 class="text-xl md:text-2xl font-bold text-green-600 font-['Poppins'] mb-2">${ai.cluster || 'Unprofiled'}</h3>
-                    <p class="text-xs md:text-sm text-gray-700 font-['Poppins'] mb-4">Confidence: ${ai.ai_confidence || '0%'}</p>
+                    <p class="text-xs md:text-sm text-white font-['Poppins'] mb-4">Confidence: ${ai.ai_confidence || '0%'}</p>
                     
                     <!-- AI Traits -->
                     <div class="flex flex-wrap justify-center gap-1 md:gap-2">
@@ -609,7 +609,7 @@ async function renderPlayerDetail(playerId) {
                             <span class="text-white text-xs font-bold">${index + 1}</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                            <h4 class="text-red-300 font-semibold font-['Poppins'] text-sm md:text-base truncate">${w.category}</h4>
+                            <h4 class="text-black font-semibold font-['Poppins'] text-sm md:text-base truncate">${w.category}</h4>
                             </div>
                             <div class="bg-red-600/50 px-2 md:px-3 py-1 rounded-full flex-shrink-0">
                             <span class="text-white text-xs font-bold font-['Poppins']">${w.accuracy}</span>

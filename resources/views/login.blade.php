@@ -63,7 +63,7 @@
         <!-- Footer -->
         <div class="mt-6 text-center">
             <p class="text-slate-500 text-xs font-['Poppins']">
-                &copy; 2024 Gamifikasi Literasi Keuangan
+                &copy; 2025 Gamifikasi Literasi Keuangan
             </p>
         </div>
     </div>
