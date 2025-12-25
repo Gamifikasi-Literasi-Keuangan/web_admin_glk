@@ -67,14 +67,29 @@
             transform: translateX(4px);
         }
 
-        .sidebar-item.active {
-            background-color: rgba(139, 69, 19, 0.2);
-            border-left: 4px solid #a855f7;
-        }
+    .custom-scrollbar {
+        overflow-x: auto;
+    }
 
-        .custom-scrollbar {
-            overflow-x: auto;
+    /* Layout fixes */
+    .main-layout {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .content-area {
+        flex: 1;
+        min-width: 0; /* Prevents flex overflow */
+        display: flex;
+        flex-direction: column;
+    }
+
+    @media (max-width: 1023px) {
+        .content-area {
+            width: 100%;
         }
+    }
     </style>
 
     @stack('styles')
@@ -82,21 +97,26 @@
 
 <body class="bg-gray-800 font-['Poppins'] antialiased">
 
-    <div class="w-full h-screen relative overflow-hidden">
-
+    <div class="main-layout">
+        
         @include('components.sidebar')
 
         <!-- Main Content Area -->
-        <div class="absolute left-72 top-0 right-0 bottom-0">
+        <div class="content-area">
             <!-- Header -->
-            <div class="w-full h-20 bg-green-600 rounded-bl-2xl rounded-br-2xl relative">
-                <div class="absolute left-12 top-[19px]">
-                    <div class="text-black text-2xl font-normal font-['Poppins']">@yield('header', 'Dashboard')</div>
+            <div class="w-full h-16 md:h-20 bg-green-600 lg:rounded-bl-2xl lg:rounded-br-2xl relative flex-shrink-0">
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleSidebar()" class="lg:hidden absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-xl z-50">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="absolute left-12 lg:left-12 top-1/2 transform -translate-y-1/2">
+                    <div class="text-white text-lg md:text-2xl font-bold font-['Poppins']">@yield('header', 'Dashboard')</div>
                 </div>
             </div>
 
             <!-- Content -->
-            <main class="p-6 h-[calc(100vh-80px)] overflow-y-auto">
+            <main class="flex-1 p-3 md:p-6 overflow-y-auto">
                 @yield('content')
             </main>
         </div>
@@ -205,13 +225,27 @@
                         }
                     }
 
-                    // Mobile sidebar toggle (if needed)
-                    function toggleSidebar() {
-                        const sidebar = document.getElementById('sidebar');
-                        if (sidebar) {
-                            sidebar.classList.toggle('hidden');
-                        }
-                    }
+    // Mobile sidebar toggle
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    }
+    
+    // Close sidebar when clicking overlay
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        if (sidebar && overlay) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+    }
     </script>
 
     @stack('scripts')
