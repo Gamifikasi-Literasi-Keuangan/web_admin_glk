@@ -278,7 +278,8 @@ async function showDetail(id) {
 
     try {
         let url;
-        if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${id}`;
+        if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${id}`;
+        else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${id}`;
         else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${id}`;
         else url = `${BASE_API}/cards/${currentTab}/${id}`;
 
@@ -286,8 +287,34 @@ async function showDetail(id) {
         const json = await res.json();
         const item = json.data || json;
 
-        // 1. DETAIL SKENARIO
-        if (currentTab === 'scenarios') {
+        // 1. DETAIL PROFILING
+        if (currentTab === 'profiling') {
+            title.innerText = 'Detail Profiling';
+            body.innerHTML = `
+                <div class="bg-purple-50 p-4 rounded border border-purple-200 mb-4">
+                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mb-2 inline-block">${item.content.category}</span>
+                    <h4 class="font-bold text-lg text-gray-800 mb-2">${item.content.title}</h4>
+                    <p class="text-gray-700 leading-relaxed">${item.content.question}</p>
+                </div>
+                <div class="flex gap-4 mb-4 text-sm">
+                    <div class="bg-white px-3 py-2 rounded border"><strong>Bobot:</strong> ${renderDifficulty(item.content.difficulty)}</div>
+                    <div class="bg-white px-3 py-2 rounded border"><strong>Skor:</strong> <span class="text-indigo-600 font-bold">${item.content.score || '-'}</span></div>
+                </div>
+                <h5 class="font-bold text-gray-700 mb-2 text-sm uppercase tracking-wide">Opsi Jawaban:</h5>
+                <ul class="space-y-2">
+                    ${item.options.map(opt => `
+                        <li class="p-3 border rounded-lg bg-white border-gray-200">
+                            <div class="flex items-start gap-3">
+                                <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-purple-200 font-bold text-xs">${opt.label}</span>
+                                <p class="text-sm text-gray-800">${opt.text}</p>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+
+            // 2. DETAIL SKENARIO GAME
+        } else if (currentTab === 'scenarios') {
             title.innerText = 'Detail Skenario';
             body.innerHTML = `
                 <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
@@ -425,7 +452,8 @@ async function renderForm(loadData = false) {
     if (loadData && currentId) {
         try {
             let url;
-            if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
+            if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${currentId}`;
+            else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
             else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${currentId}`;
             else url = `${BASE_API}/cards/${currentTab}/${currentId}`;
 
@@ -853,7 +881,8 @@ async function deleteContent() {
 
     try {
         let url;
-        if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
+        if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${currentId}`;
+        else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
         else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${currentId}`;
         else url = `${BASE_API}/cards/${currentTab}/${currentId}`;
 
