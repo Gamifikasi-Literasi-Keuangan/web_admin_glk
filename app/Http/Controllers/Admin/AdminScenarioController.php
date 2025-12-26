@@ -40,7 +40,7 @@ class AdminScenarioController extends Controller
             'category' => 'required|string',
             'question' => 'required|string',
             'difficulty' => 'required|integer|between:1,5',
-            'expected_benefit' => 'sometimes|integer|min:1|max:100',
+            'expected_benefit' => 'sometimes|integer|min:0|max:100',
             'options' => 'required|array|min:2',
             'options.*.optionId' => 'required|string',
             'options.*.text' => 'required|string',
