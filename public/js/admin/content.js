@@ -1,5 +1,5 @@
 // Global State
-let currentTab = 'scenarios';
+let currentTab = 'profiling';
 const headers = {
     'Authorization': `Bearer ${token}`, // token dari layout
     'Accept': 'application/json'
@@ -45,7 +45,8 @@ async function loadData(keyword = '') {
 
     try {
         let url;
-        if (currentTab === 'scenarios') url = `${BASE_API}/scenarios?limit=10&search=${keyword}`;
+        if (currentTab === 'profiling') url = `${BASE_API}/scenarios?limit=10&type=profiling&search=${keyword}`;
+        else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios?limit=10&type=game&search=${keyword}`;
         else if (currentTab === 'risk') url = `${BASE_API}/cards/risk?limit=10&search=${keyword}`;
         else if (currentTab === 'chance') url = `${BASE_API}/cards/chance?limit=10&search=${keyword}`;
         else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz?limit=10&search=${keyword}`;
@@ -91,15 +92,40 @@ function renderTable(data) {
     let rows = '';
 
     // Tentukan Kolom berdasarkan Tab
-    if (currentTab === 'scenarios') {
+    if (currentTab === 'profiling') {
         columns = ['Pertanyaan', 'Kategori', 'Bobot', 'Skor', 'Opsi', 'Aksi'];
+        data.forEach(item => {
+            rows += `
+                <tr class="hover:bg-green-50 border-b border-zinc-100 transition-colors">
+                    <td class="px-6 py-4 font-semibold text-zinc-800">${item.title}</td>
+                    <td class="px-6 py-4"><span class="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full border border-purple-200 font-medium">${item.category}</span></td>
+                    <td class="px-6 py-4">${renderDifficulty(item.difficulty)}</td>
+                    <td class="px-6 py-4 text-indigo-600 font-bold">${item.score || '-'}</td>
+                    <td class="px-6 py-4 text-zinc-600 font-medium">${item.options_count} Pilihan</td>
+                    <td class="px-6 py-4">
+                        <div class="flex gap-2">
+                            <button onclick="showDetail('${item.id}')" class="bg-black/70 hover:bg-black text-white p-2 rounded-lg transition-colors" title="Lihat Detail">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            <button onclick="editItem('${item.id}')" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-800 p-2 rounded-lg transition-colors border border-yellow-200 hover:border-yellow-300" title="Edit">
+                                <i class="fa-solid fa-edit"></i>
+                            </button>
+                            <button onclick="deleteItem('${item.id}')" class="bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 p-2 rounded-lg transition-colors border border-red-200 hover:border-red-300" title="Hapus">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+    } else if (currentTab === 'scenarios') {
+        columns = ['Pertanyaan', 'Kategori', 'Kesulitan', 'Opsi', 'Aksi'];
         data.forEach(item => {
             rows += `
                 <tr class="hover:bg-green-50 border-b border-zinc-100 transition-colors">
                     <td class="px-6 py-4 font-semibold text-zinc-800">${item.title}</td>
                     <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full border border-blue-200 font-medium">${item.category}</span></td>
                     <td class="px-6 py-4">${renderDifficulty(item.difficulty)}</td>
-                    <td class="px-6 py-4 text-indigo-600 font-bold">${item.score || '-'}</td>
                     <td class="px-6 py-4 text-zinc-600 font-medium">${item.options_count} Pilihan</td>
                     <td class="px-6 py-4">
                         <div class="flex gap-2">
@@ -365,7 +391,7 @@ function openCreateModal() {
     renderForm();
     document.getElementById('form-modal').classList.remove('hidden');
     // Set initial score based on default Bobot
-    if (currentTab === 'scenarios') {
+    if (currentTab === 'profiling') {
         setTimeout(() => updateScoreRange(), 100);
     }
 }
@@ -384,7 +410,8 @@ function closeFormModal() {
 }
 
 function getContentTypeName() {
-    if (currentTab === 'scenarios') return 'Skenario';
+    if (currentTab === 'profiling') return 'Profiling';
+    if (currentTab === 'scenarios') return 'Skenario Game';
     if (currentTab === 'risk') return 'Kartu Risiko';
     if (currentTab === 'chance') return 'Kartu Kesempatan';
     if (currentTab === 'quiz') return 'Kuis';
@@ -411,7 +438,7 @@ async function renderForm(loadData = false) {
         }
     }
 
-    if (currentTab === 'scenarios') {
+    if (currentTab === 'profiling') {
         const diffValue = data?.content?.difficulty || 1;
         const scoreValue = data?.content?.score || 10;
         formHtml = `
@@ -483,6 +510,92 @@ async function renderForm(loadData = false) {
                             <span class="font-bold text-indigo-600 w-8">E.</span>
                             <input type="hidden" name="option_label_4" value="E">
                             <input type="text" name="option_text_4" placeholder="Teks opsi E" required class="flex-1 px-2 py-1 border rounded">
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    } else if (currentTab === 'scenarios') {
+        // Form untuk Skenario Game (format lama dengan feedback dan scoreChange)
+        const diffValue = data?.content?.difficulty || 1;
+        formHtml = `
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Judul Skenario</label>
+                <input type="text" name="title" value="${data?.content?.title || ''}" required
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Judul skenario">
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">Kategori</label>
+                    <input type="text" name="category" value="${data?.content?.category || ''}" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Contoh: finance, general">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">Kesulitan</label>
+                    <select name="difficulty" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                        <option value="1" ${diffValue == 1 ? 'selected' : ''}>Easy</option>
+                        <option value="2" ${diffValue == 2 ? 'selected' : ''}>Medium</option>
+                        <option value="3" ${diffValue == 3 ? 'selected' : ''}>Hard</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Pertanyaan</label>
+                <textarea name="question" rows="3" required
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Isi pertanyaan skenario">${data?.content?.question || ''}</textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (Min 2)</label>
+                <div id="options-container" class="space-y-3">
+                    ${data?.options ? data.options.map((opt, i) => `
+                        <div class="border p-3 rounded bg-gray-50">
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" name="option_label_${i}" value="${opt.label}" placeholder="Label (A/B/C)" required class="w-20 px-2 py-1 border rounded">
+                                <input type="number" name="option_score_${i}" value="${opt.impact?.score || 0}" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                            </div>
+                            <input type="text" name="option_text_${i}" value="${opt.text}" placeholder="Teks opsi" required class="w-full px-2 py-1 border rounded mb-2">
+                            <input type="text" name="option_feedback_${i}" value="${opt.feedback || ''}" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="option_correct_${i}" ${opt.is_correct ? 'checked' : ''} class="mr-2">
+                                <span class="text-sm">Jawaban benar</span>
+                            </label>
+                        </div>
+                    `).join('') : `
+                        <div class="border p-3 rounded bg-gray-50">
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" name="option_label_0" value="A" placeholder="Label (A)" required class="w-20 px-2 py-1 border rounded">
+                                <input type="number" name="option_score_0" value="5" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                            </div>
+                            <input type="text" name="option_text_0" placeholder="Teks opsi A" required class="w-full px-2 py-1 border rounded mb-2">
+                            <input type="text" name="option_feedback_0" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="option_correct_0" class="mr-2">
+                                <span class="text-sm">Jawaban benar</span>
+                            </label>
+                        </div>
+                        <div class="border p-3 rounded bg-gray-50">
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" name="option_label_1" value="B" placeholder="Label (B)" required class="w-20 px-2 py-1 border rounded">
+                                <input type="number" name="option_score_1" value="-5" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                            </div>
+                            <input type="text" name="option_text_1" placeholder="Teks opsi B" required class="w-full px-2 py-1 border rounded mb-2">
+                            <input type="text" name="option_feedback_1" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="option_correct_1" class="mr-2">
+                                <span class="text-sm">Jawaban benar</span>
+                            </label>
+                        </div>
+                        <div class="border p-3 rounded bg-gray-50">
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" name="option_label_2" value="C" placeholder="Label (C)" required class="w-20 px-2 py-1 border rounded">
+                                <input type="number" name="option_score_2" value="0" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                            </div>
+                            <input type="text" name="option_text_2" placeholder="Teks opsi C" required class="w-full px-2 py-1 border rounded mb-2">
+                            <input type="text" name="option_feedback_2" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="option_correct_2" class="mr-2">
+                                <span class="text-sm">Jawaban benar</span>
+                            </label>
                         </div>
                     `}
                 </div>
@@ -596,7 +709,7 @@ async function handleSubmit(e) {
         return parseInt(diff);
     };
 
-    if (currentTab === 'scenarios') {
+    if (currentTab === 'profiling') {
         const options = [];
         let i = 0;
         while (formData.has(`option_label_${i}`)) {
@@ -615,10 +728,40 @@ async function handleSubmit(e) {
         const score = parseInt(formData.get('score') || 10);
 
         payload = {
+            type: 'profiling',
             title: formData.get('title'),
             category: formData.get('category'),
             difficulty: difficulty,
             expected_benefit: score,
+            question: formData.get('question'),
+            options: options
+        };
+    } else if (currentTab === 'scenarios') {
+        // Skenario Game dengan feedback dan scoreChange
+        const options = [];
+        let i = 0;
+        while (formData.has(`option_label_${i}`)) {
+            const scoreVal = parseInt(formData.get(`option_score_${i}`) || 0);
+            const feedbackVal = formData.get(`option_feedback_${i}`) || '-';
+            options.push({
+                optionId: formData.get(`option_label_${i}`),
+                text: formData.get(`option_text_${i}`),
+                response: feedbackVal,
+                is_correct: formData.has(`option_correct_${i}`),
+                scoreChange: { score: scoreVal }
+            });
+            i++;
+        }
+
+        const diffValue = formData.get('difficulty');
+        const difficulty = diffValue ? parseInt(diffValue) : 1;
+
+        payload = {
+            type: 'game',
+            title: formData.get('title'),
+            category: formData.get('category'),
+            difficulty: difficulty,
+            expected_benefit: 0,
             question: formData.get('question'),
             options: options
         };
@@ -667,12 +810,14 @@ async function handleSubmit(e) {
         let url, method;
         if (isEditMode) {
             method = 'PUT';
-            if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
+            if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${currentId}`;
+            else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
             else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${currentId}`;
             else url = `${BASE_API}/cards/${currentTab}/${currentId}`;
         } else {
             method = 'POST';
-            if (currentTab === 'scenarios') url = `${BASE_API}/scenarios`;
+            if (currentTab === 'profiling') url = `${BASE_API}/scenarios`;
+            else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios`;
             else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz`;
             else url = `${BASE_API}/cards/${currentTab}`;
         }

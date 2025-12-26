@@ -28,6 +28,11 @@ class ScenarioRepository
             $query->where('difficulty', $filters['difficulty']);
         }
 
+        // Filter Type (profiling / game)
+        if (!empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
         // Urutkan terbaru & Load relasi options (agar efisien / Eager Loading)
         return $query->with('options')
                      ->orderBy('created_at', 'desc')
@@ -51,9 +56,10 @@ class ScenarioRepository
             // Buat Skenario Utama
             $scenario = Scenario::create($data);
             
-            // Masukkan ID scenario ke setiap opsi
+            // Masukkan ID scenario ke setiap opsi dan pastikan response tidak null
             foreach ($options as &$opt) {
                 $opt['scenarioId'] = $scenario->id;
+                $opt['response'] = $opt['response'] ?? '-';
             }
 
             // Simpan Opsi Sekaligus
@@ -75,9 +81,10 @@ class ScenarioRepository
             // Hapus opsi lama, buat yang baru (cara paling aman untuk update list)
             $scenario->options()->delete();
             
-            // Masukkan ID scenario ke setiap opsi baru
+            // Masukkan ID scenario ke setiap opsi baru dan pastikan response tidak null
             foreach ($options as &$opt) {
                 $opt['scenarioId'] = $scenario->id;
+                $opt['response'] = $opt['response'] ?? '-';
             }
             
             $scenario->options()->createMany($options);

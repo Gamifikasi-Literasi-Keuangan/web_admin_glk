@@ -49,12 +49,14 @@ class ScenarioService
             'search' => $request->input('search'),
             'category' => $request->input('category'),
             'difficulty' => $request->input('difficulty'),
+            'type' => $request->input('type'),
         ]);
 
         // Transformasi Data agar rapi untuk API Response
         $paginator->getCollection()->transform(function ($scenario) {
             return [
                 'id' => $scenario->id,
+                'type' => $scenario->type,
                 'title' => $scenario->title,
                 'category' => $scenario->category,
                 'difficulty' => $scenario->difficulty,
@@ -118,6 +120,7 @@ class ScenarioService
 
         $scenarioData = [
             'id' => $id,
+            'type' => $data['type'] ?? 'game',
             'title' => $data['title'],
             'category' => $data['category'],
             'question' => $data['question'],
