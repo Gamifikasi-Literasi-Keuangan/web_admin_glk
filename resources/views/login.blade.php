@@ -60,6 +60,17 @@
             <p id="errorMsg" class="text-red-400 text-sm mt-4 hidden bg-red-900/20 border border-red-500/30 p-3 rounded-lg font-['Poppins']"></p>
         </form>
 
+        <!-- Demo Credentials Hint -->
+        <div class="mt-4 p-3 bg-slate-800/50 border border-slate-600 rounded-lg">
+            <p class="text-slate-400 text-xs font-['Poppins'] text-center mb-2">
+                <i class="fas fa-info-circle mr-1 text-blue-400"></i> Demo Login
+            </p>
+            <div class="flex justify-center gap-4 text-xs font-['Poppins']">
+                <span class="text-slate-300">Username: <code class="bg-slate-700 px-2 py-0.5 rounded text-green-400">admin</code></span>
+                <span class="text-slate-300">Password: <code class="bg-slate-700 px-2 py-0.5 rounded text-green-400">admin123</code></span>
+            </div>
+        </div>
+
         <!-- Footer -->
         <div class="mt-6 text-center">
             <p class="text-slate-500 text-xs font-['Poppins']">
