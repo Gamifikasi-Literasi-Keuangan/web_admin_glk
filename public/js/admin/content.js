@@ -544,86 +544,98 @@ async function renderForm(loadData = false) {
             </div>
         `;
     } else if (currentTab === 'scenarios') {
-        // Form untuk Skenario Game (format lama dengan feedback dan scoreChange)
-        const diffValue = data?.content?.difficulty || 1;
+        // Form untuk Skenario Game
+        const aspekValue = data?.content?.category || '';
         formHtml = `
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Judul Skenario</label>
-                <input type="text" name="title" value="${data?.content?.title || ''}" required
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Judul skenario">
-            </div>
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-gray-700 font-bold mb-2">Kategori</label>
-                    <input type="text" name="category" value="${data?.content?.category || ''}" required
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Contoh: finance, general">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Kesulitan</label>
-                    <select name="difficulty" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
-                        <option value="1" ${diffValue == 1 ? 'selected' : ''}>Easy</option>
-                        <option value="2" ${diffValue == 2 ? 'selected' : ''}>Medium</option>
-                        <option value="3" ${diffValue == 3 ? 'selected' : ''}>Hard</option>
+                    <label class="block text-gray-700 font-bold mb-2">Aspek Literasi</label>
+                    <select name="category" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                        <option value="">-- Pilih Aspek --</option>
+                        <option value="Pendapatan" ${aspekValue === 'Pendapatan' ? 'selected' : ''}>Pendapatan</option>
+                        <option value="Anggaran" ${aspekValue === 'Anggaran' ? 'selected' : ''}>Anggaran</option>
+                        <option value="Tabungan & Dana Darurat" ${aspekValue === 'Tabungan & Dana Darurat' ? 'selected' : ''}>Tabungan & Dana Darurat</option>
+                        <option value="Utang" ${aspekValue === 'Utang' ? 'selected' : ''}>Utang</option>
+                        <option value="Investasi" ${aspekValue === 'Investasi' ? 'selected' : ''}>Investasi</option>
+                        <option value="Asuransi" ${aspekValue === 'Asuransi' ? 'selected' : ''}>Asuransi</option>
+                        <option value="Tujuan Jangka Panjang" ${aspekValue === 'Tujuan Jangka Panjang' ? 'selected' : ''}>Tujuan Jangka Panjang</option>
                     </select>
                 </div>
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">Kategori / Sub Aspek</label>
+                    <input type="text" name="title" value="${data?.content?.title || ''}" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Contoh: Gaji Tetap, Tabungan Rutin">
+                </div>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Pertanyaan</label>
+                <label class="block text-gray-700 font-bold mb-2">Skenario</label>
                 <textarea name="question" rows="3" required
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Isi pertanyaan skenario">${data?.content?.question || ''}</textarea>
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Tulis skenario/pertanyaan di sini...">${data?.content?.question || ''}</textarea>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (Min 2)</label>
-                <div id="options-container" class="space-y-3">
+                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (A, B, C)</label>
+                <div id="options-container" class="space-y-4">
                     ${data?.options ? data.options.map((opt, i) => `
-                        <div class="border p-3 rounded bg-gray-50">
-                            <div class="flex gap-2 mb-2">
-                                <input type="text" name="option_label_${i}" value="${opt.label}" placeholder="Label (A/B/C)" required class="w-20 px-2 py-1 border rounded">
-                                <input type="number" name="option_score_${i}" value="${opt.impact?.score || 0}" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                        <div class="border p-4 rounded-lg bg-gray-50">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">${opt.label}</span>
+                                <input type="hidden" name="option_label_${i}" value="${opt.label}">
+                                <input type="text" name="option_text_${i}" value="${opt.text}" placeholder="Teks opsi ${opt.label}" required class="flex-1 px-3 py-2 border rounded-lg">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-sm text-gray-500">Skor:</span>
+                                    <input type="number" name="option_score_${i}" value="${opt.impact?.score || 0}" class="w-20 px-2 py-2 border rounded-lg text-center" title="Perubahan skor">
+                                </div>
                             </div>
-                            <input type="text" name="option_text_${i}" value="${opt.text}" placeholder="Teks opsi" required class="w-full px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_feedback_${i}" value="${opt.feedback || ''}" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="option_correct_${i}" ${opt.is_correct ? 'checked' : ''} class="mr-2">
-                                <span class="text-sm">Jawaban benar</span>
-                            </label>
+                            <div>
+                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
+                                <input type="text" name="option_feedback_${i}" value="${opt.feedback || ''}" placeholder="Feedback AI untuk opsi ${opt.label}" class="w-full px-3 py-2 border rounded-lg">
+                            </div>
                         </div>
                     `).join('') : `
-                        <div class="border p-3 rounded bg-gray-50">
-                            <div class="flex gap-2 mb-2">
-                                <input type="text" name="option_label_0" value="A" placeholder="Label (A)" required class="w-20 px-2 py-1 border rounded">
-                                <input type="number" name="option_score_0" value="5" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                        <div class="border p-4 rounded-lg bg-gray-50">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">A</span>
+                                <input type="hidden" name="option_label_0" value="A">
+                                <input type="text" name="option_text_0" placeholder="Teks opsi A" required class="flex-1 px-3 py-2 border rounded-lg">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-sm text-gray-500">Skor:</span>
+                                    <input type="number" name="option_score_0" value="5" class="w-20 px-2 py-2 border rounded-lg text-center">
+                                </div>
                             </div>
-                            <input type="text" name="option_text_0" placeholder="Teks opsi A" required class="w-full px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_feedback_0" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="option_correct_0" class="mr-2">
-                                <span class="text-sm">Jawaban benar</span>
-                            </label>
+                            <div>
+                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
+                                <input type="text" name="option_feedback_0" placeholder="Feedback AI untuk opsi A" class="w-full px-3 py-2 border rounded-lg">
+                            </div>
                         </div>
-                        <div class="border p-3 rounded bg-gray-50">
-                            <div class="flex gap-2 mb-2">
-                                <input type="text" name="option_label_1" value="B" placeholder="Label (B)" required class="w-20 px-2 py-1 border rounded">
-                                <input type="number" name="option_score_1" value="-5" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                        <div class="border p-4 rounded-lg bg-gray-50">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">B</span>
+                                <input type="hidden" name="option_label_1" value="B">
+                                <input type="text" name="option_text_1" placeholder="Teks opsi B" required class="flex-1 px-3 py-2 border rounded-lg">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-sm text-gray-500">Skor:</span>
+                                    <input type="number" name="option_score_1" value="0" class="w-20 px-2 py-2 border rounded-lg text-center">
+                                </div>
                             </div>
-                            <input type="text" name="option_text_1" placeholder="Teks opsi B" required class="w-full px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_feedback_1" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="option_correct_1" class="mr-2">
-                                <span class="text-sm">Jawaban benar</span>
-                            </label>
+                            <div>
+                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
+                                <input type="text" name="option_feedback_1" placeholder="Feedback AI untuk opsi B" class="w-full px-3 py-2 border rounded-lg">
+                            </div>
                         </div>
-                        <div class="border p-3 rounded bg-gray-50">
-                            <div class="flex gap-2 mb-2">
-                                <input type="text" name="option_label_2" value="C" placeholder="Label (C)" required class="w-20 px-2 py-1 border rounded">
-                                <input type="number" name="option_score_2" value="0" placeholder="Score (+/-)" class="w-24 px-2 py-1 border rounded" title="Perubahan skor">
+                        <div class="border p-4 rounded-lg bg-gray-50">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">C</span>
+                                <input type="hidden" name="option_label_2" value="C">
+                                <input type="text" name="option_text_2" placeholder="Teks opsi C" required class="flex-1 px-3 py-2 border rounded-lg">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-sm text-gray-500">Skor:</span>
+                                    <input type="number" name="option_score_2" value="-5" class="w-20 px-2 py-2 border rounded-lg text-center">
+                                </div>
                             </div>
-                            <input type="text" name="option_text_2" placeholder="Teks opsi C" required class="w-full px-2 py-1 border rounded mb-2">
-                            <input type="text" name="option_feedback_2" placeholder="Feedback AI" class="w-full px-2 py-1 border rounded mb-2">
-                            <label class="inline-flex items-center">
-                                <input type="checkbox" name="option_correct_2" class="mr-2">
-                                <span class="text-sm">Jawaban benar</span>
-                            </label>
+                            <div>
+                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
+                                <input type="text" name="option_feedback_2" placeholder="Feedback AI untuk opsi C" class="w-full px-3 py-2 border rounded-lg">
+                            </div>
                         </div>
                     `}
                 </div>
@@ -765,7 +777,7 @@ async function handleSubmit(e) {
             options: options
         };
     } else if (currentTab === 'scenarios') {
-        // Skenario Game dengan feedback dan scoreChange
+        // Skenario Game dengan feedback dan scoreChange per opsi
         const options = [];
         let i = 0;
         while (formData.has(`option_label_${i}`)) {
@@ -775,20 +787,17 @@ async function handleSubmit(e) {
                 optionId: formData.get(`option_label_${i}`),
                 text: formData.get(`option_text_${i}`),
                 response: feedbackVal,
-                is_correct: formData.has(`option_correct_${i}`),
+                is_correct: false,
                 scoreChange: { score: scoreVal }
             });
             i++;
         }
 
-        const diffValue = formData.get('difficulty');
-        const difficulty = diffValue ? parseInt(diffValue) : 1;
-
         payload = {
             type: 'game',
             title: formData.get('title'),
             category: formData.get('category'),
-            difficulty: difficulty,
+            difficulty: 1,
             expected_benefit: 0,
             question: formData.get('question'),
             options: options
