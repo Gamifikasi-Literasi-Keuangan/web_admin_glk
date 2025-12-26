@@ -28,11 +28,6 @@ class ScenarioRepository
             $query->where('difficulty', $filters['difficulty']);
         }
 
-        // Filter Type (profiling / game)
-        if (!empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-        }
-
         // Urutkan terbaru & Load relasi options (agar efisien / Eager Loading)
         return $query->with('options')
                      ->orderBy('created_at', 'desc')

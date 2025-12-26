@@ -8,13 +8,9 @@
         <!-- Tab Header -->
         <div class="bg-gradient-to-r from-zinc-50 to-zinc-100 border border-zinc-200 rounded-lg p-2 shadow-sm">
             <nav class="flex space-x-2 overflow-x-auto min-w-max">
-                <button onclick="switchTab('profiling')" id="tab-profiling"
-                    class="tab-btn flex items-center px-6 py-3 rounded-md font-semibold text-sm transition-all duration-200 bg-green-500 text-white shadow-md whitespace-nowrap">
-                    <i class="fa-solid fa-user-check mr-2"></i> Profiling
-                </button>
                 <button onclick="switchTab('scenarios')" id="tab-scenarios"
-                    class="tab-btn flex items-center px-6 py-3 rounded-md font-semibold text-sm transition-all duration-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-800 border border-zinc-200 hover:border-zinc-300 whitespace-nowrap">
-                    <i class="fa-solid fa-scroll mr-2"></i> Skenario Game
+                    class="tab-btn flex items-center px-6 py-3 rounded-md font-semibold text-sm transition-all duration-200 bg-green-500 text-white shadow-md whitespace-nowrap">
+                    <i class="fa-solid fa-scroll mr-2"></i> Skenario
                 </button>
                 <button onclick="switchTab('risk')" id="tab-risk"
                     class="tab-btn flex items-center px-6 py-3 rounded-md font-semibold text-sm transition-all duration-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-800 border border-zinc-200 hover:border-zinc-300 whitespace-nowrap">

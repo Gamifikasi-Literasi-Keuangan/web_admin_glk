@@ -1,5 +1,5 @@
 // Global State
-let currentTab = 'profiling';
+let currentTab = 'scenarios';
 const headers = {
     'Authorization': `Bearer ${token}`, // token dari layout
     'Accept': 'application/json'
@@ -45,8 +45,7 @@ async function loadData(keyword = '') {
 
     try {
         let url;
-        if (currentTab === 'profiling') url = `${BASE_API}/scenarios?limit=10&type=profiling&search=${keyword}`;
-        else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios?limit=10&type=game&search=${keyword}`;
+        if (currentTab === 'scenarios') url = `${BASE_API}/scenarios?limit=10&search=${keyword}`;
         else if (currentTab === 'risk') url = `${BASE_API}/cards/risk?limit=10&search=${keyword}`;
         else if (currentTab === 'chance') url = `${BASE_API}/cards/chance?limit=10&search=${keyword}`;
         else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz?limit=10&search=${keyword}`;
@@ -92,13 +91,13 @@ function renderTable(data) {
     let rows = '';
 
     // Tentukan Kolom berdasarkan Tab
-    if (currentTab === 'profiling') {
+    if (currentTab === 'scenarios') {
         columns = ['Pertanyaan', 'Kategori', 'Bobot', 'Skor', 'Opsi', 'Aksi'];
         data.forEach(item => {
             rows += `
                 <tr class="hover:bg-green-50 border-b border-zinc-100 transition-colors">
-                    <td class="px-6 py-4 font-semibold text-zinc-800">${item.title}</td>
-                    <td class="px-6 py-4"><span class="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full border border-purple-200 font-medium">${item.category}</span></td>
+                    <td class="px-6 py-4 font-semibold text-zinc-800 max-w-xs truncate" title="${item.title}">${item.title}</td>
+                    <td class="px-6 py-4"><span class="bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded-full border border-indigo-200 font-medium">${item.category}</span></td>
                     <td class="px-6 py-4">${renderDifficulty(item.difficulty)}</td>
                     <td class="px-6 py-4 text-indigo-600 font-bold">${item.score || '-'}</td>
                     <td class="px-6 py-4 text-zinc-600 font-medium">${item.options_count} Pilihan</td>
@@ -118,7 +117,7 @@ function renderTable(data) {
                 </tr>
             `;
         });
-    } else if (currentTab === 'scenarios') {
+    } else if (currentTab === 'quiz') {
         columns = ['Pertanyaan', 'Kategori', 'Kesulitan', 'Opsi', 'Aksi'];
         data.forEach(item => {
             rows += `
@@ -278,8 +277,7 @@ async function showDetail(id) {
 
     try {
         let url;
-        if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${id}`;
-        else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${id}`;
+        if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${id}`;
         else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${id}`;
         else url = `${BASE_API}/cards/${currentTab}/${id}`;
 
@@ -287,53 +285,24 @@ async function showDetail(id) {
         const json = await res.json();
         const item = json.data || json;
 
-        // 1. DETAIL PROFILING
-        if (currentTab === 'profiling') {
-            title.innerText = 'Detail Profiling';
+        // 1. DETAIL SKENARIO
+        if (currentTab === 'scenarios') {
+            title.innerText = 'Detail Skenario';
             body.innerHTML = `
-                <div class="bg-purple-50 p-4 rounded border border-purple-200 mb-4">
-                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mb-2 inline-block">${item.content.category}</span>
-                    <h4 class="font-bold text-lg text-gray-800 mb-2">${item.content.title}</h4>
-                    <p class="text-gray-700 leading-relaxed">${item.content.question}</p>
-                </div>
-                <div class="flex gap-4 mb-4 text-sm">
-                    <div class="bg-white px-3 py-2 rounded border"><strong>Bobot:</strong> ${renderDifficulty(item.content.difficulty)}</div>
-                    <div class="bg-white px-3 py-2 rounded border"><strong>Skor:</strong> <span class="text-indigo-600 font-bold">${item.content.score || '-'}</span></div>
+                <div class="bg-indigo-50 p-4 rounded border border-indigo-200 mb-4">
+                    <div class="flex gap-4 mb-3">
+                        <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-medium">${item.content.category}</span>
+                        <span class="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">Bobot: ${item.content.difficulty}</span>
+                        <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-bold">Skor: ${item.content.score || '-'}</span>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed text-lg">${item.content.question}</p>
                 </div>
                 <h5 class="font-bold text-gray-700 mb-2 text-sm uppercase tracking-wide">Opsi Jawaban:</h5>
                 <ul class="space-y-2">
                     ${item.options.map(opt => `
-                        <li class="p-3 border rounded-lg bg-white border-gray-200">
-                            <div class="flex items-start gap-3">
-                                <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-purple-200 font-bold text-xs">${opt.label}</span>
-                                <p class="text-sm text-gray-800">${opt.text}</p>
-                            </div>
-                        </li>
-                    `).join('')}
-                </ul>
-            `;
-
-            // 2. DETAIL SKENARIO GAME
-        } else if (currentTab === 'scenarios') {
-            title.innerText = 'Detail Skenario';
-            body.innerHTML = `
-                <div class="bg-gray-50 p-4 rounded border border-gray-200 mb-4">
-                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-2 inline-block">${item.content.category}</span>
-                    <h4 class="font-bold text-lg text-gray-800 mb-2">${item.content.title}</h4>
-                    <p class="text-gray-700 leading-relaxed">${item.content.question}</p>
-                </div>
-                <h5 class="font-bold text-gray-700 mb-2 text-sm uppercase tracking-wide">Opsi Jawaban:</h5>
-                <ul class="space-y-3">
-                    ${item.options.map(opt => `
-                        <li class="p-3 border rounded-lg ${opt.is_correct ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}">
-                            <div class="flex items-start gap-3">
-                                <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 font-bold text-xs">${opt.label}</span>
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-800">${opt.text}</p>
-                                    <p class="text-xs text-gray-500 mt-1 italic">"${opt.feedback}"</p>
-                                </div>
-                                ${opt.is_correct ? '<i class="fa-solid fa-check-circle text-green-600 text-lg"></i>' : ''}
-                            </div>
+                        <li class="p-3 border rounded-lg bg-white border-gray-200 flex items-center gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-indigo-600 text-white font-bold text-sm">${opt.label}</span>
+                            <p class="text-sm text-gray-800">${opt.text}</p>
                         </li>
                     `).join('')}
                 </ul>
@@ -417,10 +386,6 @@ function openCreateModal() {
     document.getElementById('form-modal-title').innerText = `Tambah ${getContentTypeName()}`;
     renderForm();
     document.getElementById('form-modal').classList.remove('hidden');
-    // Set initial score based on default Bobot
-    if (currentTab === 'profiling') {
-        setTimeout(() => updateScoreRange(), 100);
-    }
 }
 
 function openEditModal() {
@@ -437,8 +402,7 @@ function closeFormModal() {
 }
 
 function getContentTypeName() {
-    if (currentTab === 'profiling') return 'Profiling';
-    if (currentTab === 'scenarios') return 'Skenario Game';
+    if (currentTab === 'scenarios') return 'Skenario';
     if (currentTab === 'risk') return 'Kartu Risiko';
     if (currentTab === 'chance') return 'Kartu Kesempatan';
     if (currentTab === 'quiz') return 'Kuis';
@@ -452,8 +416,7 @@ async function renderForm(loadData = false) {
     if (loadData && currentId) {
         try {
             let url;
-            if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${currentId}`;
-            else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
+            if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
             else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${currentId}`;
             else url = `${BASE_API}/cards/${currentTab}/${currentId}`;
 
@@ -466,46 +429,52 @@ async function renderForm(loadData = false) {
         }
     }
 
-    if (currentTab === 'profiling') {
-        const diffValue = data?.content?.difficulty || 1;
-        const scoreValue = data?.content?.score || 10;
+    if (currentTab === 'scenarios') {
+        // Form untuk Skenario
+        const kategoriValue = data?.content?.category || '';
+        const bobotValue = data?.content?.difficulty || 1;
+        const skorValue = data?.content?.score || 10;
         formHtml = `
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-gray-700 font-bold mb-2">Pertanyaan</label>
-                    <input type="text" name="title" value="${data?.content?.title || ''}" required
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Judul/Pertanyaan singkat">
-                </div>
-                <div>
                     <label class="block text-gray-700 font-bold mb-2">Kategori</label>
-                    <input type="text" name="category" value="${data?.content?.category || ''}" required
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Contoh: Pendapatan, Anggaran">
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Bobot</label>
-                    <select name="difficulty" id="bobot-select" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" onchange="updateScoreRange()">
-                        <option value="1" ${diffValue == 1 ? 'selected' : ''}>Sangat Mudah (6-15)</option>
-                        <option value="2" ${diffValue == 2 ? 'selected' : ''}>Mudah (21-35)</option>
-                        <option value="3" ${diffValue == 3 ? 'selected' : ''}>Sedang (41-60)</option>
-                        <option value="4" ${diffValue == 4 ? 'selected' : ''}>Sulit (67-85)</option>
-                        <option value="5" ${diffValue == 5 ? 'selected' : ''}>Sangat Sulit (88-100)</option>
+                    <select name="category" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                        <option value="">-- Pilih Kategori --</option>
+                        <option value="Pendapatan" ${kategoriValue === 'Pendapatan' ? 'selected' : ''}>Pendapatan</option>
+                        <option value="Anggaran" ${kategoriValue === 'Anggaran' ? 'selected' : ''}>Anggaran</option>
+                        <option value="Tabungan & Dana Darurat" ${kategoriValue === 'Tabungan & Dana Darurat' ? 'selected' : ''}>Tabungan & Dana Darurat</option>
+                        <option value="Utang" ${kategoriValue === 'Utang' ? 'selected' : ''}>Utang</option>
+                        <option value="Asuransi & Proteksi" ${kategoriValue === 'Asuransi & Proteksi' ? 'selected' : ''}>Asuransi & Proteksi</option>
+                        <option value="Tujuan Jangka Panjang" ${kategoriValue === 'Tujuan Jangka Panjang' ? 'selected' : ''}>Tujuan Jangka Panjang</option>
+                        <option value="Risiko" ${kategoriValue === 'Risiko' ? 'selected' : ''}>Risiko</option>
+                        <option value="Kesempatan" ${kategoriValue === 'Kesempatan' ? 'selected' : ''}>Kesempatan</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Skor <span id="score-range-label" class="text-sm text-gray-500">(6-15)</span></label>
-                    <input type="number" name="score" id="score-input" value="${scoreValue}" required
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Skor pertanyaan">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Bobot</label>
+                        <select name="difficulty" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                            <option value="1" ${bobotValue == 1 ? 'selected' : ''}>1 - Sangat Mudah</option>
+                            <option value="2" ${bobotValue == 2 ? 'selected' : ''}>2 - Mudah</option>
+                            <option value="3" ${bobotValue == 3 ? 'selected' : ''}>3 - Sedang</option>
+                            <option value="4" ${bobotValue == 4 ? 'selected' : ''}>4 - Sulit</option>
+                            <option value="5" ${bobotValue == 5 ? 'selected' : ''}>5 - Sangat Sulit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Skor</label>
+                        <input type="number" name="score" value="${skorValue}" required min="0" max="100"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="0-100">
+                    </div>
                 </div>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Detail Pertanyaan</label>
-                <textarea name="question" rows="2" required
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Deskripsi lengkap pertanyaan">${data?.content?.question || ''}</textarea>
+                <label class="block text-gray-700 font-bold mb-2">Pertanyaan</label>
+                <textarea name="question" rows="3" required
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Tulis pertanyaan di sini...">${data?.content?.question || ''}</textarea>
             </div>
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (5 Pilihan: A-E)</label>
+                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (A - E)</label>
                 <div id="options-container" class="space-y-2">
                     ${data?.options ? data.options.map((opt, i) => `
                         <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
@@ -517,125 +486,27 @@ async function renderForm(loadData = false) {
                         <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
                             <span class="font-bold text-indigo-600 w-8">A.</span>
                             <input type="hidden" name="option_label_0" value="A">
-                            <input type="text" name="option_text_0" placeholder="Teks opsi A" required class="flex-1 px-2 py-1 border rounded">
+                            <input type="text" name="option_text_0" placeholder="Pilihan A" required class="flex-1 px-2 py-1 border rounded">
                         </div>
                         <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
                             <span class="font-bold text-indigo-600 w-8">B.</span>
                             <input type="hidden" name="option_label_1" value="B">
-                            <input type="text" name="option_text_1" placeholder="Teks opsi B" required class="flex-1 px-2 py-1 border rounded">
+                            <input type="text" name="option_text_1" placeholder="Pilihan B" required class="flex-1 px-2 py-1 border rounded">
                         </div>
                         <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
                             <span class="font-bold text-indigo-600 w-8">C.</span>
                             <input type="hidden" name="option_label_2" value="C">
-                            <input type="text" name="option_text_2" placeholder="Teks opsi C" required class="flex-1 px-2 py-1 border rounded">
+                            <input type="text" name="option_text_2" placeholder="Pilihan C" required class="flex-1 px-2 py-1 border rounded">
                         </div>
                         <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
                             <span class="font-bold text-indigo-600 w-8">D.</span>
                             <input type="hidden" name="option_label_3" value="D">
-                            <input type="text" name="option_text_3" placeholder="Teks opsi D" required class="flex-1 px-2 py-1 border rounded">
+                            <input type="text" name="option_text_3" placeholder="Pilihan D" required class="flex-1 px-2 py-1 border rounded">
                         </div>
                         <div class="flex gap-2 items-center border p-2 rounded bg-gray-50">
                             <span class="font-bold text-indigo-600 w-8">E.</span>
                             <input type="hidden" name="option_label_4" value="E">
-                            <input type="text" name="option_text_4" placeholder="Teks opsi E" required class="flex-1 px-2 py-1 border rounded">
-                        </div>
-                    `}
-                </div>
-            </div>
-        `;
-    } else if (currentTab === 'scenarios') {
-        // Form untuk Skenario Game
-        const aspekValue = data?.content?.category || '';
-        formHtml = `
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Aspek Literasi</label>
-                    <select name="category" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
-                        <option value="">-- Pilih Aspek --</option>
-                        <option value="Pendapatan" ${aspekValue === 'Pendapatan' ? 'selected' : ''}>Pendapatan</option>
-                        <option value="Anggaran" ${aspekValue === 'Anggaran' ? 'selected' : ''}>Anggaran</option>
-                        <option value="Tabungan & Dana Darurat" ${aspekValue === 'Tabungan & Dana Darurat' ? 'selected' : ''}>Tabungan & Dana Darurat</option>
-                        <option value="Utang" ${aspekValue === 'Utang' ? 'selected' : ''}>Utang</option>
-                        <option value="Investasi" ${aspekValue === 'Investasi' ? 'selected' : ''}>Investasi</option>
-                        <option value="Asuransi" ${aspekValue === 'Asuransi' ? 'selected' : ''}>Asuransi</option>
-                        <option value="Tujuan Jangka Panjang" ${aspekValue === 'Tujuan Jangka Panjang' ? 'selected' : ''}>Tujuan Jangka Panjang</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Kategori / Sub Aspek</label>
-                    <input type="text" name="title" value="${data?.content?.title || ''}" required
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Contoh: Gaji Tetap, Tabungan Rutin">
-                </div>
-            </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Skenario</label>
-                <textarea name="question" rows="3" required
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500" placeholder="Tulis skenario/pertanyaan di sini...">${data?.content?.question || ''}</textarea>
-            </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Opsi Jawaban (A, B, C)</label>
-                <div id="options-container" class="space-y-4">
-                    ${data?.options ? data.options.map((opt, i) => `
-                        <div class="border p-4 rounded-lg bg-gray-50">
-                            <div class="flex items-center gap-3 mb-3">
-                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">${opt.label}</span>
-                                <input type="hidden" name="option_label_${i}" value="${opt.label}">
-                                <input type="text" name="option_text_${i}" value="${opt.text}" placeholder="Teks opsi ${opt.label}" required class="flex-1 px-3 py-2 border rounded-lg">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-sm text-gray-500">Skor:</span>
-                                    <input type="number" name="option_score_${i}" value="${opt.impact?.score || 0}" class="w-20 px-2 py-2 border rounded-lg text-center" title="Perubahan skor">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
-                                <input type="text" name="option_feedback_${i}" value="${opt.feedback || ''}" placeholder="Feedback AI untuk opsi ${opt.label}" class="w-full px-3 py-2 border rounded-lg">
-                            </div>
-                        </div>
-                    `).join('') : `
-                        <div class="border p-4 rounded-lg bg-gray-50">
-                            <div class="flex items-center gap-3 mb-3">
-                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">A</span>
-                                <input type="hidden" name="option_label_0" value="A">
-                                <input type="text" name="option_text_0" placeholder="Teks opsi A" required class="flex-1 px-3 py-2 border rounded-lg">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-sm text-gray-500">Skor:</span>
-                                    <input type="number" name="option_score_0" value="5" class="w-20 px-2 py-2 border rounded-lg text-center">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
-                                <input type="text" name="option_feedback_0" placeholder="Feedback AI untuk opsi A" class="w-full px-3 py-2 border rounded-lg">
-                            </div>
-                        </div>
-                        <div class="border p-4 rounded-lg bg-gray-50">
-                            <div class="flex items-center gap-3 mb-3">
-                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">B</span>
-                                <input type="hidden" name="option_label_1" value="B">
-                                <input type="text" name="option_text_1" placeholder="Teks opsi B" required class="flex-1 px-3 py-2 border rounded-lg">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-sm text-gray-500">Skor:</span>
-                                    <input type="number" name="option_score_1" value="0" class="w-20 px-2 py-2 border rounded-lg text-center">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
-                                <input type="text" name="option_feedback_1" placeholder="Feedback AI untuk opsi B" class="w-full px-3 py-2 border rounded-lg">
-                            </div>
-                        </div>
-                        <div class="border p-4 rounded-lg bg-gray-50">
-                            <div class="flex items-center gap-3 mb-3">
-                                <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">C</span>
-                                <input type="hidden" name="option_label_2" value="C">
-                                <input type="text" name="option_text_2" placeholder="Teks opsi C" required class="flex-1 px-3 py-2 border rounded-lg">
-                                <div class="flex items-center gap-1">
-                                    <span class="text-sm text-gray-500">Skor:</span>
-                                    <input type="number" name="option_score_2" value="-5" class="w-20 px-2 py-2 border rounded-lg text-center">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-gray-600 text-sm mb-1">Respons AI:</label>
-                                <input type="text" name="option_feedback_2" placeholder="Feedback AI untuk opsi C" class="w-full px-3 py-2 border rounded-lg">
-                            </div>
+                            <input type="text" name="option_text_4" placeholder="Pilihan E" required class="flex-1 px-2 py-1 border rounded">
                         </div>
                     `}
                 </div>
@@ -749,7 +620,8 @@ async function handleSubmit(e) {
         return parseInt(diff);
     };
 
-    if (currentTab === 'profiling') {
+    if (currentTab === 'scenarios') {
+        // Skenario: Kategori, Pertanyaan, 5 Opsi A-E, Bobot, Skor
         const options = [];
         let i = 0;
         while (formData.has(`option_label_${i}`)) {
@@ -763,43 +635,17 @@ async function handleSubmit(e) {
             i++;
         }
 
-        const diffValue = formData.get('difficulty');
-        const difficulty = diffValue ? parseInt(diffValue) : 1;
-        const score = parseInt(formData.get('score') || 10);
+        const bobotValue = formData.get('difficulty');
+        const bobot = bobotValue ? parseInt(bobotValue) : 1;
+        const skor = parseInt(formData.get('score') || 10);
+        const questionText = formData.get('question') || '';
 
         payload = {
-            type: 'profiling',
-            title: formData.get('title'),
+            title: questionText.substring(0, 100) || 'Skenario Baru',
             category: formData.get('category'),
-            difficulty: difficulty,
-            expected_benefit: score,
-            question: formData.get('question'),
-            options: options
-        };
-    } else if (currentTab === 'scenarios') {
-        // Skenario Game dengan feedback dan scoreChange per opsi
-        const options = [];
-        let i = 0;
-        while (formData.has(`option_label_${i}`)) {
-            const scoreVal = parseInt(formData.get(`option_score_${i}`) || 0);
-            const feedbackVal = formData.get(`option_feedback_${i}`) || '-';
-            options.push({
-                optionId: formData.get(`option_label_${i}`),
-                text: formData.get(`option_text_${i}`),
-                response: feedbackVal,
-                is_correct: false,
-                scoreChange: { score: scoreVal }
-            });
-            i++;
-        }
-
-        payload = {
-            type: 'game',
-            title: formData.get('title'),
-            category: formData.get('category'),
-            difficulty: 1,
-            expected_benefit: 0,
-            question: formData.get('question'),
+            difficulty: bobot,
+            expected_benefit: skor,
+            question: questionText,
             options: options
         };
     } else if (currentTab === 'quiz') {
@@ -847,14 +693,12 @@ async function handleSubmit(e) {
         let url, method;
         if (isEditMode) {
             method = 'PUT';
-            if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${currentId}`;
-            else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
+            if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
             else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${currentId}`;
             else url = `${BASE_API}/cards/${currentTab}/${currentId}`;
         } else {
             method = 'POST';
-            if (currentTab === 'profiling') url = `${BASE_API}/scenarios`;
-            else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios`;
+            if (currentTab === 'scenarios') url = `${BASE_API}/scenarios`;
             else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz`;
             else url = `${BASE_API}/cards/${currentTab}`;
         }
@@ -890,8 +734,7 @@ async function deleteContent() {
 
     try {
         let url;
-        if (currentTab === 'profiling') url = `${BASE_API}/scenarios/${currentId}`;
-        else if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
+        if (currentTab === 'scenarios') url = `${BASE_API}/scenarios/${currentId}`;
         else if (currentTab === 'quiz') url = `${BASE_API}/cards/quiz/${currentId}`;
         else url = `${BASE_API}/cards/${currentTab}/${currentId}`;
 
