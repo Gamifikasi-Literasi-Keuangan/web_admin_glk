@@ -34,6 +34,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('question_id')->constrained('profiling_questions')->onDelete('cascade');
             $table->string('option_code', 5);
+            $table->string('option_token', 64)->unique;
             $table->text('option_text');
             $table->integer('score');
             $table->timestamps();
