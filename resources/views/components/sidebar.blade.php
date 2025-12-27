@@ -81,6 +81,15 @@
             </div>
             <span class="ml-3 md:ml-4 text-violet-100 text-sm md:text-base font-medium font-['Poppins'] group-hover:text-green-400">Training Data</span>
         </a>
+
+        <!-- Profiling Questions -->
+        <a href="{{ route('admin.profiling-questions') }}" 
+           class="sidebar-item group flex items-center py-2 md:py-3 px-3 md:px-4 rounded-xl transition-all duration-300 {{ request()->is('admin/profiling-questions*') ? 'bg-violet-100/20 shadow-lg' : 'hover:bg-violet-100/10' }}">
+            <div class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center">
+                <i class="fas fa-question-circle text-violet-100 text-base md:text-lg group-hover:text-green-400"></i>
+            </div>
+            <span class="ml-3 md:ml-4 text-violet-100 text-sm md:text-base font-medium font-['Poppins'] group-hover:text-green-400">Profiling Questions</span>
+        </a>
     </nav>
 
     <!-- Admin Profile Section -->

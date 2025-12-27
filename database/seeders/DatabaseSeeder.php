@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SqlSeeder::class,
             TrainingDatasetSeeder::class,
+            ProfilingSystemSeeder::class,
         ]);
 
         $this->command->info('✅ Database seeded successfully!');

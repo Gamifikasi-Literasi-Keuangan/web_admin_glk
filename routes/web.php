@@ -47,3 +47,8 @@ Route::get('/admin/ann', function () {
 Route::get('/admin/training-data', function () {
     return view('pages.training-data');
 })->name('admin.training-data');
+
+// Halaman Profiling Questions Management
+Route::get('/admin/profiling-questions', function () {
+    return view('pages.profiling-questions');
+})->name('admin.profiling-questions');
