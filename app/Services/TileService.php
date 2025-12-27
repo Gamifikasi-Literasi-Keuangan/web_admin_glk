@@ -58,4 +58,37 @@ class TileService
             'landed_count' => $stats
         ];
     }
+
+    public function createTile($data)
+    {
+        // Check if position already exists
+        if ($this->repo->positionExists($data['position'])) {
+            return ['success' => false, 'message' => 'Posisi sudah digunakan oleh tile lain'];
+        }
+
+        $tileId = $this->repo->create($data);
+        return ['success' => true, 'tile_id' => $tileId, 'message' => 'Tile berhasil dibuat'];
+    }
+
+    public function updateTile($id, $data)
+    {
+        // Check if tile exists
+        $tile = $this->repo->findById($id);
+        if (!$tile) {
+            return ['success' => false, 'message' => 'Tile tidak ditemukan'];
+        }
+
+        // Check if position already used by other tile
+        if ($this->repo->positionExists($data['position'], $id)) {
+            return ['success' => false, 'message' => 'Posisi sudah digunakan oleh tile lain'];
+        }
+
+        $this->repo->update($id, $data);
+        return ['success' => true, 'message' => 'Tile berhasil diperbarui'];
+    }
+
+    public function getAvailableContents()
+    {
+        return $this->repo->getAvailableContents();
+    }
 }

@@ -160,13 +160,41 @@ function renderConfig(data) {
 // --- 2. RENDER TILES (PETA) ---
 function renderTiles(tiles) {
     const container = document.getElementById('settings-content');
+
+    // Header with Add Button
+    const headerHtml = `
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 flex justify-between items-center mb-6">
+            <div>
+                <div class="flex items-center mb-2">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <i class="fa-solid fa-map text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-zinc-800">Peta Papan Permainan</h3>
+                </div>
+                <p class="text-zinc-600 ml-16">
+                    <i class="fa-solid fa-info-circle text-green-600 mr-2"></i>
+                    Statistik pendaratan menunjukkan berapa kali tiles dikunjungi oleh pemain
+                </p>
+            </div>
+            <button onclick="showAddTileModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-colors flex items-center transform hover:scale-105">
+                <i class="fa-solid fa-plus mr-2"></i>Tambah Tile
+            </button>
+        </div>`;
+
     if (!tiles.length) {
         container.innerHTML = `
-            <div class="text-center py-12">
-                <div class="bg-zinc-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <i class="fa-solid fa-map text-zinc-400 text-xl"></i>
+            <div class="space-y-6">
+                ${headerHtml}
+                <div class="text-center py-12 border-2 border-dashed border-zinc-300 rounded-lg bg-zinc-50">
+                    <div class="bg-white p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-map text-zinc-400 text-3xl"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-zinc-700 mb-2">Belum ada tile</h4>
+                    <p class="text-zinc-500 mb-6 max-w-md mx-auto">Tambahkan tile untuk membuat peta papan permainan.</p>
+                    <button onclick="showAddTileModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold transition-colors">
+                        <i class="fa-solid fa-plus mr-2"></i>Buat Tile Baru
+                    </button>
                 </div>
-                <p class="text-zinc-500">Data Peta kosong.</p>
             </div>
         `;
         return;
@@ -191,7 +219,7 @@ function renderTiles(tiles) {
             </td>
             <td class="px-4 py-3">
                 <span class="text-xs font-mono text-zinc-500 bg-zinc-50 px-2 py-1 rounded border border-zinc-200">
-                    ${t.content_id ? 'ID: ' + t.content_id : 'Random/Empty'}
+                    ${t.content_id ? 'ID: ' + t.content_id : (t.type === 'start' || t.type === 'finish' ? '-' : 'Konten Acak')}
                 </span>
             </td>
             <td class="px-4 py-3 text-center">
@@ -202,10 +230,16 @@ function renderTiles(tiles) {
                 </div>
             </td>
             <td class="px-4 py-3 text-right">
-                <button onclick="showTileDetail('${t.tile_id}')" 
-                    class="bg-green-100 hover:bg-green-200 text-green-700 hover:text-green-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-green-200 hover:border-green-300">
-                    <i class="fa-solid fa-eye mr-1"></i>Lihat
-                </button>
+                <div class="flex gap-2 justify-end">
+                    <button onclick="editTile('${t.tile_id}')" 
+                        class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-yellow-200 hover:border-yellow-300">
+                        <i class="fa-solid fa-edit mr-1"></i>Edit
+                    </button>
+                    <button onclick="showTileDetail('${t.tile_id}')" 
+                        class="bg-green-100 hover:bg-green-200 text-green-700 hover:text-green-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-green-200 hover:border-green-300">
+                        <i class="fa-solid fa-eye mr-1"></i>Lihat
+                    </button>
+                </div>
             </td>
         </tr>
     `
@@ -214,19 +248,7 @@ function renderTiles(tiles) {
 
     container.innerHTML = `
         <div class="space-y-6">
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
-                <div class="flex items-center mb-2">
-                    <div class="bg-green-100 p-3 rounded-full mr-4">
-                        <i class="fa-solid fa-map text-green-600 text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-zinc-800">Peta Papan Permainan</h3>
-                </div>
-                <p class="text-zinc-600 ml-16">
-                    <i class="fa-solid fa-info-circle text-green-600 mr-2"></i>
-                    Statistik pendaratan menunjukkan berapa kali tiles dikunjungi oleh pemain
-                </p>
-            </div>
-            
+            ${headerHtml}
             <div class="bg-white border border-zinc-200 rounded-lg overflow-hidden shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full">
@@ -768,6 +790,278 @@ async function deleteIntervention(id) {
             setTimeout(() => loadData(), 1500);
         } else {
             showNotification(result.message || "Gagal menghapus", "error");
+        }
+    } catch (e) {
+        showNotification(`Error: ${e.message}`, "error");
+    }
+}
+
+// --- TILE CRUD ---
+let tileModal = null;
+let currentTileId = null;
+let availableContents = null;
+
+async function loadAvailableContents() {
+    if (availableContents) return availableContents;
+    try {
+        const res = await fetch(`${BASE_API}/tiles/meta/contents`, { headers });
+        const json = await res.json();
+        availableContents = json.data;
+        return availableContents;
+    } catch (e) {
+        console.error('Failed to load contents:', e);
+        return null;
+    }
+}
+
+// Build content options filtered by tile type
+function buildContentOptions(contents, tileType = null, selectedType = null, selectedId = null) {
+    if (!contents) return '<option value="">Tidak tersedia</option>';
+
+    // For start/finish, no content needed
+    if (tileType === 'start' || tileType === 'finish') {
+        return '<option value="">-- Tidak memerlukan konten --</option>';
+    }
+
+    let options = '<option value="">-- Pilih Konten (Opsional) --</option>';
+
+    // Only show scenarios if type is scenario
+    if ((!tileType || tileType === 'scenario') && contents.scenarios && contents.scenarios.length) {
+        options += '<optgroup label="Scenarios">';
+        contents.scenarios.forEach(s => {
+            const selected = selectedType === 'scenario' && selectedId == s.id ? 'selected' : '';
+            options += `<option value="scenario:${s.id}" ${selected}>${s.title}</option>`;
+        });
+        options += '</optgroup>';
+    }
+
+    // Only show risks if type is risk
+    if ((!tileType || tileType === 'risk') && contents.risks && contents.risks.length) {
+        options += '<optgroup label="Risk Cards">';
+        contents.risks.forEach(r => {
+            const selected = selectedType === 'risk' && selectedId == r.id ? 'selected' : '';
+            options += `<option value="risk:${r.id}" ${selected}>${r.title}</option>`;
+        });
+        options += '</optgroup>';
+    }
+
+    // Only show chances if type is chance
+    if ((!tileType || tileType === 'chance') && contents.chances && contents.chances.length) {
+        options += '<optgroup label="Chance Cards">';
+        contents.chances.forEach(c => {
+            const selected = selectedType === 'chance' && selectedId == c.id ? 'selected' : '';
+            options += `<option value="chance:${c.id}" ${selected}>${c.title}</option>`;
+        });
+        options += '</optgroup>';
+    }
+
+    // Only show quizzes if type is quiz
+    if ((!tileType || tileType === 'quiz') && contents.quizzes && contents.quizzes.length) {
+        options += '<optgroup label="Quiz Cards">';
+        contents.quizzes.forEach(q => {
+            const selected = selectedType === 'quiz' && selectedId == q.id ? 'selected' : '';
+            options += `<option value="quiz:${q.id}" ${selected}>${q.title}</option>`;
+        });
+        options += '</optgroup>';
+    }
+
+    return options;
+}
+
+// Update content dropdown when type changes
+function updateContentDropdown(tileType) {
+    const contentSelect = document.querySelector('#tileForm select[name="content"]');
+    if (contentSelect && availableContents) {
+        contentSelect.innerHTML = buildContentOptions(availableContents, tileType);
+    }
+}
+
+async function showAddTileModal() {
+    currentTileId = null;
+    const contents = await loadAvailableContents();
+
+    const modal = document.createElement("div");
+    modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+    modal.id = "tile-crud-modal";
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-lg w-96 max-h-[90vh] overflow-y-auto p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">Tambah Tile Baru</h3>
+                <button onclick="closeTileModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <form id="tileForm" onsubmit="saveTile(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Nama Tile</label>
+                        <input type="text" name="name" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" placeholder="Contoh: Kotak Start">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
+                        <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="updateContentDropdown(this.value)">
+                            <option value="scenario">Scenario</option>
+                            <option value="risk">Risk</option>
+                            <option value="chance">Chance</option>
+                            <option value="quiz">Quiz</option>
+                            <option value="start">Start</option>
+                            <option value="finish">Finish</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Posisi</label>
+                        <input type="number" name="position" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" placeholder="0, 1, 2, ...">
+                    </div>
+                    <div id="content-container">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Konten Tertaut</label>
+                        <select name="content" class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                            ${buildContentOptions(contents, 'scenario')}
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Opsional. Biarkan kosong untuk konten acak.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="closeTileModal()" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition">
+                        <i class="fa-solid fa-save mr-1"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    tileModal = modal;
+}
+
+async function editTile(id) {
+    try {
+        const res = await fetch(`${BASE_API}/tiles/${id}`, { headers });
+        const json = await res.json();
+        const data = json.data || json;
+
+        currentTileId = id;
+        const contents = await loadAvailableContents();
+
+        // Get current tile position from list
+        const tilesRes = await fetch(`${BASE_API}/tiles`, { headers });
+        const tilesJson = await tilesRes.json();
+        const tilesData = tilesJson.data || tilesJson;
+        const currentTile = tilesData.find(t => t.tile_id === id);
+
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+        modal.id = "tile-crud-modal";
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg shadow-lg w-96 max-h-[90vh] overflow-y-auto p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Edit Tile</h3>
+                    <button onclick="closeTileModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <form id="tileForm" onsubmit="saveTile(event)">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Nama Tile</label>
+                            <input type="text" name="name" value="${data.name || ''}" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
+                            <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="updateContentDropdown(this.value)">
+                                <option value="scenario" ${data.type === 'scenario' ? 'selected' : ''}>Scenario</option>
+                                <option value="risk" ${data.type === 'risk' ? 'selected' : ''}>Risk</option>
+                                <option value="chance" ${data.type === 'chance' ? 'selected' : ''}>Chance</option>
+                                <option value="quiz" ${data.type === 'quiz' ? 'selected' : ''}>Quiz</option>
+                                <option value="start" ${data.type === 'start' ? 'selected' : ''}>Start</option>
+                                <option value="finish" ${data.type === 'finish' ? 'selected' : ''}>Finish</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Posisi</label>
+                            <input type="number" name="position" value="${currentTile?.position || 0}" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                        </div>
+                        <div id="content-container">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Konten Tertaut</label>
+                            <select name="content" class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                                ${buildContentOptions(contents, data.type, data.content_type, data.content_id)}
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Opsional. Biarkan kosong untuk konten acak.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="closeTileModal()" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition">
+                            Batal
+                        </button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition">
+                            <i class="fa-solid fa-save mr-1"></i> Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        if (tileModal) tileModal.remove();
+        document.body.appendChild(modal);
+        tileModal = modal;
+    } catch (e) {
+        showNotification(`Error: ${e.message}`, "error");
+    }
+}
+
+function closeTileModal() {
+    if (tileModal) {
+        tileModal.remove();
+        tileModal = null;
+    }
+}
+
+async function saveTile(e) {
+    e.preventDefault();
+    const form = document.getElementById("tileForm");
+    const formData = new FormData(form);
+
+    // Parse content selection
+    const contentValue = formData.get("content");
+    let contentType = null;
+    let contentId = null;
+    if (contentValue && contentValue.includes(':')) {
+        const parts = contentValue.split(':');
+        contentType = parts[0];
+        contentId = parseInt(parts[1]);
+    }
+
+    const payload = {
+        name: formData.get("name"),
+        type: formData.get("type"),
+        position: parseInt(formData.get("position")),
+        content_type: contentType,
+        content_id: contentId
+    };
+
+    try {
+        const method = currentTileId ? "PUT" : "POST";
+        const url = currentTileId
+            ? `${BASE_API}/tiles/${currentTileId}`
+            : `${BASE_API}/tiles`;
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                ...headers,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showNotification(result.message, "success");
+            closeTileModal();
+            setTimeout(() => loadData(), 1500);
+        } else {
+            showNotification(result.message || "Gagal menyimpan tile", "error");
         }
     } catch (e) {
         showNotification(`Error: ${e.message}`, "error");

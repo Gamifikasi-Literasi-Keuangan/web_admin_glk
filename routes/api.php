@@ -48,6 +48,9 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     Route::delete('/scenarios/{id}', [AdminScenarioController::class, 'destroy']);
     Route::get('/tiles', [AdminTileController::class, 'index']);
     Route::get('/tiles/{id}', [AdminTileController::class, 'show']);
+    Route::post('/tiles', [AdminTileController::class, 'store']);
+    Route::put('/tiles/{id}', [AdminTileController::class, 'update']);
+    Route::get('/tiles/meta/contents', [AdminTileController::class, 'contents']);
     Route::get('/interventions', [AdminInterventionController::class, 'index']);
     Route::get('/interventions/{id}', [AdminInterventionController::class, 'show']);
     Route::post('/interventions', [AdminInterventionController::class, 'store']);
