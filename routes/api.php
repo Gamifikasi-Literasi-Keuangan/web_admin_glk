@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\AdminLeaderboardController;
 use App\Http\Controllers\Admin\AdminMetricController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminAnalyticsController;
+use App\Http\Controllers\ANNController;
 
 Route::get('/scenario/{scenario}', [ScenarioController::class, 'show']);
 Route::post('/scenario/submit', [ScenarioController::class, 'submit']);
@@ -104,6 +105,11 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
         Route::get('/growth', [AdminMetricController::class, 'growthMetrics']);
         Route::get('/engagement', [AdminMetricController::class, 'engagement']);
     });
- 
-
+    
+    // ANN Management Endpoints
+    Route::prefix('ann')->group(function () {
+        Route::post('/train', [ANNController::class, 'train']);
+        Route::post('/test', [ANNController::class, 'test']);
+        Route::get('/evaluate', [ANNController::class, 'evaluate']);
+    });
 });

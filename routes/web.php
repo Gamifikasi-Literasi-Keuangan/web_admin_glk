@@ -37,3 +37,8 @@ Route::get('/admin/games', function () {
 Route::get('/admin/analytics', function () {
     return view('pages.analytics');
 })->name('admin.analytics');
+
+// Halaman ANN Management
+Route::get('/admin/ann', function () {
+    return view('pages.ann');
+})->name('admin.ann');
