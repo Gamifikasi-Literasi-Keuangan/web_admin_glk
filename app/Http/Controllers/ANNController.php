@@ -111,8 +111,30 @@ class ANNController extends Controller
     // Fungsi untuk melatih model ANN
     public function train()
     {
-        // Data training dari unified dataset
-        $trainingData = \App\Services\AI\TrainingDataset::getForController();
+        // Data training dari database
+        $trainingDataModels = \App\Models\TrainingDataset::active()->get();
+
+        if ($trainingDataModels->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data training kosong. Silakan tambah data training terlebih dahulu.',
+            ], 422);
+        }
+
+        // Convert database records to format expected by training
+        $trainingData = [];
+        foreach ($trainingDataModels as $model) {
+            $trainingData[] = [
+                'Pendapatan' => $model->pendapatan,
+                'Anggaran' => $model->anggaran,
+                'Tabungan & Dana Darurat' => $model->tabungan_dan_dana_darurat,
+                'Utang' => $model->utang,
+                'Investasi' => $model->investasi,
+                'Asuransi' => $model->asuransi_dan_proteksi,
+                'Tujuan Jangka Panjang' => $model->tujuan_jangka_panjang,
+                'Kelas Ekonomi (Arsitekip)' => $model->cluster
+            ];
+        }
 
         // Pisahkan fitur dan label
         $features = [];

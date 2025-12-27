@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
         // Call SQL Seeder untuk import data dari file SQL
         $this->call([
             SqlSeeder::class,
+            TrainingDatasetSeeder::class,
         ]);
 
         $this->command->info('✅ Database seeded successfully!');

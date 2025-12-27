@@ -42,3 +42,8 @@ Route::get('/admin/analytics', function () {
 Route::get('/admin/ann', function () {
     return view('pages.ann');
 })->name('admin.ann');
+
+// Halaman Training Data Management
+Route::get('/admin/training-data', function () {
+    return view('pages.training-data');
+})->name('admin.training-data');
