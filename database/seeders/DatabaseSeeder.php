@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
     {
         // Call SQL Seeder untuk import data dari file SQL
         $this->call([
+            AdminUserSeeder::class,
             SqlSeeder::class,
             TrainingDatasetSeeder::class,
             ProfilingSystemSeeder::class,
