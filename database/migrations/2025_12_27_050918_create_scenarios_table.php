@@ -23,7 +23,7 @@ return new class extends Migration
             $table->longText('weak_area_relevance')->nullable();
             $table->longText('cluster_relevance')->nullable();
             $table->float('historical_success_rate')->nullable();
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 

@@ -42,27 +42,60 @@ class SqlSeeder extends Seeder
             $statements = array_filter(
                 array_map('trim', explode(';', $sql)),
                 function ($statement) {
-                    // Skip empty lines dan comments
-                    return !empty($statement) 
-                        && !str_starts_with($statement, '--') 
-                        && !str_starts_with($statement, '/*')
-                        && !str_starts_with($statement, '!');
+                    // Remove all comment lines
+                    $lines = explode("\n", $statement);
+                    $cleanedLines = array_filter($lines, function($line) {
+                        $trimmed = trim($line);
+                        return !empty($trimmed) && !str_starts_with($trimmed, '--');
+                    });
+                    $cleaned = trim(implode("\n", $cleanedLines));
+                    
+                    // Skip empty statements and MySQL directives
+                    return !empty($cleaned) 
+                        && !str_starts_with($cleaned, '/*')
+                        && !str_starts_with($cleaned, '!');
                 }
             );
 
             $this->command->info("   └─ Total statements: " . count($statements));
+            
+            // Debug: Show all statements for postman_seed_full.sql
+            if ($sqlFile === 'postman_seed_full.sql') {
+                foreach ($statements as $idx => $stmt) {
+                    $preview = substr(str_replace(["\n", "\r"], ' ', $stmt), 0, 80);
+                    $this->command->info("   Statement #" . ($idx + 1) . ": " . $preview . "...");
+                }
+            }
 
             // Execute setiap statement
             $success = 0;
             $failed = 0;
 
-            foreach ($statements as $statement) {
+            foreach ($statements as $index => $statement) {
                 try {
-                    DB::unprepared($statement);
+                    // Clean up the statement - remove comment lines
+                    $lines = explode("\n", $statement);
+                    $cleanedLines = array_filter($lines, function($line) {
+                        $trimmed = trim($line);
+                        return !empty($trimmed) && !str_starts_with($trimmed, '--');
+                    });
+                    $cleanStatement = trim(implode("\n", $cleanedLines));
+                    
+                    if (empty($cleanStatement)) {
+                        continue;
+                    }
+                    
+                    DB::unprepared($cleanStatement);
                     $success++;
+                    
+                    // Debug: Show what's being executed
+                    if (str_contains(strtolower($cleanStatement), 'boardtiles')) {
+                        $this->command->info("   → Executing boardtiles statement");
+                        $this->command->info("   → Statement preview: " . substr($cleanStatement, 0, 100) . '...');
+                    }
                 } catch (\Exception $e) {
                     $failed++;
-                    $this->command->error("   ✗ Error: " . substr($statement, 0, 50) . '...');
+                    $this->command->error("   ✗ Error in statement #" . ($index + 1) . ": " . substr($statement, 0, 50) . '...');
                     $this->command->error("     " . $e->getMessage());
                 }
             }

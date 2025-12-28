@@ -52,7 +52,7 @@ UNLOCK TABLES;
 --
 --
 LOCK TABLES `cards` WRITE;
-INSERT INTO `cards` VALUES ('chance_01','chance','Bonus Tahunan','Selamat! Kinerja Anda bagus.',15,'add_balance','[\"pendapatan\"]',NULL,1,15,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33'),('risk_01','risk','Sakit Gigi','Anda harus ke dokter gigi segera.',-5,'pay_cash','[\"kesehatan\", \"pengeluaran\"]',NULL,2,-5,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33');
+INSERT INTO `cards` VALUES ('chance_01','chance','Bonus Tahunan','Selamat! Kinerja Anda bagus.',15,'add_balance','["pendapatan"]',NULL,1,15,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33'),('risk_01','risk','Sakit Gigi','Anda harus ke dokter gigi segera.',-5,'pay_cash','["kesehatan", "pengeluaran"]',NULL,2,-5,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33');
 UNLOCK TABLES;
 --
 --
@@ -121,7 +121,7 @@ UNLOCK TABLES;
 --
 --
 LOCK TABLES `profiling_inputs` WRITE;
-INSERT INTO `profiling_inputs` VALUES (1,'player_zEGwhs9e','{\r\n        \"pendapatan\": 60,\r\n        \"anggaran\": 40,\r\n        \"tabungan_dan_dana_darurat\": 30,\r\n        \"utang\": 80,\r\n        \"investasi\": 20,\r\n        \"asuransi_dan_proteksi\": 10,\r\n        \"tujuan_jangka_panjang\": 20\r\n    }','2025-11-28 12:41:58');
+INSERT INTO `profiling_inputs` VALUES (1,'player_zEGwhs9e','{\r\n        "pendapatan": 60,\r\n        "anggaran": 40,\r\n        "tabungan_dan_dana_darurat": 30,\r\n        "utang": 80,\r\n        "investasi": 20,\r\n        "asuransi_dan_proteksi": 10,\r\n        "tujuan_jangka_panjang": 20\r\n    }','2025-11-28 12:41:58','2025-11-28 12:41:58');
 UNLOCK TABLES;
 --
 --
@@ -159,7 +159,7 @@ UNLOCK TABLES;
 --
 --
 LOCK TABLES `scenarios` WRITE;
-INSERT INTO `scenarios` VALUES ('sc_asuransi_01','asuransi_dan_proteksi','Perlindungan Aset','Anda baru saja membeli motor baru untuk bekerja. Apa langkah finansial terbaik untuk melindungi aset ini?','[\"asuransi\", \"aset\"]',30,10,'Memahami pentingnya asuransi kendaraan',NULL,NULL,NULL,'2025-11-30 07:01:43'),('sc_investasi_01','investasi','Pilihan Investasi Pemula','Anda memiliki uang dingin Rp 1.000.000 yang tidak terpakai. Instrumen investasi apa yang paling tepat untuk mulai belajar?','[\"investasi\", \"pemula\"]',40,12,'Mengenal instrumen investasi risiko rendah',NULL,NULL,NULL,'2025-11-30 07:06:26'),('sc_saving_01','tabungan_dan_dana_darurat','Motor Mogok','Motor rusak butuh 1 juta. Pakai uang apa?','[\"emergency\", \"saving\"]',45,8,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33'),('sc_utang_01','utang','Jeratan Pinjol','Anda tergoda iklan pinjol cair cepat. Apa tindakan Anda?','[\"risk\", \"debt\"]',40,10,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33');
+INSERT INTO `scenarios` VALUES ('sc_asuransi_01','asuransi_dan_proteksi','Perlindungan Aset','Anda baru saja membeli motor baru untuk bekerja. Apa langkah finansial terbaik untuk melindungi aset ini?','["asuransi", "aset"]',30,10,'Memahami pentingnya asuransi kendaraan',NULL,NULL,NULL,'2025-11-30 07:01:43','2025-11-30 07:01:43'),('sc_investasi_01','investasi','Pilihan Investasi Pemula','Anda memiliki uang dingin Rp 1.000.000 yang tidak terpakai. Instrumen investasi apa yang paling tepat untuk mulai belajar?','["investasi", "pemula"]',40,12,'Mengenal instrumen investasi risiko rendah',NULL,NULL,NULL,'2025-11-30 07:06:26','2025-11-30 07:06:26'),('sc_saving_01','tabungan_dan_dana_darurat','Motor Mogok','Motor rusak butuh 1 juta. Pakai uang apa?','["emergency", "saving"]',45,8,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33'),('sc_utang_01','utang','Jeratan Pinjol','Anda tergoda iklan pinjol cair cepat. Apa tindakan Anda?','["risk", "debt"]',40,10,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33');
 UNLOCK TABLES;
 --
 --

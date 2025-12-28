@@ -15,7 +15,7 @@ return new class extends Migration
             $table->integer('id', true);
             $table->string('player_id', 50)->nullable();
             $table->longText('feature')->nullable();
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 
