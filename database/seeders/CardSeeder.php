@@ -193,12 +193,12 @@ class CardSeeder extends Seeder
             ],
 
             // =============================================
-            // KARTU KESEMPATAN (OPPORTUNITY CARDS)
+            // KARTU KESEMPATAN (CHANCE CARDS)
             // Sumber: 
             // =============================================
             [
                 'id' => 'CARD_OPP_01',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Menabung Rutin',
                 'narration' => 'Kamu berhasil konsisten menabung setiap minggu.',
                 'scoreChange' => 7,
@@ -215,7 +215,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_02',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Dana Darurat Tersedia',
                 'narration' => 'HP mu rusak, tapi kamu bisa pakai dana darurat tanpa panik.',
                 'scoreChange' => 6,
@@ -232,7 +232,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_03',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Investasi Cerdas',
                 'narration' => 'Kamu membeli reksadana pasar uang sesuai tujuan jangka pendek.',
                 'scoreChange' => 5,
@@ -249,7 +249,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_04',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Bayar Cicilan Tepat Waktu',
                 'narration' => 'Kamu disiplin melunasi cicilan paylater sebelum jatuh tempo.',
                 'scoreChange' => 6,
@@ -266,7 +266,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_05',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Gunakan Promo Bijak',
                 'narration' => 'Kamu menggunakan promo ojek online hanya saat perlu, sehingga anggaran jadi hemat.',
                 'scoreChange' => 4,
@@ -283,7 +283,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_06',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Punya Asuransi Kesehatan',
                 'narration' => 'Kamu sakit, tapi semua biaya ditanggung oleh BPJS/asuransi kesehatan.',
                 'scoreChange' => 7,
@@ -300,7 +300,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_07',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Atur Anggaran Makan',
                 'narration' => 'Kamu berhasil menjaga anggaran makan tetap seimbang tanpa boros.',
                 'scoreChange' => 5,
@@ -317,7 +317,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_08',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Menolak Pinjol',
                 'narration' => 'Kamu menolak tawaran pinjol ilegal karena sadar risikonya tinggi.',
                 'scoreChange' => 6,
@@ -334,7 +334,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_09',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Investasi Saham Blue Chip',
                 'narration' => 'Kamu mulai rutin menabung saham di perusahaan stabil (blue chip).',
                 'scoreChange' => 7,
@@ -351,7 +351,7 @@ class CardSeeder extends Seeder
             ],
             [
                 'id' => 'CARD_OPP_10',
-                'type' => 'OPPORTUNITY',
+                'type' => 'CHANCE',
                 'title' => 'Rencana Pendidikan',
                 'narration' => 'Kamu menyiapkan tabungan khusus untuk biaya skripsi.',
                 'scoreChange' => 5,
