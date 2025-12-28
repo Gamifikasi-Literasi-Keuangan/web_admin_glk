@@ -13,6 +13,10 @@ class ProfilingQuestionOption extends Model
         'score'
     ];
 
+    protected $guarded = [
+        'option_token',
+    ];
+
     protected $casts = [
         'score' => 'integer'
     ];
@@ -23,5 +27,15 @@ class ProfilingQuestionOption extends Model
     public function question()
     {
         return $this->belongsTo(ProfilingQuestion::class, 'question_id');
+    }
+
+    // Membuat UUID otomatis saat membuat opsi baru
+    protected static function booted()
+    {
+        static::creating(function ($option) {
+            if (empty($option->option_token)) {
+                $option->option_token = (string) Str::uuid();
+            }
+        });
     }
 }
