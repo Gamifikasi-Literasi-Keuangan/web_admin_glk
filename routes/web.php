@@ -37,3 +37,18 @@ Route::get('/admin/games', function () {
 Route::get('/admin/analytics', function () {
     return view('pages.analytics');
 })->name('admin.analytics');
+
+// Halaman ANN Management
+Route::get('/admin/ann', function () {
+    return view('pages.ann');
+})->name('admin.ann');
+
+// Halaman Training Data Management
+Route::get('/admin/training-data', function () {
+    return view('pages.training-data');
+})->name('admin.training-data');
+
+// Halaman Profiling Questions Management
+Route::get('/admin/profiling-questions', function () {
+    return view('pages.profiling-questions');
+})->name('admin.profiling-questions');

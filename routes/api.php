@@ -19,6 +19,9 @@ use App\Http\Controllers\Admin\AdminLeaderboardController;
 use App\Http\Controllers\Admin\AdminMetricController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminAnalyticsController;
+use App\Http\Controllers\ANNController;
+use App\Http\Controllers\Admin\AdminTrainingDataController;
+use App\Http\Controllers\Admin\AdminProfilingQuestionController;
 
 Route::get('/scenario/{scenario}', [ScenarioController::class, 'show']);
 Route::post('/scenario/submit', [ScenarioController::class, 'submit']);
@@ -107,6 +110,33 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
         Route::get('/growth', [AdminMetricController::class, 'growthMetrics']);
         Route::get('/engagement', [AdminMetricController::class, 'engagement']);
     });
- 
+    
+    // ANN Management Endpoints
+    Route::prefix('ann')->group(function () {
+        Route::post('/train', [ANNController::class, 'train']);
+        Route::post('/test', [ANNController::class, 'test']);
+        Route::get('/evaluate', [ANNController::class, 'evaluate']);
+    });
 
+    // Training Data CRUD
+    Route::prefix('training-data')->group(function () {
+        Route::get('/', [AdminTrainingDataController::class, 'index']);
+        Route::post('/', [AdminTrainingDataController::class, 'store']);
+        Route::get('/options', [AdminTrainingDataController::class, 'options']);
+        Route::get('/{id}', [AdminTrainingDataController::class, 'show']);
+        Route::put('/{id}', [AdminTrainingDataController::class, 'update']);
+        Route::delete('/{id}', [AdminTrainingDataController::class, 'destroy']);
+        Route::post('/bulk-delete', [AdminTrainingDataController::class, 'bulkDelete']);
+    });
+
+    // Profiling Questions CRUD
+    Route::prefix('profiling-questions')->group(function () {
+        Route::get('/aspects', [AdminProfilingQuestionController::class, 'getAspects']);
+        Route::get('/', [AdminProfilingQuestionController::class, 'index']);
+        Route::post('/', [AdminProfilingQuestionController::class, 'store']);
+        Route::get('/{id}', [AdminProfilingQuestionController::class, 'show']);
+        Route::put('/{id}', [AdminProfilingQuestionController::class, 'update']);
+        Route::delete('/{id}', [AdminProfilingQuestionController::class, 'destroy']);
+        Route::post('/{id}/toggle-active', [AdminProfilingQuestionController::class, 'toggleActive']);
+    });
 });
