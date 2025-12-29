@@ -18,8 +18,31 @@ class TileService
 
         return $tiles->map(function ($tile) {
             $content = json_decode($tile->linked_content, true);
+            
+            // Parsing Logic untuk support Data dari BoardTilesSeeder
             $contentType = $content['content_type'] ?? null;
+            $category = $content['category'] ?? $tile->category ?? null;
+
+            // 1. Handle Scenario Category from Seeder
+            if (isset($content['scenario_category'])) {
+                $category = $content['scenario_category'];
+                // Jika content_type kosong, kita anggap ini kategori skenario
+                if (!$contentType) $contentType = 'scenario_category';
+            }
+
+            // 2. Handle Card Type (Risk/Chance/Quiz) Random from Seeder
+            if (isset($content['card_type'])) {
+                if (!$contentType) $contentType = $content['card_type']; // risk, chance, quiz
+            }
+
+            // 3. Handle Property Types from Seeder
+            if (isset($content['type']) && !isset($content['content_type'])) {
+                $contentType = $content['type']; // investment, savings, insurance, etc.
+            }
+
             $contentId = $content['content_id'] ?? null;
+
+            $contentTitle = $this->repo->getContentTitle($contentType, $contentId);
 
             // Get landed stats
             $stats = $this->repo->getLandedStats($tile->tile_id);
@@ -31,6 +54,8 @@ class TileService
                 'type' => $tile->type,
                 'content_type' => $contentType,
                 'content_id' => $contentId,
+                'content_title' => $contentTitle,
+                'category' => $category,
                 'landed_count' => $stats
             ];
         });
@@ -43,7 +68,22 @@ class TileService
             return null;
 
         $content = json_decode($tile->linked_content, true);
+
+        // Parsing Logic (Sama dengan getAllTiles)
         $contentType = $content['content_type'] ?? null;
+        $category = $content['category'] ?? $tile->category ?? null;
+
+        if (isset($content['scenario_category'])) {
+            $category = $content['scenario_category'];
+            if (!$contentType) $contentType = 'scenario_category';
+        }
+        if (isset($content['card_type'])) {
+            if (!$contentType) $contentType = $content['card_type'];
+        }
+        if (isset($content['type']) && !isset($content['content_type'])) {
+            $contentType = $content['type'];
+        }
+
         $contentId = $content['content_id'] ?? null;
         $contentTitle = $this->repo->getContentTitle($contentType, $contentId);
         $stats = $this->repo->getLandedStats($id);
@@ -54,6 +94,7 @@ class TileService
             'type' => $tile->type,
             'content_type' => $contentType,
             'content_id' => $contentId,
+            'category' => $category,
             'content_title' => $contentTitle,
             'landed_count' => $stats
         ];
@@ -90,5 +131,16 @@ class TileService
     public function getAvailableContents()
     {
         return $this->repo->getAvailableContents();
+    }
+
+    public function deleteTile($id)
+    {
+        $tile = $this->repo->findById($id);
+        if (!$tile) {
+            return ['success' => false, 'message' => 'Tile tidak ditemukan'];
+        }
+
+        $this->repo->delete($id);
+        return ['success' => true, 'message' => 'Tile berhasil dihapus'];
     }
 }

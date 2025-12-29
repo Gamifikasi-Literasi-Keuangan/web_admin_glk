@@ -44,12 +44,12 @@ class TileRepository
             'name' => $data['name'],
             'type' => $data['type'],
             'position_index' => $data['position'],
+            'category' => $data['category'] ?? null, // Store category for scenario tiles
             'linked_content' => json_encode([
                 'content_type' => $data['content_type'] ?? null,
-                'content_id' => $data['content_id'] ?? null
+                'content_id' => $data['content_id'] ?? null,
+                'category' => $data['category'] ?? null
             ]),
-            'created_at' => now(),
-            'updated_at' => now()
         ]);
         return $tileId;
     }
@@ -62,11 +62,12 @@ class TileRepository
                 'name' => $data['name'],
                 'type' => $data['type'],
                 'position_index' => $data['position'],
+                'category' => $data['category'] ?? null, // Store category for scenario tiles
                 'linked_content' => json_encode([
                     'content_type' => $data['content_type'] ?? null,
-                    'content_id' => $data['content_id'] ?? null
+                    'content_id' => $data['content_id'] ?? null,
+                    'category' => $data['category'] ?? null
                 ]),
-                'updated_at' => now()
             ]);
     }
 
@@ -81,20 +82,21 @@ class TileRepository
 
     public function getAvailableContents()
     {
-        // Filter out soft-deleted records (deleted_at IS NULL)
-        $scenarios = DB::table('scenarios')
-            ->whereNull('deleted_at')
-            ->select('id', 'title')
-            ->get()
-            ->map(fn($s) => [
-                'id' => $s->id,
-                'title' => $s->title,
-                'type' => 'scenario'
+        // For scenarios: get distinct categories (not individual scenarios)
+        // Tile will store category, and game will random pick scenario from that category
+        $scenarioCategories = DB::table('scenarios')
+            ->whereNotNull('category')
+            ->select('category')
+            ->distinct()
+            ->pluck('category')
+            ->map(fn($cat) => [
+                'category' => $cat,
+                'title' => $cat, // Display name same as category
+                'type' => 'scenario_category'
             ]);
 
         $risks = DB::table('cards')
             ->where('type', 'risk')
-            ->whereNull('deleted_at')
             ->select('id', 'title')
             ->get()
             ->map(fn($c) => [
@@ -105,7 +107,6 @@ class TileRepository
 
         $chances = DB::table('cards')
             ->where('type', 'chance')
-            ->whereNull('deleted_at')
             ->select('id', 'title')
             ->get()
             ->map(fn($c) => [
@@ -115,7 +116,6 @@ class TileRepository
             ]);
 
         $quizzes = DB::table('quiz_cards')
-            ->whereNull('deleted_at')
             ->select('id', 'question as title')
             ->get()
             ->map(fn($q) => [
@@ -125,10 +125,15 @@ class TileRepository
             ]);
 
         return [
-            'scenarios' => $scenarios,
+            'scenario_categories' => $scenarioCategories,
             'risks' => $risks,
             'chances' => $chances,
             'quizzes' => $quizzes
         ];
+    }
+
+    public function delete($id)
+    {
+        return DB::table('boardtiles')->where('tile_id', $id)->delete();
     }
 }

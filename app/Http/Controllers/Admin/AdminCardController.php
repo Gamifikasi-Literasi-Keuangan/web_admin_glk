@@ -52,7 +52,7 @@ class AdminCardController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'effect' => 'required|string',
+            'narration' => 'required|string',
             'difficulty' => 'required|integer|between:1,3',
         ]);
         $card = $this->service->createCard('risk', $request->all());
@@ -63,7 +63,7 @@ class AdminCardController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'effect' => 'required|string',
+            'narration' => 'required|string',
             'difficulty' => 'required|integer|between:1,3',
         ]);
         $card = $this->service->createCard('chance', $request->all());
@@ -78,6 +78,8 @@ class AdminCardController extends Controller
             'options' => 'required|array|min:2',
             'options.*.text' => 'required|string',
             'options.*.is_correct' => 'required|boolean',
+            'tags' => 'nullable|string',
+            'learning_objective' => 'nullable|string',
         ]);
         $quiz = $this->service->createQuiz($request->all());
         return response()->json(['message' => 'Quiz created', 'data' => $quiz], 201);
@@ -88,7 +90,7 @@ class AdminCardController extends Controller
     {
         $request->validate([
             'title' => 'sometimes|string|max:255',
-            'effect' => 'sometimes|string',
+            'narration' => 'sometimes|string',
             'difficulty' => 'sometimes|integer|between:1,3',
             'scoreChange' => 'sometimes|integer',
         ]);
@@ -102,7 +104,7 @@ class AdminCardController extends Controller
     {
         $request->validate([
             'title' => 'sometimes|string|max:255',
-            'effect' => 'sometimes|string',
+            'narration' => 'sometimes|string',
             'difficulty' => 'sometimes|integer|between:1,3',
             'scoreChange' => 'sometimes|integer',
         ]);
@@ -123,6 +125,8 @@ class AdminCardController extends Controller
             'options' => 'sometimes|array|min:2',
             'options.*.optionId' => 'sometimes|string',
             'options.*.text' => 'sometimes|string',
+            'tags' => 'nullable|string',
+            'learning_objective' => 'nullable|string',
         ]);
         $quiz = $this->service->updateQuiz($id, $request->all());
         if (!$quiz)

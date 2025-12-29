@@ -98,13 +98,17 @@ class ScenarioService
                 'historical_success_rate' => $scenario->historical_success_rate
             ],
             'options' => $scenario->options->map(function ($opt) {
+                // scoreChange adalah array/object, kita hitung total dampaknya
+                $scoreChangeArray = is_array($opt->scoreChange) ? $opt->scoreChange : json_decode($opt->scoreChange, true);
+                $totalImpact = is_array($scoreChangeArray) ? array_sum($scoreChangeArray) : 0;
+                
                 return [
                     'id' => $opt->id,
                     'label' => $opt->optionId,
                     'text' => $opt->text,
                     'feedback' => $opt->response,
                     'is_correct' => (bool) $opt->is_correct,
-                    'impact' => $opt->scoreChange
+                    'impact' => $totalImpact
                 ];
             })
         ];
@@ -113,7 +117,7 @@ class ScenarioService
     public function create($data)
     {
         // Generate unique ID untuk scenario
-        $category = strtolower($data['category']);
+        $category = strtolower(str_replace(' ', '_', $data['category']));
         $id = $category . '_' . uniqid();
 
         $scenarioData = [
@@ -121,7 +125,7 @@ class ScenarioService
             'title' => $data['title'],
             'category' => $data['category'],
             'question' => $data['question'],
-            'difficulty' => $data['difficulty'],
+            'difficulty' => $data['difficulty'] ?? 1, // Default 1 if not provided
             'expected_benefit' => $data['expected_benefit'] ?? 10,
             'learning_objective' => $data['learning_objective'] ?? null,
             'tags' => $data['tags'] ?? [],

@@ -157,6 +157,41 @@ function renderConfig(data) {
     `;
 }
 
+// Helper to display content info for each tile type
+// Helper to display content info for each tile type
+function getContentDisplay(tile) {
+    // For start/finish tiles, no content needed
+    if (tile.type === 'start' || tile.type === 'finish') {
+        return '-';
+    }
+
+    // 1. Scenario Categories (Prioritize category field)
+    if (tile.type === 'scenario' || tile.content_type === 'scenario_category') {
+        if (tile.category) return `Kategori: ${tile.category}`;
+    }
+
+    // 2. Specific Content (with Title)
+    if (tile.content_title) {
+        return `<span class="font-semibold block truncate max-w-[200px]" title="${tile.content_title}">${tile.content_title}</span>
+                <span class="text-xs text-zinc-400">ID: ${tile.content_id}</span>`;
+    }
+
+    // 3. Specific Content (ID only fallback)
+    if (tile.content_id) {
+        return `ID: ${tile.content_id}`;
+    }
+
+    // 4. Random/Properties (matching Seeder logic)
+    if (['risk', 'chance', 'quiz', 'property'].includes(tile.type)) {
+        if (tile.type === 'property' && tile.content_type) {
+            return `Tipe: ${tile.content_type}`;
+        }
+        return `Acak (${tile.type})`;
+    }
+
+    return 'Konten Acak/Kosong';
+}
+
 // --- 2. RENDER TILES (PETA) ---
 function renderTiles(tiles) {
     const container = document.getElementById('settings-content');
@@ -219,7 +254,7 @@ function renderTiles(tiles) {
             </td>
             <td class="px-4 py-3">
                 <span class="text-xs font-mono text-zinc-500 bg-zinc-50 px-2 py-1 rounded border border-zinc-200">
-                    ${t.content_id ? 'ID: ' + t.content_id : (t.type === 'start' || t.type === 'finish' ? '-' : 'Konten Acak')}
+                    ${getContentDisplay(t)}
                 </span>
             </td>
             <td class="px-4 py-3 text-center">
@@ -232,12 +267,16 @@ function renderTiles(tiles) {
             <td class="px-4 py-3 text-right">
                 <div class="flex gap-2 justify-end">
                     <button onclick="editTile('${t.tile_id}')" 
-                        class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-yellow-200 hover:border-yellow-300">
-                        <i class="fa-solid fa-edit mr-1"></i>Edit
+                        class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-yellow-200 hover:border-yellow-300" title="Edit">
+                        <i class="fa-solid fa-edit"></i>
                     </button>
                     <button onclick="showTileDetail('${t.tile_id}')" 
-                        class="bg-green-100 hover:bg-green-200 text-green-700 hover:text-green-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-green-200 hover:border-green-300">
-                        <i class="fa-solid fa-eye mr-1"></i>Lihat
+                        class="bg-green-100 hover:bg-green-200 text-green-700 hover:text-green-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-green-200 hover:border-green-300" title="Lihat">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button onclick="deleteTile('${t.tile_id}')" 
+                        class="bg-red-100 hover:bg-red-200 text-red-700 hover:text-red-800 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors border border-red-200 hover:border-red-300" title="Hapus">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
             </td>
@@ -432,10 +471,42 @@ async function showTileDetail(id) {
                             </div>
                             <p class="text-sm font-semibold text-zinc-600 uppercase tracking-wide">Konten Tertaut</p>
                         </div>
-                        <p class="font-medium text-green-600 mb-1">${t.content_title || 'Tidak ada konten'}</p>
-                        <p class="text-xs text-zinc-500 bg-zinc-50 px-2 py-1 rounded border border-zinc-200">
-                            ${t.content_id ? (t.content_type + ': ' + t.content_id) : 'Random/Empty content'}
-                        </p>
+                        <div>
+                            ${(() => {
+                if (t.type === 'start' || t.type === 'finish') {
+                    return '<span class="text-zinc-400 italic text-sm">Tidak memerlukan konten</span>';
+                }
+                // Scenario Category
+                if (t.category || t.content_type === 'scenario_category') {
+                    return `
+                                        <p class="font-bold text-green-700 mb-1">Kategori: ${t.category || 'Unknown'}</p>
+                                        <div class="flex items-center mt-1">
+                                            <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded border border-green-200">
+                                                Scenario Pool
+                                            </span>
+                                        </div>`;
+                }
+                // Specific Content
+                if (t.content_title) {
+                    return `
+                                        <p class="font-bold text-green-700 mb-1 line-clamp-2" title="${t.content_title}">${t.content_title}</p>
+                                        <div class="flex items-center mt-1">
+                                            <span class="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded border border-zinc-200 font-mono">
+                                                ID: ${t.content_id}
+                                            </span>
+                                            <span class="text-xs text-zinc-400 ml-2 capitalize">(${t.content_type})</span>
+                                        </div>`;
+                }
+                // Random / Property Type
+                if (['risk', 'chance', 'quiz', 'property'].includes(t.type)) {
+                    if (t.type === 'property' && t.content_type) {
+                        return `<p class="font-bold text-blue-600">Tipe: ${t.content_type}</p>`;
+                    }
+                    return `<p class="font-bold text-purple-600">Acak (${t.type})</p>`;
+                }
+                return '<span class="text-zinc-400 italic text-sm">Tidak ada konten tertaut</span>';
+            })()}
+                        </div>
                     </div>
                 </div>
 
@@ -815,7 +886,7 @@ async function loadAvailableContents() {
 }
 
 // Build content options filtered by tile type
-function buildContentOptions(contents, tileType = null, selectedType = null, selectedId = null) {
+function buildContentOptions(contents, tileType = null, selectedType = null, selectedValue = null) {
     if (!contents) return '<option value="">Tidak tersedia</option>';
 
     // For start/finish, no content needed
@@ -823,14 +894,14 @@ function buildContentOptions(contents, tileType = null, selectedType = null, sel
         return '<option value="">-- Tidak memerlukan konten --</option>';
     }
 
-    let options = '<option value="">-- Pilih Konten (Opsional) --</option>';
+    let options = '<option value="">-- Konten Acak --</option>';
 
-    // Only show scenarios if type is scenario
-    if ((!tileType || tileType === 'scenario') && contents.scenarios && contents.scenarios.length) {
-        options += '<optgroup label="Scenarios">';
-        contents.scenarios.forEach(s => {
-            const selected = selectedType === 'scenario' && selectedId == s.id ? 'selected' : '';
-            options += `<option value="scenario:${s.id}" ${selected}>${s.title}</option>`;
+    // For scenario tiles: show categories (not individual scenarios)
+    if ((!tileType || tileType === 'scenario') && contents.scenario_categories && contents.scenario_categories.length) {
+        options += '<optgroup label="Kategori Skenario">';
+        contents.scenario_categories.forEach(cat => {
+            const selected = selectedType === 'scenario_category' && selectedValue == cat.category ? 'selected' : '';
+            options += `<option value="scenario_category:${cat.category}" ${selected}>${cat.title}</option>`;
         });
         options += '</optgroup>';
     }
@@ -839,7 +910,7 @@ function buildContentOptions(contents, tileType = null, selectedType = null, sel
     if ((!tileType || tileType === 'risk') && contents.risks && contents.risks.length) {
         options += '<optgroup label="Risk Cards">';
         contents.risks.forEach(r => {
-            const selected = selectedType === 'risk' && selectedId == r.id ? 'selected' : '';
+            const selected = selectedType === 'risk' && selectedValue == r.id ? 'selected' : '';
             options += `<option value="risk:${r.id}" ${selected}>${r.title}</option>`;
         });
         options += '</optgroup>';
@@ -849,7 +920,7 @@ function buildContentOptions(contents, tileType = null, selectedType = null, sel
     if ((!tileType || tileType === 'chance') && contents.chances && contents.chances.length) {
         options += '<optgroup label="Chance Cards">';
         contents.chances.forEach(c => {
-            const selected = selectedType === 'chance' && selectedId == c.id ? 'selected' : '';
+            const selected = selectedType === 'chance' && selectedValue == c.id ? 'selected' : '';
             options += `<option value="chance:${c.id}" ${selected}>${c.title}</option>`;
         });
         options += '</optgroup>';
@@ -859,10 +930,27 @@ function buildContentOptions(contents, tileType = null, selectedType = null, sel
     if ((!tileType || tileType === 'quiz') && contents.quizzes && contents.quizzes.length) {
         options += '<optgroup label="Quiz Cards">';
         contents.quizzes.forEach(q => {
-            const selected = selectedType === 'quiz' && selectedId == q.id ? 'selected' : '';
+            const selected = selectedType === 'quiz' && selectedValue == q.id ? 'selected' : '';
             options += `<option value="quiz:${q.id}" ${selected}>${q.title}</option>`;
         });
         options += '</optgroup>';
+    }
+
+    // Property Sub-types
+    if (tileType === 'property') {
+        options = '<option value="">-- Pilih Tipe Aset --</option>';
+        const types = [
+            { id: 'investment', label: 'Investasi (Saham/Reksadana)' },
+            { id: 'savings', label: 'Tabungan & Deposito' },
+            { id: 'insurance', label: 'Asuransi (Proteksi)' },
+            { id: 'education_investment', label: 'Investasi Pendidikan' },
+            { id: 'asset', label: 'Aset Produktif Lainnya' }
+        ];
+        types.forEach(t => {
+            // Check if matches content linked data
+            const selected = (selectedType === 'property' && selectedValue === t.id) || (selectedType === t.id) ? 'selected' : '';
+            options += `<option value="property_type:${t.id}" ${selected}>${t.label}</option>`;
+        });
     }
 
     return options;
@@ -901,6 +989,7 @@ async function showAddTileModal() {
                         <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
                         <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="updateContentDropdown(this.value)">
                             <option value="scenario">Scenario</option>
+                            <option value="property">Investasi & Aset (Property)</option>
                             <option value="risk">Risk</option>
                             <option value="chance">Chance</option>
                             <option value="quiz">Quiz</option>
@@ -971,6 +1060,7 @@ async function editTile(id) {
                             <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
                             <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="updateContentDropdown(this.value)">
                                 <option value="scenario" ${data.type === 'scenario' ? 'selected' : ''}>Scenario</option>
+                                <option value="property" ${data.type === 'property' ? 'selected' : ''}>Investasi & Aset (Property)</option>
                                 <option value="risk" ${data.type === 'risk' ? 'selected' : ''}>Risk</option>
                                 <option value="chance" ${data.type === 'chance' ? 'selected' : ''}>Chance</option>
                                 <option value="quiz" ${data.type === 'quiz' ? 'selected' : ''}>Quiz</option>
@@ -985,7 +1075,7 @@ async function editTile(id) {
                         <div id="content-container">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Konten Tertaut</label>
                             <select name="content" class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
-                                ${buildContentOptions(contents, data.type, data.content_type, data.content_id)}
+                                ${buildContentOptions(contents, data.type, data.content_type, data.category || data.content_id)}
                             </select>
                             <p class="text-xs text-gray-500 mt-1">Opsional. Biarkan kosong untuk konten acak.</p>
                         </div>
@@ -1025,10 +1115,24 @@ async function saveTile(e) {
     const contentValue = formData.get("content");
     let contentType = null;
     let contentId = null;
+    let category = null;
+
     if (contentValue && contentValue.includes(':')) {
         const parts = contentValue.split(':');
         contentType = parts[0];
-        contentId = parseInt(parts[1]);
+
+        // For scenario_category, store category string instead of ID
+        if (contentType === 'scenario_category') {
+            category = parts[1]; // e.g., "Pendapatan", "Anggaran"
+            contentId = null;
+        } else if (contentType === 'property_type') {
+            // Handle Property Type selection (overwrite contentType with the specific type e.g. 'investment')
+            contentType = parts[1]; // investment, insurance, etc
+            contentId = null;
+            // Note: We are storing this in content_type column or linked_content logic in backend
+        } else {
+            contentId = parseInt(parts[1]);
+        }
     }
 
     const payload = {
@@ -1036,7 +1140,8 @@ async function saveTile(e) {
         type: formData.get("type"),
         position: parseInt(formData.get("position")),
         content_type: contentType,
-        content_id: contentId
+        content_id: contentId,
+        category: category
     };
 
     try {
@@ -1062,6 +1167,28 @@ async function saveTile(e) {
             setTimeout(() => loadData(), 1500);
         } else {
             showNotification(result.message || "Gagal menyimpan tile", "error");
+        }
+    } catch (e) {
+        showNotification(`Error: ${e.message}`, "error");
+    }
+}
+
+async function deleteTile(id) {
+    if (!confirm("Apakah Anda yakin ingin menghapus tile ini?")) return;
+
+    try {
+        const response = await fetch(`${BASE_API}/tiles/${id}`, {
+            method: "DELETE",
+            headers,
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showNotification(result.message, "success");
+            setTimeout(() => loadData(), 1500);
+        } else {
+            showNotification(result.message || "Gagal menghapus tile", "error");
         }
     } catch (e) {
         showNotification(`Error: ${e.message}`, "error");

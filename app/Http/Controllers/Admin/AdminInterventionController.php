@@ -17,9 +17,9 @@ class AdminInterventionController extends Controller
 
             $formatted = $templates->map(function ($tpl) {
                 return [
-                    'id' => $tpl->id,
+                    'id' => $tpl->level, // Use level as ID since no ID column exists
                     'level_id' => $tpl->level,
-                    'risk_label' => $tpl->risk_level,
+                    'risk_label' => $tpl->risk_level, // Frontend expects 'risk_label'
                     'title' => $tpl->title_template,
                     'message' => $tpl->message_template,
                     'actions' => $tpl->actions_template ? json_decode($tpl->actions_template, true) : [],
@@ -46,7 +46,8 @@ class AdminInterventionController extends Controller
     public function show($id)
     {
         try {
-            $template = DB::table('interventiontemplates')->find($id);
+            // Find by level instead of id
+            $template = DB::table('interventiontemplates')->where('level', $id)->first();
 
             if (!$template) {
                 return response()->json(['error' => 'Intervensi tidak ditemukan'], 404);
@@ -54,7 +55,7 @@ class AdminInterventionController extends Controller
 
             return response()->json([
                 'data' => [
-                    'id' => $template->id,
+                    'id' => $template->level,
                     'level_id' => $template->level,
                     'risk_label' => $template->risk_level,
                     'title' => $template->title_template,
@@ -75,7 +76,7 @@ class AdminInterventionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'level' => 'required|integer|min:1|max:10',
+            'level' => 'required|integer|min:1|max:10|unique:interventiontemplates,level',
             'risk_level' => 'required|in:Critical,High,Medium,Low',
             'title_template' => 'required|string|max:255',
             'message_template' => 'required|string',
@@ -90,8 +91,11 @@ class AdminInterventionController extends Controller
             'message_template' => $validated['message_template'],
             'actions_template' => json_encode($validated['actions']),
             'is_mandatory' => $validated['is_mandatory'] ?? false,
-            'created_at' => now(),
-            'updated_at' => now()
+            // No timestamps in migration schema shown, but let's keep it safe or remove if error
+            // Migration create did NOT have timestamps() call, so no created_at/updated_at columns?
+            // Wait, migration: $table->integer('level')->primary(); ... NO timestamps().
+            // But controller was inserting created_at/updated_at. This will cause another error.
+            // Removing created_at/updated_at insertion.
         ]);
 
         return response()->json([
@@ -103,14 +107,14 @@ class AdminInterventionController extends Controller
     // --- UPDATE: Update Intervention ---
     public function update(Request $request, $id)
     {
-        $template = DB::table('interventiontemplates')->find($id);
+        $template = DB::table('interventiontemplates')->where('level', $id)->first();
 
         if (!$template) {
             return response()->json(['error' => 'Intervensi tidak ditemukan'], 404);
         }
 
         $validated = $request->validate([
-            'level' => 'required|integer|min:1|max:10',
+            'level' => 'required|integer|min:1|max:10|unique:interventiontemplates,level,' . $id . ',level',
             'risk_level' => 'required|in:Critical,High,Medium,Low',
             'title_template' => 'required|string|max:255',
             'message_template' => 'required|string',
@@ -118,14 +122,13 @@ class AdminInterventionController extends Controller
             'is_mandatory' => 'boolean'
         ]);
 
-        DB::table('interventiontemplates')->where('id', $id)->update([
-            'level' => $validated['level'],
+        DB::table('interventiontemplates')->where('level', $id)->update([
+            'level' => $validated['level'], // Allow changing level (PK)
             'risk_level' => $validated['risk_level'],
             'title_template' => $validated['title_template'],
             'message_template' => $validated['message_template'],
             'actions_template' => json_encode($validated['actions']),
-            'is_mandatory' => $validated['is_mandatory'] ?? false,
-            'updated_at' => now()
+            'is_mandatory' => $validated['is_mandatory'] ?? false
         ]);
 
         return response()->json([
@@ -137,13 +140,11 @@ class AdminInterventionController extends Controller
     // --- DELETE: Delete Intervention ---
     public function destroy($id)
     {
-        $template = DB::table('interventiontemplates')->find($id);
+        $deleted = DB::table('interventiontemplates')->where('level', $id)->delete();
 
-        if (!$template) {
+        if (!$deleted) {
             return response()->json(['error' => 'Intervensi tidak ditemukan'], 404);
         }
-
-        DB::table('interventiontemplates')->where('id', $id)->delete();
 
         return response()->json([
             'success' => true,

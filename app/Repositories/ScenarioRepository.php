@@ -90,6 +90,12 @@ class ScenarioRepository
 
     public function delete($id)
     {
-        return Scenario::destroy($id);
+        $scenario = Scenario::find($id);
+        if (!$scenario) return false;
+        
+        // Hapus options terlebih dahulu (foreign key constraint)
+        $scenario->options()->delete();
+        
+        return $scenario->delete();
     }
 }

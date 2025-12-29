@@ -51,8 +51,12 @@ class CardService
             'id' => $card->id,
             'title' => $card->title,
             'description' => $card->narration,
-            'action_type' => $card->action, // Tambahan agar tidak undefined di JS
+            'action_type' => $card->action,
             'difficulty' => (int) $card->difficulty,
+            'categories' => $card->categories,
+            'tags' => $card->tags,
+            'expected_benefit' => (int) ($card->expected_benefit ?? 5),
+            'learning_objective' => $card->learning_objective ?? '',
             'stats' => ['landed_count' => (int) $stats]
         ];
 
@@ -101,6 +105,8 @@ class CardService
             'incorrect_score' => (int) $quiz->incorrectScore, // Supaya Score Salah muncul
 
             'difficulty' => (int) $quiz->difficulty,
+            'tags' => $quiz->tags,
+            'learning_objective' => $quiz->learning_objective,
             'options' => $quiz->options->map(function ($opt) {
                 return [
                     'id' => $opt->id,
@@ -114,18 +120,18 @@ class CardService
     // CREATE, UPDATE, DELETE
     public function createCard($type, $data)
     {
-        // Generate unique ID for card
-        $id = $type . '_' . uniqid();
-
         $cardData = [
-            'id' => $id,
-            'type' => $type,
+            'id' => strtoupper($type) . '_' . uniqid(),
+            'type' => strtoupper($type),
             'title' => $data['title'],
-            'narration' => $data['effect'],
-            'action' => $data['action'] ?? 'instant',
-            'difficulty' => $data['difficulty'],
+            'narration' => $data['narration'] ?? $data['effect'] ?? '',
+            'action' => $data['action'] ?? 'default',
+            'difficulty' => $data['difficulty'] ?? 1,
             'scoreChange' => $data['scoreChange'] ?? 0,
-            'categories' => $data['categories'] ?? [],
+            'categories' => $data['categories'] ?? '',
+            'tags' => $data['tags'] ?? '',
+            'expected_benefit' => $data['expected_benefit'] ?? 5,
+            'learning_objective' => $data['learning_objective'] ?? '',
         ];
         return $this->repo->createCard($cardData);
     }
@@ -142,6 +148,8 @@ class CardService
             'correctOption' => $data['correctOption'] ?? 'A',
             'correctScore' => $data['correctScore'] ?? 10,
             'incorrectScore' => $data['incorrectScore'] ?? -5,
+            'tags' => $data['tags'] ?? '',
+            'learning_objective' => $data['learning_objective'] ?? '',
         ];
         return $this->repo->createQuiz($quizData, $data['options']);
     }
@@ -154,9 +162,14 @@ class CardService
 
         $updateData = array_filter([
             'title' => $data['title'] ?? $card->title,
-            'narration' => $data['effect'] ?? $card->narration,
+            'narration' => $data['narration'] ?? $data['effect'] ?? $card->narration,
+            'action' => $data['action'] ?? $card->action,
             'difficulty' => $data['difficulty'] ?? $card->difficulty,
             'scoreChange' => $data['scoreChange'] ?? $card->scoreChange,
+            'categories' => $data['categories'] ?? $card->categories,
+            'tags' => $data['tags'] ?? $card->tags,
+            'expected_benefit' => $data['expected_benefit'] ?? $card->expected_benefit,
+            'learning_objective' => $data['learning_objective'] ?? $card->learning_objective,
         ]);
         return $this->repo->updateCard($id, $updateData);
     }
@@ -173,6 +186,8 @@ class CardService
             'correctOption' => $data['correctOption'] ?? $quiz->correctOption,
             'correctScore' => $data['correctScore'] ?? $quiz->correctScore,
             'incorrectScore' => $data['incorrectScore'] ?? $quiz->incorrectScore,
+            'tags' => $data['tags'] ?? $quiz->tags,
+            'learning_objective' => $data['learning_objective'] ?? $quiz->learning_objective,
         ]);
 
         $options = $data['options'] ?? [];

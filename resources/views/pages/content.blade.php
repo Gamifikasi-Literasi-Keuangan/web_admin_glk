@@ -53,6 +53,10 @@
                 </div>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <div id="pagination-wrapper" class="mt-4 p-4 bg-white border border-zinc-200 rounded-lg shadow-sm">
+        </div>
     </div>
 
     <div id="detail-modal" class="fixed inset-0 bg-zinc-900 bg-opacity-50 backdrop-blur-sm hidden items-center justify-center z-50 flex p-4">

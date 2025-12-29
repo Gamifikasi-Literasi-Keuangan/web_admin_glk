@@ -11,7 +11,7 @@ class CardRepository
     // --- RISK & CHANCE (Pakai Eloquent withCount) ---
     public function getCardsPaginated($type, $limit, $filters = [])
     {
-        $query = Card::where('type', $type);
+        $query = Card::where('type', strtoupper($type));
 
         if (!empty($filters['search'])) {
             $query->where('title', 'like', "%{$filters['search']}%");
@@ -32,7 +32,7 @@ class CardRepository
 
     public function findCardById($id, $type)
     {
-        return Card::where('id', $id)->where('type', $type)->first();
+        return Card::where('id', $id)->where('type', strtoupper($type))->first();
     }
 
     public function getCardStats($id, $type)
@@ -133,11 +133,16 @@ class CardRepository
     // DELETE
     public function deleteCard($id, $type)
     {
-        return Card::where('id', $id)->where('type', $type)->delete();
+        return Card::where('id', $id)->where('type', strtoupper($type))->delete();
     }
 
     public function deleteQuiz($id)
     {
-        return QuizCard::destroy($id);
+        $quiz = QuizCard::find($id);
+        if ($quiz) {
+            $quiz->options()->delete(); // Hapus opsi dulu
+            return $quiz->delete();
+        }
+        return false;
     }
 }

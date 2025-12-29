@@ -39,12 +39,14 @@ class AdminScenarioController extends Controller
             'title' => 'required|string|max:255',
             'category' => 'required|string',
             'question' => 'required|string',
-            'difficulty' => 'required|integer|between:1,5',
+            'difficulty' => 'sometimes|integer|between:1,5', // Optional - not in Excel
             'expected_benefit' => 'sometimes|integer|min:0|max:100',
             'options' => 'required|array|min:2',
             'options.*.optionId' => 'required|string',
             'options.*.text' => 'required|string',
             'options.*.is_correct' => 'sometimes|boolean',
+            'options.*.response' => 'sometimes|nullable|string', // AI Response
+            'options.*.scoreChange' => 'sometimes|nullable|array', // Score per option (multi-aspek)
         ]);
 
         $scenario = $this->service->create($request->all());

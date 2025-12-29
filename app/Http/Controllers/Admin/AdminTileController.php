@@ -32,7 +32,8 @@ class AdminTileController extends Controller
             'type' => 'required|in:scenario,risk,chance,quiz,start,finish',
             'position' => 'required|integer|min:0',
             'content_type' => 'nullable|string',
-            'content_id' => 'nullable|integer'
+            'content_id' => 'nullable|integer',
+            'category' => 'nullable|string|max:100' // For scenario tiles
         ]);
 
         $result = $this->service->createTile($validated);
@@ -50,11 +51,21 @@ class AdminTileController extends Controller
             'type' => 'required|in:scenario,risk,chance,quiz,start,finish',
             'position' => 'required|integer|min:0',
             'content_type' => 'nullable|string',
-            'content_id' => 'nullable|integer'
+            'content_id' => 'nullable|integer',
+            'category' => 'nullable|string|max:100' // For scenario tiles
         ]);
 
         $result = $this->service->updateTile($id, $validated);
         
+        if ($result['success']) {
+            return response()->json($result);
+        }
+        return response()->json($result, 400);
+    }
+
+    public function destroy($id)
+    {
+        $result = $this->service->deleteTile($id);
         if ($result['success']) {
             return response()->json($result);
         }
