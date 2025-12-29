@@ -39,7 +39,7 @@ UNLOCK TABLES;
 --
 --
 LOCK TABLES `auth_users` WRITE;
-INSERT INTO `auth_users` VALUES (1,'mona_lisa','google_1029384756',NULL,'player','https://ui-avatars.com/api/?name=Mona','2025-11-27 02:53:33','2025-11-27 07:28:45'),(4,'Mona Lisa Test','google_test_123',NULL,'player','https://via.placeholder.com/150','2025-11-27 07:35:35','2025-11-27 07:35:35'),(5,'Mona Tester','google_test_user_001',NULL,'player','https://ui-avatars.com/api/?name=Mona+Tester','2025-11-28 03:00:10','2025-11-28 03:00:10'),(6,'dev_tester','dev_123',NULL,'player',NULL,'2025-11-28 07:00:59','2025-11-28 07:00:59'),(7,'Tester Postman','google_id_tester_001',NULL,'player','https://ui-avatars.com/api/?name=Tester+Postman','2025-11-28 11:36:38','2025-11-28 11:36:38');
+INSERT INTO `auth_users` VALUES (2,'mona_lisa','google_1029384756',NULL,'player','https://ui-avatars.com/api/?name=Mona','2025-11-27 02:53:33','2025-11-27 07:28:45'),(4,'Mona Lisa Test','google_test_123',NULL,'player','https://via.placeholder.com/150','2025-11-27 07:35:35','2025-11-27 07:35:35'),(5,'Mona Tester','google_test_user_001',NULL,'player','https://ui-avatars.com/api/?name=Mona+Tester','2025-11-28 03:00:10','2025-11-28 03:00:10'),(6,'dev_tester','dev_123',NULL,'player',NULL,'2025-11-28 07:00:59','2025-11-28 07:00:59'),(7,'Tester Postman','google_id_tester_001',NULL,'player','https://ui-avatars.com/api/?name=Tester+Postman','2025-11-28 11:36:38','2025-11-28 11:36:38');
 UNLOCK TABLES;
 --
 --
@@ -51,9 +51,9 @@ UNLOCK TABLES;
 --
 --
 --
-LOCK TABLES `cards` WRITE;
-INSERT INTO `cards` VALUES ('chance_01','chance','Bonus Tahunan','Selamat! Kinerja Anda bagus.',15,'add_balance','["pendapatan"]',NULL,1,15,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33'),('risk_01','risk','Sakit Gigi','Anda harus ke dokter gigi segera.',-5,'pay_cash','["kesehatan", "pengeluaran"]',NULL,2,-5,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33');
-UNLOCK TABLES;
+-- LOCK TABLES `cards` WRITE;
+-- INSERT INTO `cards` VALUES ('chance_01','chance','Bonus Tahunan','Selamat! Kinerja Anda bagus.',15,'add_balance','["pendapatan"]',NULL,1,15,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33'),('risk_01','risk','Sakit Gigi','Anda harus ke dokter gigi segera.',-5,'pay_cash','["kesehatan", "pengeluaran"]',NULL,2,-5,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33');
+-- UNLOCK TABLES;
 --
 --
 --
@@ -152,14 +152,14 @@ UNLOCK TABLES;
 --
 --
 LOCK TABLES `scenario_options` WRITE;
-INSERT INTO `scenario_options` VALUES (1,'sc_utang_01','A','Langsung pinjam untuk belanja','{\"utang\": -10}','Bahaya! Bunga tinggi menanti.',0),(2,'sc_utang_01','B','Cek legalitas OJK dulu','{\"utang\": 5, \"literasi\": 5}','Bagus! Selalu waspada.',1),(3,'sc_saving_01','A','Pakai Dana Darurat','{\"tabungan\": -5}','Tepat! Itulah gunanya dana darurat.',1),(4,'sc_saving_01','B','Gesek Kartu Kredit','{\"utang\": -10}','Jangan tambah utang jika ada tabungan.',0),(5,'sc_asuransi_01','A','Membeli asuransi kendaraan TLO atau All Risk','{\"asuransi_dan_proteksi\": 10, \"pengeluaran\": -2}','Tepat! Risiko kehilangan aset kini dialihkan ke asuransi.',1),(6,'sc_asuransi_01','B','Tidak membeli asuransi agar hemat uang','{\"asuransi_dan_proteksi\": -10, \"tabungan\": 5}','Berbahaya. Jika motor hilang, Anda rugi total.',0),(7,'sc_investasi_01','A','Reksadana Pasar Uang','{\"investasi\": 12, \"risiko\": -5}','Pilihan cerdas! Risiko rendah dan likuid, cocok untuk pemula.',1),(8,'sc_investasi_01','B','Saham Gorengan / Crypto Viral','{\"investasi\": -5, \"risiko\": 20}','Terlalu berisiko! Anda bisa kehilangan modal dengan cepat.',0);
+-- INSERT INTO `scenario_options` VALUES (1,'sc_utang_01','A','Langsung pinjam untuk belanja','{\"utang\": -10}','Bahaya! Bunga tinggi menanti.',0),(2,'sc_utang_01','B','Cek legalitas OJK dulu','{\"utang\": 5, \"literasi\": 5}','Bagus! Selalu waspada.',1),(3,'sc_saving_01','A','Pakai Dana Darurat','{\"tabungan\": -5}','Tepat! Itulah gunanya dana darurat.',1),(4,'sc_saving_01','B','Gesek Kartu Kredit','{\"utang\": -10}','Jangan tambah utang jika ada tabungan.',0),(5,'sc_asuransi_01','A','Membeli asuransi kendaraan TLO atau All Risk','{\"asuransi_dan_proteksi\": 10, \"pengeluaran\": -2}','Tepat! Risiko kehilangan aset kini dialihkan ke asuransi.',1),(6,'sc_asuransi_01','B','Tidak membeli asuransi agar hemat uang','{\"asuransi_dan_proteksi\": -10, \"tabungan\": 5}','Berbahaya. Jika motor hilang, Anda rugi total.',0),(7,'sc_investasi_01','A','Reksadana Pasar Uang','{\"investasi\": 12, \"risiko\": -5}','Pilihan cerdas! Risiko rendah dan likuid, cocok untuk pemula.',1),(8,'sc_investasi_01','B','Saham Gorengan / Crypto Viral','{\"investasi\": -5, \"risiko\": 20}','Terlalu berisiko! Anda bisa kehilangan modal dengan cepat.',0);
 UNLOCK TABLES;
 --
 --
 --
 --
 LOCK TABLES `scenarios` WRITE;
-INSERT INTO `scenarios` VALUES ('sc_asuransi_01','asuransi_dan_proteksi','Perlindungan Aset','Anda baru saja membeli motor baru untuk bekerja. Apa langkah finansial terbaik untuk melindungi aset ini?','["asuransi", "aset"]',30,10,'Memahami pentingnya asuransi kendaraan',NULL,NULL,NULL,'2025-11-30 07:01:43','2025-11-30 07:01:43'),('sc_investasi_01','investasi','Pilihan Investasi Pemula','Anda memiliki uang dingin Rp 1.000.000 yang tidak terpakai. Instrumen investasi apa yang paling tepat untuk mulai belajar?','["investasi", "pemula"]',40,12,'Mengenal instrumen investasi risiko rendah',NULL,NULL,NULL,'2025-11-30 07:06:26','2025-11-30 07:06:26'),('sc_saving_01','tabungan_dan_dana_darurat','Motor Mogok','Motor rusak butuh 1 juta. Pakai uang apa?','["emergency", "saving"]',45,8,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33'),('sc_utang_01','utang','Jeratan Pinjol','Anda tergoda iklan pinjol cair cepat. Apa tindakan Anda?','["risk", "debt"]',40,10,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33');
+-- INSERT INTO `scenarios` VALUES ('sc_asuransi_01','asuransi_dan_proteksi','Perlindungan Aset','Anda baru saja membeli motor baru untuk bekerja. Apa langkah finansial terbaik untuk melindungi aset ini?','["asuransi", "aset"]',30,10,'Memahami pentingnya asuransi kendaraan',NULL,NULL,NULL,'2025-11-30 07:01:43','2025-11-30 07:01:43'),('sc_investasi_01','investasi','Pilihan Investasi Pemula','Anda memiliki uang dingin Rp 1.000.000 yang tidak terpakai. Instrumen investasi apa yang paling tepat untuk mulai belajar?','["investasi", "pemula"]',40,12,'Mengenal instrumen investasi risiko rendah',NULL,NULL,NULL,'2025-11-30 07:06:26','2025-11-30 07:06:26'),('sc_saving_01','tabungan_dan_dana_darurat','Motor Mogok','Motor rusak butuh 1 juta. Pakai uang apa?','["emergency", "saving"]',45,8,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33'),('sc_utang_01','utang','Jeratan Pinjol','Anda tergoda iklan pinjol cair cepat. Apa tindakan Anda?','["risk", "debt"]',40,10,NULL,NULL,NULL,NULL,'2025-11-27 02:53:33','2025-11-27 02:53:33');
 UNLOCK TABLES;
 --
 --
