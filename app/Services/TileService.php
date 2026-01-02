@@ -96,7 +96,8 @@ class TileService
             'content_id' => $contentId,
             'category' => $category,
             'content_title' => $contentTitle,
-            'landed_count' => $stats
+            'landed_count' => $stats,
+            'linked_content_raw' => $tile->linked_content // Raw JSON for edit form
         ];
     }
 

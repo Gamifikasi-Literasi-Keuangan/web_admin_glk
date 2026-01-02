@@ -510,6 +510,18 @@ async function showTileDetail(id) {
                     </div>
                 </div>
 
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                            <i class="fa-solid fa-code text-blue-600"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-blue-700 uppercase tracking-wide">
+                            Linked Content (JSON)
+                        </p>
+                    </div>
+                    <pre class="bg-white border border-blue-200 rounded p-3 text-xs font-mono overflow-x-auto max-h-32">${t.linked_content_raw ? JSON.stringify(JSON.parse(t.linked_content_raw), null, 2) : '<span class="text-gray-400 italic">Tidak ada linked content</span>'}</pre>
+                </div>
+
                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 text-center">
                     <div class="flex items-center justify-center mb-3">
                         <div class="bg-green-100 p-2 rounded-lg mr-3">
@@ -964,9 +976,222 @@ function updateContentDropdown(tileType) {
     }
 }
 
+// Render dynamic fields based on tile type
+function renderDynamicFields(tileType, data = {}) {
+    const container = document.getElementById('dynamic-fields-container');
+    if (!container) return;
+
+    // Parse existing linked_content if available
+    let linkedContent = {};
+    if (data.linked_content_raw) {
+        try { linkedContent = JSON.parse(data.linked_content_raw); } catch (e) { }
+    }
+
+    let html = '';
+
+    switch (tileType) {
+        case 'scenario':
+            const scenarioCategory = linkedContent.scenario_category || data.category || '';
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Kategori Skenario</label>
+                    <input list="scenario-list" name="scenario_category" value="${scenarioCategory}" 
+                        class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                        placeholder="Pilih atau ketik kategori...">
+                    <datalist id="scenario-list">
+                        ${availableContents?.scenario_categories?.map(c =>
+                `<option value="${c.category}">`
+            ).join('') || ''}
+                    </datalist>
+                    <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik kategori custom. Kosongkan untuk acak.</p>
+                </div>
+            `;
+            break;
+
+        case 'property':
+            const propertyType = linkedContent.type || '';
+            const riskLevel = linkedContent.risk_level || '';
+            const interestRate = linkedContent.interest_rate || '';
+            const coverage = linkedContent.coverage || '';
+            const generatesIncome = linkedContent.generates_income || '';
+            const termMonths = linkedContent.term || '';
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Aset</label>
+                    <input list="property-list" name="property_type" value="${propertyType}"
+                        class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                        placeholder="Pilih atau ketik tipe aset...">
+                    <datalist id="property-list">
+                        <option value="investment">Investasi (Saham/Reksadana)</option>
+                        <option value="savings">Tabungan & Deposito</option>
+                        <option value="insurance">Asuransi (Proteksi)</option>
+                        <option value="asset">Aset Produktif</option>
+                        <option value="education_investment">Investasi Pendidikan</option>
+                    </datalist>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Level Risiko</label>
+                        <input list="risk-level-list" name="risk_level" value="${riskLevel}"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                            placeholder="low/medium/high">
+                        <datalist id="risk-level-list">
+                            <option value="low">Rendah</option>
+                            <option value="medium">Menengah</option>
+                            <option value="high">Tinggi</option>
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Interest Rate (%)</label>
+                        <input type="number" step="0.1" name="interest_rate" value="${interestRate}"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                            placeholder="contoh: 2.5">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Coverage</label>
+                        <input list="coverage-list" name="coverage" value="${coverage}"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                            placeholder="Jenis coverage...">
+                        <datalist id="coverage-list">
+                            <option value="property">Property</option>
+                            <option value="health">Health</option>
+                            <option value="life">Life</option>
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Term (bulan)</label>
+                        <input type="number" name="term" value="${termMonths}"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                            placeholder="contoh: 12">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Generates Income</label>
+                    <select name="generates_income" class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                        <option value="">-- Tidak diset --</option>
+                        <option value="true" ${generatesIncome === true ? 'selected' : ''}>Ya (true)</option>
+                        <option value="false" ${generatesIncome === false ? 'selected' : ''}>Tidak (false)</option>
+                    </select>
+                </div>
+            `;
+            break;
+
+        case 'risk':
+            const riskCardId = linkedContent.card_id || '';
+            const riskSeverity = linkedContent.severity || '';
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Kartu Risk</label>
+                    <input list="risk-cards-list" name="card_id" value="${riskCardId}"
+                        class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                        placeholder="Kosongkan untuk acak atau pilih/ketik ID...">
+                    <datalist id="risk-cards-list">
+                        ${availableContents?.risks?.map(r =>
+                `<option value="${r.id}">${r.title}</option>`
+            ).join('') || ''}
+                    </datalist>
+                    <p class="text-xs text-gray-500 mt-1">Pilih kartu spesifik atau kosongkan untuk acak.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Severity</label>
+                    <input list="severity-list" name="severity" value="${riskSeverity}"
+                        class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                        placeholder="Tingkat keparahan risiko...">
+                    <datalist id="severity-list">
+                        <option value="low">Rendah</option>
+                        <option value="medium">Menengah</option>
+                        <option value="high">Tinggi</option>
+                    </datalist>
+                </div>
+            `;
+            break;
+
+        case 'chance':
+            const chanceCardId = linkedContent.card_id || '';
+            const incomeType = linkedContent.income_type || '';
+            const chanceBenefit = linkedContent.benefit || '';
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Kartu Chance</label>
+                    <input list="chance-cards-list" name="card_id" value="${chanceCardId}"
+                        class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                        placeholder="Kosongkan untuk acak atau pilih/ketik ID...">
+                    <datalist id="chance-cards-list">
+                        ${availableContents?.chances?.map(c =>
+                `<option value="${c.id}">${c.title}</option>`
+            ).join('') || ''}
+                    </datalist>
+                    <p class="text-xs text-gray-500 mt-1">Pilih kartu spesifik atau kosongkan untuk acak.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Income Type</label>
+                        <input list="income-type-list" name="income_type" value="${incomeType}"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                            placeholder="Jenis pendapatan...">
+                        <datalist id="income-type-list">
+                            <option value="side_hustle">Side Hustle</option>
+                            <option value="bonus">Bonus</option>
+                            <option value="gift">Gift</option>
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Benefit</label>
+                        <input list="benefit-list" name="benefit" value="${chanceBenefit}"
+                            class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                            placeholder="Jenis benefit...">
+                        <datalist id="benefit-list">
+                            <option value="education">Education</option>
+                            <option value="health">Health</option>
+                            <option value="financial">Financial</option>
+                        </datalist>
+                    </div>
+                </div>
+            `;
+            break;
+
+        case 'quiz':
+            const quizId = linkedContent.quiz_id || '';
+            html = `
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Kartu Quiz</label>
+                    <input list="quiz-cards-list" name="quiz_id" value="${quizId}"
+                        class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
+                        placeholder="Kosongkan untuk acak atau pilih/ketik ID...">
+                    <datalist id="quiz-cards-list">
+                        ${availableContents?.quizzes?.map(q =>
+                `<option value="${q.id}">${q.title}</option>`
+            ).join('') || ''}
+                    </datalist>
+                    <p class="text-xs text-gray-500 mt-1">Pilih quiz spesifik atau kosongkan untuk acak.</p>
+                </div>
+            `;
+            break;
+
+        case 'start':
+        case 'finish':
+            html = `
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                    <i class="fa-solid fa-info-circle text-gray-400 text-2xl mb-2"></i>
+                    <p class="text-gray-500 text-sm">Tile ${tileType.toUpperCase()} tidak memerlukan konfigurasi tambahan.</p>
+                </div>
+            `;
+            break;
+
+        default:
+            html = '<p class="text-gray-500 text-sm italic">Pilih tipe tile terlebih dahulu.</p>';
+    }
+
+    container.innerHTML = html;
+}
+
 async function showAddTileModal() {
     currentTileId = null;
-    const contents = await loadAvailableContents();
+
+    // Load available contents for dropdowns
+    await loadAvailableContents();
 
     const modal = document.createElement("div");
     modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
@@ -987,7 +1212,7 @@ async function showAddTileModal() {
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
-                        <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="updateContentDropdown(this.value)">
+                        <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="renderDynamicFields(this.value)">
                             <option value="scenario">Scenario</option>
                             <option value="property">Investasi & Aset (Property)</option>
                             <option value="risk">Risk</option>
@@ -1001,12 +1226,8 @@ async function showAddTileModal() {
                         <label class="block text-sm font-bold text-gray-700 mb-2">Posisi</label>
                         <input type="number" name="position" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" placeholder="0, 1, 2, ...">
                     </div>
-                    <div id="content-container">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Konten Tertaut</label>
-                        <select name="content" class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
-                            ${buildContentOptions(contents, 'scenario')}
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Opsional. Biarkan kosong untuk konten acak.</p>
+                    <div id="dynamic-fields-container" class="space-y-4">
+                        <!-- Dynamic fields will be rendered here -->
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -1022,6 +1243,9 @@ async function showAddTileModal() {
     `;
     document.body.appendChild(modal);
     tileModal = modal;
+
+    // Initialize dynamic fields for default type (scenario)
+    renderDynamicFields('scenario');
 }
 
 async function editTile(id) {
@@ -1031,13 +1255,18 @@ async function editTile(id) {
         const data = json.data || json;
 
         currentTileId = id;
-        const contents = await loadAvailableContents();
+
+        // Load available contents for dropdowns
+        await loadAvailableContents();
 
         // Get current tile position from list
         const tilesRes = await fetch(`${BASE_API}/tiles`, { headers });
         const tilesJson = await tilesRes.json();
         const tilesData = tilesJson.data || tilesJson;
         const currentTile = tilesData.find(t => t.tile_id === id);
+
+        // Store data globally for renderDynamicFields to access
+        window.currentEditTileData = data;
 
         const modal = document.createElement("div");
         modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
@@ -1058,7 +1287,7 @@ async function editTile(id) {
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
-                            <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="updateContentDropdown(this.value)">
+                            <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="renderDynamicFields(this.value, window.currentEditTileData)">
                                 <option value="scenario" ${data.type === 'scenario' ? 'selected' : ''}>Scenario</option>
                                 <option value="property" ${data.type === 'property' ? 'selected' : ''}>Investasi & Aset (Property)</option>
                                 <option value="risk" ${data.type === 'risk' ? 'selected' : ''}>Risk</option>
@@ -1072,12 +1301,8 @@ async function editTile(id) {
                             <label class="block text-sm font-bold text-gray-700 mb-2">Posisi</label>
                             <input type="number" name="position" value="${currentTile?.position || 0}" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
                         </div>
-                        <div id="content-container">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Konten Tertaut</label>
-                            <select name="content" class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
-                                ${buildContentOptions(contents, data.type, data.content_type, data.category || data.content_id)}
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Opsional. Biarkan kosong untuk konten acak.</p>
+                        <div id="dynamic-fields-container" class="space-y-4">
+                            <!-- Dynamic fields will be rendered here -->
                         </div>
                     </div>
                     <div class="flex gap-3 mt-6">
@@ -1094,6 +1319,9 @@ async function editTile(id) {
         if (tileModal) tileModal.remove();
         document.body.appendChild(modal);
         tileModal = modal;
+
+        // Initialize dynamic fields with existing data
+        renderDynamicFields(data.type, data);
     } catch (e) {
         showNotification(`Error: ${e.message}`, "error");
     }
@@ -1111,37 +1339,74 @@ async function saveTile(e) {
     const form = document.getElementById("tileForm");
     const formData = new FormData(form);
 
-    // Parse content selection
-    const contentValue = formData.get("content");
-    let contentType = null;
-    let contentId = null;
-    let category = null;
+    const tileType = formData.get("type");
 
-    if (contentValue && contentValue.includes(':')) {
-        const parts = contentValue.split(':');
-        contentType = parts[0];
+    // Build linked_content based on tile type and form fields
+    let linkedContent = null;
 
-        // For scenario_category, store category string instead of ID
-        if (contentType === 'scenario_category') {
-            category = parts[1]; // e.g., "Pendapatan", "Anggaran"
-            contentId = null;
-        } else if (contentType === 'property_type') {
-            // Handle Property Type selection (overwrite contentType with the specific type e.g. 'investment')
-            contentType = parts[1]; // investment, insurance, etc
-            contentId = null;
-            // Note: We are storing this in content_type column or linked_content logic in backend
-        } else {
-            contentId = parseInt(parts[1]);
-        }
+    switch (tileType) {
+        case 'scenario':
+            const scenarioCategory = formData.get("scenario_category");
+            if (scenarioCategory) {
+                linkedContent = { scenario_category: scenarioCategory };
+            }
+            break;
+
+        case 'property':
+            const propType = formData.get("property_type");
+            const propRiskLevel = formData.get("risk_level");
+            const propInterestRate = formData.get("interest_rate");
+            const propCoverage = formData.get("coverage");
+            const propTerm = formData.get("term");
+            const propGeneratesIncome = formData.get("generates_income");
+            linkedContent = {};
+            if (propType) linkedContent.type = propType;
+            if (propRiskLevel) linkedContent.risk_level = propRiskLevel;
+            if (propInterestRate) linkedContent.interest_rate = parseFloat(propInterestRate);
+            if (propCoverage) linkedContent.coverage = propCoverage;
+            if (propTerm) linkedContent.term = parseInt(propTerm);
+            if (propGeneratesIncome === 'true') linkedContent.generates_income = true;
+            if (propGeneratesIncome === 'false') linkedContent.generates_income = false;
+            break;
+
+        case 'risk':
+            const riskCardId = formData.get("card_id");
+            const riskSeverity = formData.get("severity");
+            linkedContent = { card_type: 'risk' };
+            if (riskCardId) linkedContent.card_id = parseInt(riskCardId);
+            if (riskSeverity) linkedContent.severity = riskSeverity;
+            break;
+
+        case 'chance':
+            const chanceCardId = formData.get("card_id");
+            const chanceIncomeType = formData.get("income_type");
+            const chanceBenefit = formData.get("benefit");
+            linkedContent = { card_type: 'chance' };
+            if (chanceCardId) linkedContent.card_id = parseInt(chanceCardId);
+            if (chanceIncomeType) linkedContent.income_type = chanceIncomeType;
+            if (chanceBenefit) linkedContent.benefit = chanceBenefit;
+            break;
+
+        case 'quiz':
+            const quizId = formData.get("quiz_id");
+            if (quizId) {
+                linkedContent = { quiz_id: parseInt(quizId) };
+            } else {
+                linkedContent = { quiz_category: 'literasi_umum' };
+            }
+            break;
+
+        case 'start':
+        case 'finish':
+            linkedContent = null;
+            break;
     }
 
     const payload = {
         name: formData.get("name"),
-        type: formData.get("type"),
+        type: tileType,
         position: parseInt(formData.get("position")),
-        content_type: contentType,
-        content_id: contentId,
-        category: category
+        linked_content: linkedContent
     };
 
     try {

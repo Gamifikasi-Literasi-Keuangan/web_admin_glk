@@ -29,11 +29,9 @@ class AdminTileController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'type' => 'required|in:scenario,risk,chance,quiz,start,finish',
+            'type' => 'required|in:scenario,property,risk,chance,quiz,start,finish',
             'position' => 'required|integer|min:0',
-            'content_type' => 'nullable|string',
-            'content_id' => 'nullable|integer',
-            'category' => 'nullable|string|max:100' // For scenario tiles
+            'linked_content' => 'nullable|array' // Accept JSON object directly
         ]);
 
         $result = $this->service->createTile($validated);
@@ -48,11 +46,9 @@ class AdminTileController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'type' => 'required|in:scenario,risk,chance,quiz,start,finish',
+            'type' => 'required|in:scenario,property,risk,chance,quiz,start,finish',
             'position' => 'required|integer|min:0',
-            'content_type' => 'nullable|string',
-            'content_id' => 'nullable|integer',
-            'category' => 'nullable|string|max:100' // For scenario tiles
+            'linked_content' => 'nullable|array' // Accept JSON object directly
         ]);
 
         $result = $this->service->updateTile($id, $validated);

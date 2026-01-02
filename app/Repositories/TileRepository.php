@@ -39,35 +39,34 @@ class TileRepository
     {
         // Generate short tile_id (max 10 chars to fit DB column)
         $tileId = 't' . substr(md5(uniqid()), 0, 8);
+        
+        // Store linked_content directly from user input
+        $linkedContent = $data['linked_content'] ?? null;
+        
         DB::table('boardtiles')->insert([
             'tile_id' => $tileId,
             'name' => $data['name'],
             'type' => $data['type'],
             'position_index' => $data['position'],
-            'category' => $data['category'] ?? null, // Store category for scenario tiles
-            'linked_content' => json_encode([
-                'content_type' => $data['content_type'] ?? null,
-                'content_id' => $data['content_id'] ?? null,
-                'category' => $data['category'] ?? null
-            ]),
+            'category' => $linkedContent['scenario_category'] ?? $linkedContent['category'] ?? null,
+            'linked_content' => $linkedContent ? json_encode($linkedContent) : null,
         ]);
         return $tileId;
     }
 
     public function update($id, $data)
     {
+        // Store linked_content directly from user input
+        $linkedContent = $data['linked_content'] ?? null;
+        
         return DB::table('boardtiles')
             ->where('tile_id', $id)
             ->update([
                 'name' => $data['name'],
                 'type' => $data['type'],
                 'position_index' => $data['position'],
-                'category' => $data['category'] ?? null, // Store category for scenario tiles
-                'linked_content' => json_encode([
-                    'content_type' => $data['content_type'] ?? null,
-                    'content_id' => $data['content_id'] ?? null,
-                    'category' => $data['category'] ?? null
-                ]),
+                'category' => $linkedContent['scenario_category'] ?? $linkedContent['category'] ?? null,
+                'linked_content' => $linkedContent ? json_encode($linkedContent) : null,
             ]);
     }
 
@@ -135,5 +134,85 @@ class TileRepository
     public function delete($id)
     {
         return DB::table('boardtiles')->where('tile_id', $id)->delete();
+    }
+
+    /**
+     * Build linked_content JSON structure based on tile type
+     * Matches BoardTilesSeeder format for game engine compatibility
+     */
+    private function buildLinkedContent($data)
+    {
+        $type = $data['type'] ?? null;
+        $contentType = $data['content_type'] ?? null;
+        $contentId = $data['content_id'] ?? null;
+        $category = $data['category'] ?? null;
+
+        // START/FINISH tiles don't need linked content
+        if (in_array($type, ['start', 'finish'])) {
+            return null;
+        }
+
+        // SCENARIO tiles - use scenario_category format
+        if ($type === 'scenario') {
+            return [
+                'scenario_category' => $category ?? $contentType
+            ];
+        }
+
+        // PROPERTY tiles - use type format with sub-type
+        if ($type === 'property') {
+            return [
+                'type' => $contentType ?? 'investment',
+                'risk_level' => 'medium' // Default risk level
+            ];
+        }
+
+        // RISK tiles
+        if ($type === 'risk') {
+            if ($contentId) {
+                return [
+                    'card_type' => 'risk',
+                    'card_id' => $contentId
+                ];
+            }
+            return [
+                'card_type' => 'risk',
+                'random' => true
+            ];
+        }
+
+        // CHANCE tiles
+        if ($type === 'chance') {
+            if ($contentId) {
+                return [
+                    'card_type' => 'chance',
+                    'card_id' => $contentId
+                ];
+            }
+            return [
+                'card_type' => 'chance',
+                'random' => true
+            ];
+        }
+
+        // QUIZ tiles
+        if ($type === 'quiz') {
+            if ($contentId) {
+                return [
+                    'quiz_id' => $contentId
+                ];
+            }
+            return [
+                'quiz_category' => 'literasi_umum',
+                'random' => true
+            ];
+        }
+
+        // Fallback - generic format
+        return [
+            'content_type' => $contentType,
+            'content_id' => $contentId,
+            'category' => $category
+        ];
     }
 }
