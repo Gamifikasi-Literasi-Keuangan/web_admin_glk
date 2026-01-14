@@ -17,7 +17,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 0,
                 'position_index' => 0,
-                'type' => 'start',
+                'type' => 'special',
                 'name' => 'Mulai',
                 'category' => 'special',
                 'linked_content' => json_encode(['description' => 'Titik awal permainan'])
@@ -27,7 +27,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 1,
                 'position_index' => 1,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Reksadana',
                 'category' => 'investasi',
                 'linked_content' => json_encode(['type' => 'investment', 'risk_level' => 'medium'])
@@ -47,7 +47,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 3,
                 'position_index' => 3,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Tabungan',
                 'category' => 'tabungan_dan_dana_darurat',
                 'linked_content' => json_encode(['type' => 'savings', 'interest_rate' => 2.5])
@@ -59,7 +59,7 @@ class BoardTilesSeeder extends Seeder
                 'position_index' => 4,
                 'type' => 'risk',
                 'name' => 'Risiko',
-                'category' => 'special',
+                'category' => 'card',
                 'linked_content' => json_encode(['card_type' => 'risk'])
             ],
             
@@ -79,7 +79,7 @@ class BoardTilesSeeder extends Seeder
                 'position_index' => 6,
                 'type' => 'scenario',
                 'name' => 'Uang Bulanan',
-                'category' => 'anggaran',
+                'category' => 'pendapatan',
                 'linked_content' => json_encode(['scenario_category' => 'budgeting'])
             ],
             
@@ -87,9 +87,9 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 7,
                 'position_index' => 7,
-                'type' => 'risk',
+                'type' => 'special',
                 'name' => 'Terjerat Utang',
-                'category' => 'utang',
+                'category' => 'special',
                 'linked_content' => json_encode(['card_type' => 'risk', 'severity' => 'high'])
             ],
             
@@ -97,7 +97,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 8,
                 'position_index' => 8,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Cryptocurrency',
                 'category' => 'investasi',
                 'linked_content' => json_encode(['type' => 'investment', 'risk_level' => 'high'])
@@ -117,7 +117,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 10,
                 'position_index' => 10,
-                'type' => 'chance',
+                'type' => 'scenario',
                 'name' => 'Beasiswa',
                 'category' => 'pendapatan',
                 'linked_content' => json_encode(['card_type' => 'chance', 'benefit' => 'education'])
@@ -127,9 +127,9 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 11,
                 'position_index' => 11,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Aset Produktif',
-                'category' => 'investasi',
+                'category' => 'tujuan_jangka_panjang',
                 'linked_content' => json_encode(['type' => 'asset', 'generates_income' => true])
             ],
             
@@ -147,9 +147,9 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 13,
                 'position_index' => 13,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Asuransi Barang/Harta',
-                'category' => 'asuransi_dan_proteksi',
+                'category' => 'asuransi',
                 'linked_content' => json_encode(['type' => 'insurance', 'coverage' => 'property'])
             ],
             
@@ -157,9 +157,9 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 14,
                 'position_index' => 14,
-                'type' => 'property',
+                'type' => 'special',
                 'name' => 'Dana Darurat Aman',
-                'category' => 'tabungan_dan_dana_darurat',
+                'category' => 'special',
                 'linked_content' => json_encode(['type' => 'emergency_fund', 'status' => 'secured'])
             ],
             
@@ -167,7 +167,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 15,
                 'position_index' => 15,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Deposito',
                 'category' => 'tabungan_dan_dana_darurat',
                 'linked_content' => json_encode(['type' => 'savings', 'interest_rate' => 5.0, 'term' => 12])
@@ -187,7 +187,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 17,
                 'position_index' => 17,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Saham',
                 'category' => 'investasi',
                 'linked_content' => json_encode(['type' => 'investment', 'risk_level' => 'high'])
@@ -199,7 +199,7 @@ class BoardTilesSeeder extends Seeder
                 'position_index' => 18,
                 'type' => 'quiz',
                 'name' => 'Kuis Literasi',
-                'category' => 'special',
+                'category' => 'quiz',
                 'linked_content' => json_encode(['card_type' => 'quiz'])
             ],
             
@@ -207,9 +207,9 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 19,
                 'position_index' => 19,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Asuransi Kendaraan',
-                'category' => 'asuransi_dan_proteksi',
+                'category' => 'asuransi',
                 'linked_content' => json_encode(['type' => 'insurance', 'coverage' => 'vehicle'])
             ],
             
@@ -217,7 +217,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 20,
                 'position_index' => 20,
-                'type' => 'chance',
+                'type' => 'scenario',
                 'name' => 'Freelance',
                 'category' => 'pendapatan',
                 'linked_content' => json_encode(['card_type' => 'chance', 'income_type' => 'side_hustle'])
@@ -227,9 +227,9 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 21,
                 'position_index' => 21,
-                'type' => 'risk',
+                'type' => 'special',
                 'name' => 'Bangkrut',
-                'category' => 'utang',
+                'category' => 'special',
                 'linked_content' => json_encode(['card_type' => 'risk', 'severity' => 'critical'])
             ],
             
@@ -237,7 +237,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 22,
                 'position_index' => 22,
-                'type' => 'risk',
+                'type' => 'scenario',
                 'name' => 'Pinjol',
                 'category' => 'utang',
                 'linked_content' => json_encode(['card_type' => 'risk', 'severity' => 'high'])
@@ -247,7 +247,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 23,
                 'position_index' => 23,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Dana Darurat',
                 'category' => 'tabungan_dan_dana_darurat',
                 'linked_content' => json_encode(['type' => 'emergency_fund'])
@@ -269,7 +269,7 @@ class BoardTilesSeeder extends Seeder
                 'position_index' => 25,
                 'type' => 'chance',
                 'name' => 'Kesempatan',
-                'category' => 'special',
+                'category' => 'card',
                 'linked_content' => json_encode(['card_type' => 'chance'])
             ],
             
@@ -277,7 +277,7 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 26,
                 'position_index' => 26,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Pendidikan',
                 'category' => 'tujuan_jangka_panjang',
                 'linked_content' => json_encode(['type' => 'education_investment'])
@@ -287,9 +287,9 @@ class BoardTilesSeeder extends Seeder
             [
                 'tile_id' => 27,
                 'position_index' => 27,
-                'type' => 'property',
+                'type' => 'scenario',
                 'name' => 'Asuransi Kesehatan',
-                'category' => 'asuransi_dan_proteksi',
+                'category' => 'asuransi',
                 'linked_content' => json_encode(['type' => 'insurance', 'coverage' => 'health'])
             ],
         ];
@@ -303,9 +303,7 @@ class BoardTilesSeeder extends Seeder
 
         $this->command->info('✅ Board tiles seeded successfully!');
         $this->command->info('📊 Total tiles: ' . count($tiles));
-        $this->command->info('   - Start: 1');
-        $this->command->info('   - Properties: 13');
-        $this->command->info('   - Scenarios: 7');
+        $this->command->info('   - Scenarios: 19');
         $this->command->info('   - Risk: 4');
         $this->command->info('   - Chance: 3');
         $this->command->info('   - Quiz: 1');
