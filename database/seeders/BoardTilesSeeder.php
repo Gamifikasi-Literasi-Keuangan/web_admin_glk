@@ -43,7 +43,7 @@ class BoardTilesSeeder extends Seeder
                 'linked_content' => json_encode(['scenario_category' => 'debt_management'])
             ],
             
-            // ID 3 - Tabungan
+            // ID 3 - Tabungan & Dana Darurat
             [
                 'tile_id' => 3,
                 'position_index' => 3,
@@ -133,12 +133,12 @@ class BoardTilesSeeder extends Seeder
                 'linked_content' => json_encode(['type' => 'asset', 'generates_income' => true])
             ],
             
-            // ID 12 - Pay Later
+            // ID 12 - Paylater
             [
                 'tile_id' => 12,
                 'position_index' => 12,
                 'type' => 'scenario',
-                'name' => 'Pay Later',
+                'name' => 'Paylater',
                 'category' => 'utang',
                 'linked_content' => json_encode(['scenario_category' => 'debt_management'])
             ],

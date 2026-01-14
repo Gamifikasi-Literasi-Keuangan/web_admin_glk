@@ -64,7 +64,7 @@ class ScenarioSeeder extends Seeder
 
             [
                 'id' => 'SCN_PENDAPATAN_04',
-                'category' => 'Pendapatan',
+                'category' => 'Freelance',
                 'title' => 'Bayaran Freelance',
                 'question' => 'Kamu mendapat bayaran freelance Rp1.000.000. Apa yang kamu lakukan?',
                 'difficulty' => 1,
@@ -77,7 +77,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_PENDAPATAN_05',
-                'category' => 'Pendapatan',
+                'category' => 'Freelance',
                 'title' => 'Pendapatan Freelance Tidak Tetap',
                 'question' => 'Pendapatan freelance-mu bulan ini Rp700.000, bulan depan belum tentu ada. Bagaimana cara mengelolanya?',
                 'difficulty' => 2,
@@ -90,7 +90,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_PENDAPATAN_06',
-                'category' => 'Pendapatan',
+                'category' => 'Freelance',
                 'title' => 'Pendapatan Tambahan dari Freelance',
                 'question' => 'Kamu sudah punya gaji tetap, lalu mendapat tambahan Rp1.500.000 dari freelance. Apa yang kamu lakukan dengan tambahan ini?',
                 'difficulty' => 3,
@@ -283,7 +283,7 @@ class ScenarioSeeder extends Seeder
             // =============================================
             [
                 'id' => 'SCN_TABUNGAN_01',
-                'category' => 'Tabungan & Dana Darurat',
+                'category' => 'Tabungan',
                 'title' => 'Mulai Menabung',
                 'question' => 'Kamu ingin mulai menabung dari uang saku bulanan Rp2.000.000. Bagaimana caramu?',
                 'difficulty' => 1,
@@ -296,7 +296,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_TABUNGAN_02',
-                'category' => 'Tabungan & Dana Darurat',
+                'category' => 'Tabungan',
                 'title' => 'Target Beli Laptop',
                 'question' => 'Kamu ingin membeli laptop baru seharga Rp6.000.000 dalam 1 tahun. Bagaimana strategimu?',
                 'difficulty' => 2,
@@ -309,7 +309,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_TABUNGAN_03',
-                'category' => 'Tabungan & Dana Darurat',
+                'category' => 'Tabungan',
                 'title' => 'Mengelola Uang Kaget',
                 'question' => 'Kamu punya Rp2.000.000 dari hasil freelance. Bagaimana cara mengelolanya?',
                 'difficulty' => 3,
@@ -326,7 +326,7 @@ class ScenarioSeeder extends Seeder
             // =============================================
             [
                 'id' => 'SCN_TABUNGAN_04',
-                'category' => 'Tabungan & Dana Darurat',
+                'category' => 'Dana Darurat',
                 'title' => 'Menyiapkan Dana Darurat',
                 'question' => 'Kamu baru mulai kerja dan ingin menyiapkan dana darurat. Apa yang kamu lakukan?',
                 'difficulty' => 1,
@@ -339,7 +339,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_TABUNGAN_05',
-                'category' => 'Tabungan & Dana Darurat',
+                'category' => 'Dana Darurat',
                 'title' => 'Menggunakan Dana Darurat',
                 'question' => 'Tiba-tiba motor kamu rusak dan butuh biaya Rp1.000.000. Dari mana kamu ambil uangnya?',
                 'difficulty' => 2,
@@ -352,7 +352,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_TABUNGAN_06',
-                'category' => 'Tabungan & Dana Darurat',
+                'category' => 'Dana Darurat',
                 'title' => 'Menghitung Target Dana Darurat',
                 'question' => 'Pengeluaran rutinmu Rp2.000.000/bulan. Berapa target dana darurat yang perlu disiapkan?',
                 'difficulty' => 3,
@@ -499,7 +499,7 @@ class ScenarioSeeder extends Seeder
             // =============================================
             [
                 'id' => 'SCN_UTANG_07',
-                'category' => 'Utang',
+                'category' => 'Paylater',
                 'title' => 'Keinginan vs Kemampuan',
                 'question' => 'Kamu ingin membeli sepatu Rp800.000 padahal gaji masih 2 minggu lagi. Apa pilihanmu?',
                 'difficulty' => 1,
@@ -512,7 +512,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_UTANG_08',
-                'category' => 'Utang',
+                'category' => 'Paylater',
                 'title' => 'Pelunasan Kartu Kredit',
                 'question' => 'Kamu punya tagihan kartu kredit Rp1.000.000. Bagaimana cara membayarnya?',
                 'difficulty' => 2,
@@ -525,7 +525,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_UTANG_09',
-                'category' => 'Utang',
+                'category' => 'Paylater',
                 'title' => 'Jebakan Diskon Paylater',
                 'question' => 'E-commerce menawarkan diskon besar jika memakai paylater. Bagaimana sikapmu?',
                 'difficulty' => 3,
@@ -629,7 +629,7 @@ class ScenarioSeeder extends Seeder
             // =============================================
             [
                 'id' => 'SCN_INVESTASI_07',
-                'category' => 'Cryptoocurrency',
+                'category' => 'Cryptocurrency',
                 'title' => 'Memulai Crypto',
                 'question' => 'Kamu punya Rp1.000.000 dan ingin mencoba cryptocurrency. Apa langkahmu?',
                 'difficulty' => 1,
@@ -642,7 +642,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_INVESTASI_08',
-                'category' => 'Cryptoocurrency',
+                'category' => 'Cryptocurrency',
                 'title' => 'Volatilitas Crypto',
                 'question' => 'Harga crypto yang kamu beli turun 30% dalam sebulan. Apa reaksimu?',
                 'difficulty' => 2,
@@ -655,7 +655,7 @@ class ScenarioSeeder extends Seeder
             ],
             [
                 'id' => 'SCN_INVESTASI_09',
-                'category' => 'Cryptoocurrency',
+                'category' => 'Cryptocurrency',
                 'title' => 'Keamanan Aset Digital',
                 'question' => 'Kamu menyimpan crypto di aplikasi exchange. Bagaimana cara terbaik melindunginya?',
                 'difficulty' => 3,
