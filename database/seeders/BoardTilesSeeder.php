@@ -20,7 +20,7 @@ class BoardTilesSeeder extends Seeder
                 'type' => 'special',
                 'name' => 'Mulai',
                 'category' => 'special',
-                'linked_content' => json_encode(['description' => 'Titik awal permainan'])
+                'linked_content' => json_encode(['special_id' => 'start', 'description' => 'Titik awal permainan'])
             ],
             
             // ID 1 - Reksadana
@@ -90,7 +90,7 @@ class BoardTilesSeeder extends Seeder
                 'type' => 'special',
                 'name' => 'Terjerat Utang',
                 'category' => 'special',
-                'linked_content' => json_encode(['card_type' => 'risk', 'severity' => 'high'])
+                'linked_content' => json_encode(['special_id' => 'terjerat_utang', 'severity' => 'high'])
             ],
             
             // ID 8 - Cryptocurrency
@@ -160,7 +160,7 @@ class BoardTilesSeeder extends Seeder
                 'type' => 'special',
                 'name' => 'Dana Darurat Aman',
                 'category' => 'special',
-                'linked_content' => json_encode(['type' => 'emergency_fund', 'status' => 'secured'])
+                'linked_content' => json_encode(['special_id' => 'dana_darurat_aman', 'status' => 'secured'])
             ],
             
             // ID 15 - Deposito
@@ -230,7 +230,7 @@ class BoardTilesSeeder extends Seeder
                 'type' => 'special',
                 'name' => 'Bangkrut',
                 'category' => 'special',
-                'linked_content' => json_encode(['card_type' => 'risk', 'severity' => 'critical'])
+                'linked_content' => json_encode(['special_id' => 'bangkrut', 'severity' => 'critical'])
             ],
             
             // ID 22 - Pinjol
