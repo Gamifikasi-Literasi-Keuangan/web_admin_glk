@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('narration');
             $table->integer('scoreChange');
             $table->string('action', 50);
+            $table->integer('target_tile')->nullable(); // Kotak tujuan untuk card movement
             $table->longText('categories');
             $table->longText('tags')->nullable();
             $table->integer('difficulty')->nullable();
