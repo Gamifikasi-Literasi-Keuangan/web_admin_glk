@@ -31,6 +31,9 @@ class DatabaseSeeder extends Seeder
         // 3. Profiling System (Financial Aspects, Questions, Options)
         $this->call(ProfilingSystemSeeder::class);
 
+        // 4. intervention seeder
+        $this->call(InterventionTemplateSeeder::class);
+
         $this->command->info('');
 
         // ============================================
@@ -53,6 +56,9 @@ class DatabaseSeeder extends Seeder
         // 8. Scenario Options (pilihan jawaban scenario)
         // CATATAN: ScenarioOptionSeeder memiliki dependency ke Scenarios
         $this->call(ScenarioOptionSeeder::class);
+
+        // 9. interventio seeder
+        $this->call(InterventionTemplateSeeder::class);
 
         $this->command->info('');
 

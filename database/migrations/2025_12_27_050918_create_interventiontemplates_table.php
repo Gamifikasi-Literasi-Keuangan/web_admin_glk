@@ -11,13 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('interventiontemplates');
+
         Schema::create('interventiontemplates', function (Blueprint $table) {
-            $table->integer('level')->primary();
-            $table->string('risk_level', 20);
-            $table->string('title_template', 200);
+            $table->id();
+            $table->integer('level')->index();
+            $table->string('risk_level')->nullable();
+            $table->string('category')->nullable();
+            $table->text('title_template');
             $table->text('message_template');
-            $table->longText('actions_template')->nullable();
-            $table->boolean('is_mandatory')->nullable()->default(false);
+            $table->json('actions_template')->nullable();
+            $table->text('heed_message')->nullable();
+            $table->boolean('is_mandatory')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
         });
     }
 

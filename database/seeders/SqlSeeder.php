@@ -20,8 +20,7 @@ class SqlSeeder extends Seeder
 
         // Path ke file SQL seeder
         $sqlFiles = [
-            'glk_db.sql',
-            'postman_seed_full.sql',
+            'glk_db.sql'
         ];
 
         foreach ($sqlFiles as $sqlFile) {
