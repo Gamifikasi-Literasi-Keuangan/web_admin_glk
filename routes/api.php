@@ -88,6 +88,8 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     Route::get('/sessions', [AdminSessionController::class, 'index']);
     //pake 3: Leaderboard dan Session Detail
     Route::get('/sessions/{id}', [AdminSessionController::class, 'show']);
+    Route::post('/sessions/{id}/force-end', [AdminSessionController::class, 'forceEnd']);
+    Route::delete('/sessions/{id}', [AdminSessionController::class, 'destroy']);
     Route::get('/leaderboard/global', [AdminLeaderboardController::class, 'globalLeaderboard']);
     Route::get('/sessions/{id}/leaderboard', [AdminSessionController::class, 'leaderboard']);
 

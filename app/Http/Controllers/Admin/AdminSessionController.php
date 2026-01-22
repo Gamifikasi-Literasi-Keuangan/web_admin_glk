@@ -37,4 +37,30 @@ class AdminSessionController extends Controller
         $data = $this->service->getSessionDetail($id);
         return $data ? response()->json($data) : response()->json(['message' => 'Not Found'], 404);
     }
+
+    public function forceEnd($id)
+    {
+        $result = $this->service->forceEndSession($id);
+        if (!$result) {
+            return response()->json(['message' => 'Session not found or cannot be ended'], 404);
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Session has been force ended',
+            'session_id' => $id
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $result = $this->service->deleteSession($id);
+        if (!$result) {
+            return response()->json(['message' => 'Session not found or cannot be deleted'], 404);
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Session has been deleted',
+            'session_id' => $id
+        ]);
+    }
 }

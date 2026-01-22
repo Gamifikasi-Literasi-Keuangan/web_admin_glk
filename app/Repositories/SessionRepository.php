@@ -16,11 +16,15 @@ class SessionRepository
                     ->where('participatesin.rank', '=', 1);
             })
             ->leftJoin('players as winner', 'participatesin.playerId', '=', 'winner.PlayerId')
+            // Count total players in session
+            ->leftJoin(DB::raw('(SELECT sessionId, COUNT(*) as player_count FROM participatesin GROUP BY sessionId) as player_counts'), 
+                'game_sessions.sessionId', '=', 'player_counts.sessionId')
             ->select(
                 'game_sessions.*',
                 'players.name as host_name',
                 'winner.name as winner_name',
-                'participatesin.score as winning_score'
+                'participatesin.score as winning_score',
+                DB::raw('COALESCE(player_counts.player_count, 0) as player_count')
             )
             ->orderBy('game_sessions.created_at', 'desc');
 

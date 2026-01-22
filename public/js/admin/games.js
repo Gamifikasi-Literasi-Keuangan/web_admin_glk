@@ -70,8 +70,23 @@ function renderSessionGrid(sessions) {
         const sessionId = session.session_id || session.id || session.game_id || `GAME-${String(index + 1).padStart(3, '0')}`;
         
         // Handle multiple possible field names for status
-        const status = session.status || session.session_status || session.state || 'unknown';
-        const isActive = status.toLowerCase() === 'active' || status.toLowerCase() === 'running' || status.toLowerCase() === 'ongoing';
+        const status = (session.status || session.session_status || session.state || 'unknown').toLowerCase();
+        
+        // Determine badge color and text based on status
+        let badgeColor, badgeText;
+        if (status === 'active') {
+            badgeColor = 'bg-green-600';
+            badgeText = 'Active';
+        } else if (status === 'waiting') {
+            badgeColor = 'bg-blue-600';
+            badgeText = 'Waiting';
+        } else if (status === 'completed') {
+            badgeColor = 'bg-gray-500';
+            badgeText = 'Ended';
+        } else {
+            badgeColor = 'bg-gray-500';
+            badgeText = 'Unknown';
+        }
         
         // Handle multiple possible field names for other data
         const playerCount = session.player_count || session.players_count || session.total_players || 0;
@@ -83,8 +98,8 @@ function renderSessionGrid(sessions) {
                 <!-- Session Header -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
                     <h3 class="text-black text-lg md:text-2xl font-normal font-['Poppins']">Session Info</h3>
-                    <div class="w-16 h-6 sm:w-20 sm:h-7 ${isActive ? 'bg-green-600' : 'bg-gray-500'} rounded-[5px] flex items-center justify-center">
-                        <span class="text-white text-sm sm:text-base font-normal font-['Poppins']">${isActive ? 'Active' : 'Ended'}</span>
+                    <div class="w-16 h-6 sm:w-20 sm:h-7 ${badgeColor} rounded-[5px] flex items-center justify-center">
+                        <span class="text-white text-sm sm:text-base font-normal font-['Poppins']">${badgeText}</span>
                     </div>
                 </div>
                 
@@ -162,8 +177,23 @@ async function showSessionDetail(sessionId) {
         const currentTurn = sessionData.current_turn || sessionData.current_player || {};
         
         // Extract data with multiple fallback options
-        const sessionStatus = info.status || info.session_status || info.state || 'active';
-        const isActive = sessionStatus.toLowerCase() === 'active' || sessionStatus.toLowerCase() === 'running';
+        const sessionStatus = (info.status || info.session_status || info.state || 'unknown').toLowerCase();
+        
+        // Determine badge color and text based on status
+        let badgeColor, badgeText;
+        if (sessionStatus === 'active') {
+            badgeColor = 'bg-green-600';
+            badgeText = 'Active';
+        } else if (sessionStatus === 'waiting') {
+            badgeColor = 'bg-blue-600';
+            badgeText = 'Waiting';
+        } else if (sessionStatus === 'completed') {
+            badgeColor = 'bg-gray-500';
+            badgeText = 'Ended';
+        } else {
+            badgeColor = 'bg-gray-500';
+            badgeText = 'Unknown';
+        }
         
         const currentPlayerName = currentTurn.player_name || currentTurn.name || 
                                  info.current_player || info.current_player_name || 'Waiting...';
@@ -198,8 +228,8 @@ async function showSessionDetail(sessionId) {
                                 <p class="text-black text-sm md:text-base font-normal font-['Poppins'] mb-1">Session ID</p>
                                 <p class="text-black text-base md:text-xl font-bold font-['Poppins'] break-all">${sessionId}</p>
                             </div>
-                            <div class="w-16 h-5 sm:w-20 sm:h-6 ${isActive ? 'bg-green-600' : 'bg-gray-500'} rounded-[5px] flex items-center justify-center">
-                                <span class="text-white text-xs sm:text-base font-normal font-['Poppins']">${isActive ? 'Active' : 'Ended'}</span>
+                            <div class="w-16 h-5 sm:w-20 sm:h-6 ${badgeColor} rounded-[5px] flex items-center justify-center">
+                                <span class="text-white text-xs sm:text-base font-normal font-['Poppins']">${badgeText}</span>
                             </div>
                         </div>
                     </div>
@@ -230,10 +260,14 @@ async function showSessionDetail(sessionId) {
                             const playerName = player.name || player.player_name || player.username || `Player ${index + 1}`;
                             const playerScore = player.score || player.final_score || player.points || player.total_score || '0';
                             const playerId = player.player_id || player.id || player.user_id || `player-${index}`;
+                            const rank = player.rank || index + 1;
                             
                             return `
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-                                    <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                                        <div class="w-8 h-8 rounded-full ${rank === 1 ? 'bg-yellow-500' : rank === 2 ? 'bg-gray-400' : rank === 3 ? 'bg-orange-600' : 'bg-zinc-500'} flex items-center justify-center flex-shrink-0">
+                                            <span class="text-white text-sm font-bold">${rank}</span>
+                                        </div>
                                         <p class="text-black text-lg md:text-2xl font-normal font-['Poppins'] truncate">${playerName}</p>
                                     </div>
                                     <div class="flex items-center gap-3 md:gap-4 w-full sm:w-auto justify-between sm:justify-end">
@@ -254,6 +288,23 @@ async function showSessionDetail(sessionId) {
                         `}
                     </div>
                 </div>
+
+                <!-- Action Buttons (Only for active/waiting sessions) -->
+                ${sessionStatus === 'active' || sessionStatus === 'waiting' ? `
+                <div class="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
+                    <button onclick="forceEndSession('${sessionId}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-semibold font-['Poppins'] transition-colors text-sm md:text-base flex items-center justify-center gap-2">
+                        <i class="fas fa-stop-circle"></i>
+                        <span>Force End Session</span>
+                    </button>
+                </div>
+                ` : sessionStatus === 'completed' ? `
+                <div class="mt-4 md:mt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
+                    <button onclick="deleteSession('${sessionId}')" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg font-semibold font-['Poppins'] transition-colors text-sm md:text-base flex items-center justify-center gap-2">
+                        <i class="fas fa-trash"></i>
+                        <span>Delete Session</span>
+                    </button>
+                </div>
+                ` : ''}
             </div>
         `;
 
@@ -308,6 +359,100 @@ function showPlayerDetail(playerId) {
         // Fallback: redirect to players page
         window.location.href = `/admin/players#player-${playerId}`;
     }
+}
+
+// --- FORCE END SESSION ---
+async function forceEndSession(sessionId) {
+    if (!confirm('Are you sure you want to force end this session? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${BASE_API}/sessions/${sessionId}/force-end`, {
+            method: 'POST',
+            headers
+        });
+
+        if (!res.ok) throw new Error('Failed to force end session');
+
+        const json = await res.json();
+        
+        // Show success notification
+        showNotification('Session has been force ended successfully', 'success');
+        
+        // Reload session detail after 1 second
+        setTimeout(() => {
+            showSessionDetail(sessionId);
+        }, 1000);
+
+    } catch (e) {
+        console.error('Force end error:', e);
+        showNotification('Failed to force end session: ' + e.message, 'error');
+    }
+}
+
+// --- DELETE SESSION ---
+async function deleteSession(sessionId) {
+    if (!confirm('Are you sure you want to delete this session? All related data will be permanently deleted!')) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${BASE_API}/sessions/${sessionId}`, {
+            method: 'DELETE',
+            headers
+        });
+
+        if (!res.ok) throw new Error('Failed to delete session');
+
+        const json = await res.json();
+        
+        // Show success notification
+        showNotification('Session has been deleted successfully', 'success');
+        
+        // Go back to session list after 1 second
+        setTimeout(() => {
+            backToSessionList();
+        }, 1000);
+
+    } catch (e) {
+        console.error('Delete error:', e);
+        showNotification('Failed to delete session: ' + e.message, 'error');
+    }
+}
+
+// --- NOTIFICATION FUNCTION ---
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full opacity-0 max-w-sm`;
+
+    if (type === 'success') {
+        notification.className += ' bg-green-600 text-white';
+        notification.innerHTML = `<div class="flex items-center"><i class="fas fa-check-circle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
+    } else if (type === 'error') {
+        notification.className += ' bg-red-600 text-white';
+        notification.innerHTML = `<div class="flex items-center"><i class="fas fa-exclamation-triangle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
+    } else {
+        notification.className += ' bg-blue-600 text-white';
+        notification.innerHTML = `<div class="flex items-center"><i class="fas fa-info-circle mr-3"></i><span class="font-['Poppins']">${message}</span></div>`;
+    }
+
+    document.body.appendChild(notification);
+
+    // Show notification
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full', 'opacity-0');
+    }, 100);
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 }
 
 // No longer needed - using direct content replacement instead of modal

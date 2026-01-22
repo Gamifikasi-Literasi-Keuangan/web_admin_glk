@@ -39,7 +39,12 @@ UNLOCK TABLES;
 --
 --
 LOCK TABLES `auth_users` WRITE;
-INSERT INTO `auth_users` VALUES (2,'mona_lisa','google_1029384756',NULL,'player','https://ui-avatars.com/api/?name=Mona','2025-11-27 02:53:33','2025-11-27 07:28:45'),(4,'Mona Lisa Test','google_test_123',NULL,'player','https://via.placeholder.com/150','2025-11-27 07:35:35','2025-11-27 07:35:35'),(5,'Mona Tester','google_test_user_001',NULL,'player','https://ui-avatars.com/api/?name=Mona+Tester','2025-11-28 03:00:10','2025-11-28 03:00:10'),(6,'dev_tester','dev_123',NULL,'player',NULL,'2025-11-28 07:00:59','2025-11-28 07:00:59'),(7,'Tester Postman','google_id_tester_001',NULL,'player','https://ui-avatars.com/api/?name=Tester+Postman','2025-11-28 11:36:38','2025-11-28 11:36:38');
+INSERT INTO `auth_users` (`id`, `username`, `google_id`, `passwordHash`, `role`, `avatar`, `created_at`, `updated_at`) VALUES 
+(2,'mona_lisa','google_1029384756',NULL,'player','https://ui-avatars.com/api/?name=Mona','2025-11-27 02:53:33','2025-11-27 07:28:45'),
+(4,'Mona Lisa Test','google_test_123',NULL,'player','https://via.placeholder.com/150','2025-11-27 07:35:35','2025-11-27 07:35:35'),
+(5,'Mona Tester','google_test_user_001',NULL,'player','https://ui-avatars.com/api/?name=Mona+Tester','2025-11-28 03:00:10','2025-11-28 03:00:10'),
+(6,'dev_tester','dev_123',NULL,'player',NULL,'2025-11-28 07:00:59','2025-11-28 07:00:59'),
+(7,'Tester Postman','google_id_tester_001',NULL,'player','https://ui-avatars.com/api/?name=Tester+Postman','2025-11-28 11:36:38','2025-11-28 11:36:38');
 UNLOCK TABLES;
 --
 --
