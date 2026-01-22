@@ -116,9 +116,65 @@ class ScenarioService
 
     public function create($data)
     {
-        // Generate unique ID untuk scenario
-        $category = strtolower(str_replace(' ', '_', $data['category']));
-        $id = $category . '_' . uniqid();
+        // Mapping category/sub-aspek ke prefix ID
+        $categoryMap = [
+            // Pendapatan sub-aspek
+            'Uang Bulanan' => 'PENDAPATAN',
+            'Freelance' => 'PENDAPATAN',
+            'Beasiswa' => 'PENDAPATAN',
+            
+            // Anggaran sub-aspek
+            'Makan' => 'ANGGARAN',
+            'Transport' => 'ANGGARAN',
+            'Nongkrong' => 'ANGGARAN',
+            
+            // Tabungan sub-aspek
+            'Tabungan' => 'TABUNGAN',
+            'Dana Darurat' => 'TABUNGAN',
+            'Deposito' => 'TABUNGAN',
+            
+            // Utang sub-aspek
+            'Pinjaman Teman' => 'UTANG',
+            'Pinjol' => 'UTANG',
+            'Paylater' => 'UTANG',
+            
+            // Investasi sub-aspek
+            'Reksadana' => 'INVESTASI',
+            'Saham' => 'INVESTASI',
+            'Cryptocurrency' => 'INVESTASI',
+            
+            // Asuransi sub-aspek
+            'Asuransi Kesehatan' => 'ASURANSI',
+            'Asuransi Kendaraan' => 'ASURANSI',
+            'Asuransi Barang/Harta' => 'ASURANSI',
+            
+            // Tujuan Finansial sub-aspek
+            'Pendidikan' => 'TUJUAN',
+            'Pengalaman' => 'TUJUAN',
+            'Aset Produktif' => 'TUJUAN',
+        ];
+
+        // Dapatkan prefix berdasarkan category
+        $category = $data['category'];
+        $prefix = $categoryMap[$category] ?? 'SCENARIO';
+        
+        // Cari nomor sequence terakhir dengan prefix yang sama
+        $lastScenario = \App\Models\Scenario::where('id', 'LIKE', "SCN_{$prefix}_%")
+            ->orderBy('id', 'desc')
+            ->first();
+        
+        // Generate nomor baru
+        $nextNumber = 1;
+        if ($lastScenario) {
+            // Extract angka dari ID terakhir (SCN_PREFIX_01 -> 01)
+            preg_match('/SCN_' . $prefix . '_(\d+)$/', $lastScenario->id, $matches);
+            if (!empty($matches[1])) {
+                $nextNumber = intval($matches[1]) + 1;
+            }
+        }
+        
+        // Format ID: SCN_PREFIX_XX (dengan padding 2 digit)
+        $id = 'SCN_' . $prefix . '_' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
 
         $scenarioData = [
             'id' => $id,
