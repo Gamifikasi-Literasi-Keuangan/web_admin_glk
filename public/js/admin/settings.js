@@ -47,6 +47,7 @@ async function loadData() {
     try {
         let url;
         if (currentTab === "config") url = `${BASE_API}/config/game`;
+        else if (currentTab === "scoring") url = `${BASE_API}/config/scoring`;
         else if (currentTab === "tiles") url = `${BASE_API}/tiles`;
         else url = `${BASE_API}/interventions`;
 
@@ -59,6 +60,7 @@ async function loadData() {
         const data = json.data || json;
 
         if (currentTab === "config") renderConfig(data);
+        else if (currentTab === "scoring") renderScoringConfig(data);
         else if (currentTab === "tiles") renderTiles(data);
         else renderInterventions(data);
     } catch (e) {
@@ -144,6 +146,118 @@ function renderConfig(data) {
 
                 <div class="flex items-center justify-end border-t border-zinc-200 pt-6">
                     <button type="button" onclick="resetConfigForm()" 
+                        class="text-zinc-600 hover:text-zinc-800 font-medium px-6 py-2.5 mr-4 transition-colors">
+                        <i class="fa-solid fa-rotate-right mr-2"></i>Reset
+                    </button>
+                    <button type="submit" 
+                        class="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-8 py-3 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-save mr-2"></i>Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+}
+
+// --- 1B. RENDER SCORING CONFIG ---
+function renderScoringConfig(data) {
+    const container = document.getElementById("settings-content");
+
+    // Map config_key to user-friendly labels and icons
+    const configLabels = {
+        'max_player_score': {
+            label: 'Skor Maksimal Pemain',
+            icon: 'trophy',
+            min: 1,
+            max: 1000,
+            step: 1
+        },
+        'sensitivity_factor': {
+            label: 'Faktor Sensitivitas',
+            icon: 'sliders',
+            min: 0,
+            max: 1,
+            step: 0.01
+        },
+        'min_score_multiplier': {
+            label: 'Multiplier Skor Minimum',
+            icon: 'arrow-down',
+            min: 0,
+            max: 1,
+            step: 0.01
+        },
+        'max_score_multiplier': {
+            label: 'Multiplier Skor Maksimum',
+            icon: 'arrow-up',
+            min: 1,
+            max: 10,
+            step: 0.1
+        }
+    };
+
+    // Define order for 2x2 layout (top row, bottom row)
+    const orderedKeys = [
+        'max_player_score',
+        'sensitivity_factor',
+        'min_score_multiplier',
+        'max_score_multiplier'
+    ];
+
+    // Build config cards in specific order
+    let configCards = '';
+    orderedKeys.forEach(key => {
+        const config = data.find(c => c.config_key === key);
+        if (!config) return;
+
+        const meta = configLabels[key];
+        if (!meta) return;
+
+        // Format value - remove trailing zeros for integers
+        let displayValue = config.config_value;
+        if (key === 'max_player_score') {
+            displayValue = parseInt(config.config_value);
+        }
+
+        configCards += `
+            <div class="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center mb-3">
+                    <div class="bg-zinc-100 p-2 rounded-lg mr-3">
+                        <i class="fa-solid fa-${meta.icon} text-zinc-600"></i>
+                    </div>
+                    <label class="block text-zinc-700 font-semibold">${meta.label}</label>
+                </div>
+                <input type="number" id="${config.config_key}" 
+                    value="${displayValue}" 
+                    min="${meta.min}" 
+                    max="${meta.max}" 
+                    step="${meta.step}"
+                    class="w-full bg-zinc-50 border border-zinc-300 text-zinc-800 text-lg font-bold rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5">
+                <p class="mt-2 text-xs text-zinc-500 text-justify">${config.description || ''}</p>
+            </div>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="max-w-6xl">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <i class="fa-solid fa-calculator text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-zinc-800">Konfigurasi Skor</h3>
+                        <p class="text-sm text-zinc-600">Pengaturan sistem penilaian dan weighted scoring untuk permainan.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="scoringConfigForm" onsubmit="saveScoringConfig(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    ${configCards}
+                </div>
+
+                <div class="flex items-center justify-end border-t border-zinc-200 pt-6">
+                    <button type="button" onclick="resetScoringConfigForm()" 
                         class="text-zinc-600 hover:text-zinc-800 font-medium px-6 py-2.5 mr-4 transition-colors">
                         <i class="fa-solid fa-rotate-right mr-2"></i>Reset
                     </button>
@@ -622,6 +736,94 @@ async function saveConfig(e) {
 
 // --- RESET CONFIG FORM ---
 function resetConfigForm() {
+    loadData();
+}
+
+// --- SAVE SCORING CONFIG ---
+async function saveScoringConfig(e) {
+    e.preventDefault();
+
+    // Collect all config values
+    const configs = [
+        {
+            config_key: 'max_player_score',
+            config_value: parseFloat(document.getElementById('max_player_score').value)
+        },
+        {
+            config_key: 'sensitivity_factor',
+            config_value: parseFloat(document.getElementById('sensitivity_factor').value)
+        },
+        {
+            config_key: 'min_score_multiplier',
+            config_value: parseFloat(document.getElementById('min_score_multiplier').value)
+        },
+        {
+            config_key: 'max_score_multiplier',
+            config_value: parseFloat(document.getElementById('max_score_multiplier').value)
+        }
+    ];
+
+    // Validasi
+    for (const config of configs) {
+        if (isNaN(config.config_value)) {
+            alert(`Nilai untuk ${config.config_key} harus berupa angka!`);
+            return;
+        }
+    }
+
+    // Validasi khusus per config
+    const maxPlayerScore = configs.find(c => c.config_key === 'max_player_score').config_value;
+    if (maxPlayerScore <= 0 || maxPlayerScore > 1000) {
+        alert('Skor Maksimal Pemain harus antara 1-1000!');
+        return;
+    }
+
+    const sensitivityFactor = configs.find(c => c.config_key === 'sensitivity_factor').config_value;
+    if (sensitivityFactor < 0 || sensitivityFactor > 1) {
+        alert('Faktor Sensitivitas harus antara 0-1!');
+        return;
+    }
+
+    const minMultiplier = configs.find(c => c.config_key === 'min_score_multiplier').config_value;
+    if (minMultiplier < 0 || minMultiplier > 1) {
+        alert('Multiplier Skor Minimum harus antara 0-1!');
+        return;
+    }
+
+    const maxMultiplier = configs.find(c => c.config_key === 'max_score_multiplier').config_value;
+    if (maxMultiplier < 1 || maxMultiplier > 10) {
+        alert('Multiplier Skor Maksimum harus antara 1-10!');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${BASE_API}/config/scoring`, {
+            method: 'PUT',
+            headers: {
+                ...headers,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ configs }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            showNotification('Konfigurasi skor berhasil diperbarui!', 'success');
+            setTimeout(() => loadData(), 1500);
+        } else {
+            showNotification(
+                result.message || 'Gagal menyimpan konfigurasi skor',
+                'error'
+            );
+        }
+    } catch (e) {
+        showNotification(`Error: ${e.message}`, 'error');
+    }
+}
+
+// --- RESET SCORING CONFIG FORM ---
+function resetScoringConfigForm() {
     loadData();
 }
 

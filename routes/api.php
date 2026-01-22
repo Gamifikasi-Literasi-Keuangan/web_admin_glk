@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\AdminCardController;
 use App\Http\Controllers\Admin\AdminTileController;
 use App\Http\Controllers\Admin\AdminInterventionController;
 use App\Http\Controllers\Admin\AdminConfigController;
+use App\Http\Controllers\Admin\AdminScoringConfigController;
 use App\Http\Controllers\Admin\AdminSessionController;
 use App\Http\Controllers\Admin\AdminLeaderboardController;
 use App\Http\Controllers\Admin\AdminMetricController;
@@ -62,6 +63,8 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     Route::delete('/interventions/{id}', [AdminInterventionController::class, 'destroy']);
     Route::get('/config/game', [AdminConfigController::class, 'show']);
     Route::put('/config/game', [AdminConfigController::class, 'update']);
+    Route::get('/config/scoring', [AdminScoringConfigController::class, 'index']);
+    Route::put('/config/scoring', [AdminScoringConfigController::class, 'update']);
     Route::prefix('cards')->group(function () {
         // Risk
         Route::get('/risk', [AdminCardController::class, 'indexRisk']);
@@ -111,7 +114,7 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
         Route::get('/growth', [AdminMetricController::class, 'growthMetrics']);
         Route::get('/engagement', [AdminMetricController::class, 'engagement']);
     });
-    
+
     // ANN Management Endpoints
     Route::prefix('ann')->group(function () {
         Route::post('/train', [ANNController::class, 'train']);
