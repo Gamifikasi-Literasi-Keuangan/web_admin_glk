@@ -97,7 +97,7 @@ class PlayerRepository
 
         // Update status banned di auth_users
         $player->user->update([
-            'is_active' => false,
+            'is_active' => 0,
             'ban_reason' => $banReason ?? 'Banned by admin'
         ]);
 
@@ -113,7 +113,7 @@ class PlayerRepository
 
         // Update status active di auth_users
         $player->user->update([
-            'is_active' => true,
+            'is_active' => 1,
             'ban_reason' => null
         ]);
 

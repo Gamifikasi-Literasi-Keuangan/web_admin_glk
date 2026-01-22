@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["resources/js/*"]
+    },
+    "lib": ["ES2020", "DOM"],
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true
+  },
+  "include": [
+    "resources/js/**/*",
+    "public/js/**/*",
+    "resources/views/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "vendor",
+    "storage",
+    "public/build"
+  ]
+}
