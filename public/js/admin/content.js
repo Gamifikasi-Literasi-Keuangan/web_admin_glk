@@ -482,8 +482,8 @@ async function showDetail(id) {
                         <span class="text-3xl font-bold ${impactColor}">${impactVal > 0 ? '+' + impactVal : impactVal}</span>
                     </div>
                     <div class="bg-white p-4 rounded shadow-sm border border-gray-100 text-center">
-                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Expected Benefit</p>
-                        <span class="text-xl font-bold text-blue-600">${item.expected_benefit || 5}</span>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Target Tile</p>
+                        <span class="text-xl font-bold text-purple-600">${item.target_tile || '-'}</span>
                     </div>
                     <div class="bg-white p-4 rounded shadow-sm border border-gray-100 text-center">
                         <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Statistik</p>
@@ -492,9 +492,15 @@ async function showDetail(id) {
                     </div>
                 </div>
                 
-                <div class="bg-white p-4 rounded border border-gray-200 mb-4">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Aksi/Efek</p>
-                    <p class="text-gray-800 font-medium">${item.action_type || 'default'}</p>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white p-4 rounded border border-gray-200">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Aksi/Efek</p>
+                        <p class="text-gray-800 font-medium">${item.action_type || 'default'}</p>
+                    </div>
+                    <div class="bg-white p-4 rounded border border-gray-200">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Expected Benefit</p>
+                        <p class="text-gray-800 font-medium">${item.expected_benefit || 5}</p>
+                    </div>
                 </div>
                 
                 ${item.learning_objective ? `
@@ -925,11 +931,22 @@ async function renderForm(loadData = false) {
         const diffValue = data?.difficulty || 1;
         const isRisk = currentTab === 'risk';
 
-        // Categories options based on CardSeeder
-        const categoryOptions = [
-            'Dana Darurat', 'Asuransi Kesehatan', 'Tabungan', 'Utang', 'Investasi',
-            'Anggaran', 'Paylater', 'Cryptocurrency', 'Gaya Hidup', 'Tujuan Jangka Panjang'
-        ];
+        // Fetch board tiles untuk dropdown target_tile
+        let tilesOptions = '<option value="">-- Pilih Tile Tujuan --</option>';
+        try {
+            const tilesRes = await fetch(`${BASE_API}/tiles`, { headers });
+            if (tilesRes.ok) {
+                const tilesJson = await tilesRes.json();
+                const tiles = tilesJson.data || tilesJson || [];
+                tilesOptions += tiles.map(tile => {
+                    const tilePosition = tile.tile_id ?? tile.position_index ?? 0;
+                    const selected = data?.target_tile === tilePosition ? 'selected' : '';
+                    return `<option value="${tilePosition}" ${selected}>${tilePosition} - ${tile.name}</option>`;
+                }).join('');
+            }
+        } catch (e) {
+            console.error('Gagal memuat tiles:', e);
+        }
 
         formHtml = `
             <div class="mb-4">
@@ -951,26 +968,25 @@ async function renderForm(loadData = false) {
                 </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">Aksi/Efek</label>
-                    <input type="text" name="action" value="${data?.action_type || ''}" placeholder="Contoh: Pindah ke Kotak Dana Darurat"
+                    <input type="text" id="action-input" name="action" value="${data?.action_type || ''}" placeholder="Contoh: Pindah ke Kotak Dana Darurat"
                         class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                    <p class="text-xs text-gray-500 mt-1">Deskripsi efek yang terjadi (opsional)</p>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Kategori</label>
-                    <select name="categories" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
-                        <option value="">-- Pilih Kategori --</option>
-                        ${categoryOptions.map(cat => `<option value="${cat}" ${data?.categories === cat ? 'selected' : ''}>${cat}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Tingkat Kesulitan</label>
-                    <select name="difficulty" required class="w-full px-3 py-2 border rounded-lg">
-                        <option value="1" ${diffValue == 1 ? 'selected' : ''}>1 - Mudah</option>
-                        <option value="2" ${diffValue == 2 ? 'selected' : ''}>2 - Sedang</option>
-                        <option value="3" ${diffValue == 3 ? 'selected' : ''}>3 - Sulit</option>
-                    </select>
-                </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Target Tile (Tujuan Pindah) <span class="text-red-500">*</span></label>
+                <select id="target-tile-select" name="target_tile" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                    ${tilesOptions}
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Tile tujuan ketika kartu ini diambil (wajib diisi)</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Tingkat Kesulitan</label>
+                <select name="difficulty" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                    <option value="1" ${diffValue == 1 ? 'selected' : ''}>1 - Mudah</option>
+                    <option value="2" ${diffValue == 2 ? 'selected' : ''}>2 - Sedang</option>
+                    <option value="3" ${diffValue == 3 ? 'selected' : ''}>3 - Sulit</option>
+                </select>
             </div>
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
@@ -1089,11 +1105,18 @@ async function handleSubmit(e) {
         const tagsStr = formData.get('tags') || '';
         const tagsArray = tagsStr.split(',').map(t => t.trim()).filter(t => t);
 
+        // target_tile is now always required
+        const targetTileValue = formData.get('target_tile');
+        if (!targetTileValue) {
+            alert('Target Tile wajib diisi!');
+            return;
+        }
+
         payload = {
             title: formData.get('title'),
             narration: formData.get('narration'),
             action: formData.get('action') || 'default',
-            categories: formData.get('categories') || '',
+            target_tile: parseInt(targetTileValue),
             tags: tagsArray.join(', '),
             difficulty: difficulty,
             expected_benefit: parseInt(formData.get('expected_benefit')) || 5,

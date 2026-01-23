@@ -60,6 +60,9 @@ class DatabaseSeeder extends Seeder
         // 9. interventio seeder
         $this->call(InterventionTemplateSeeder::class);
 
+        // 10. Scoring Configuration
+        $this->call(ScoringConfigSeeder::class);
+
         $this->command->info('');
 
         // ============================================

@@ -25,9 +25,11 @@ class Card extends Model
         'narration',
         'scoreChange',
         'action',
+        'target_tile',
         'categories',
         'tags',
         'difficulty',
+        'expected_benefit',
         'learning_objective',
         'weak_area_relevance',
         'cluster_relevance',
@@ -42,6 +44,8 @@ class Card extends Model
         'historical_success_rate' => 'float',
         'scoreChange' => 'integer',
         'difficulty' => 'integer',
+        'target_tile' => 'integer',
+        'expected_benefit' => 'integer',
     ];
     public function decisions()
     {

@@ -885,6 +885,19 @@ function showAddInterventionModal() {
                         </select>
                     </div>
                     <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Kategori</label>
+                        <select name="category" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">
+                            <option value="">-- Pilih Kategori --</option>
+                            <option value="pendapatan">Pendapatan</option>
+                            <option value="anggaran">Anggaran</option>
+                            <option value="tabungan_dan_dana_darurat">Tabungan dan Dana Darurat</option>
+                            <option value="utang">Utang</option>
+                            <option value="investasi">Investasi</option>
+                            <option value="asuransi">Asuransi</option>
+                            <option value="tujuan_jangka_panjang">Tujuan Jangka Panjang</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Judul</label>
                         <input type="text" name="title_template" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">
                     </div>
@@ -893,8 +906,24 @@ function showAddInterventionModal() {
                         <textarea name="message_template" rows="3" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Tombol (JSON)</label>
-                        <textarea name="actions_json" rows="3" placeholder='[{"text": "OK"}]' required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none font-mono text-xs"></textarea>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Hint Message</label>
+                        <textarea name="heed_message" rows="2" placeholder="Pesan hint yang muncul jika intervensi..." class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Tombol Aksi</label>
+                        <div class="space-y-3 mb-2">
+                            <div class="border border-gray-300 rounded p-3 bg-gray-50">
+                                <p class="text-xs font-semibold text-gray-600 mb-2">Tombol 1</p>
+                                <input type="text" name="action_id_0" value="heeded" placeholder="ID tombol" class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none mb-2 text-sm">
+                                <input type="text" name="action_text_0" value="Lihat Penjelasan Lengkap" placeholder="Teks tombol" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none text-sm">
+                            </div>
+                            <div class="border border-gray-300 rounded p-3 bg-gray-50">
+                                <p class="text-xs font-semibold text-gray-600 mb-2">Tombol 2</p>
+                                <input type="text" name="action_id_1" value="ignored" placeholder="ID tombol" class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none mb-2 text-sm">
+                                <input type="text" name="action_text_1" value="Saya Sudah Yakin, Lanjut" placeholder="Teks tombol" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none text-sm">
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500">Tombol pertama untuk 'heeded' (melihat penjelasan), tombol kedua untuk 'ignored' (melewati)</p>
                     </div>
                     <div class="flex items-center">
                         <input type="checkbox" name="is_mandatory" id="is_mandatory" class="rounded">
@@ -960,6 +989,19 @@ async function editIntervention(id) {
                             </select>
                         </div>
                         <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Kategori</label>
+                            <select name="category" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">
+                                <option value="">-- Pilih Kategori --</option>
+                                <option value="pendapatan" ${data.category === "pendapatan" ? "selected" : ""}>Pendapatan</option>
+                                <option value="anggaran" ${data.category === "anggaran" ? "selected" : ""}>Anggaran</option>
+                                <option value="tabungan_dan_dana_darurat" ${data.category === "tabungan_dan_dana_darurat" ? "selected" : ""}>Tabungan dan Dana Darurat</option>
+                                <option value="utang" ${data.category === "utang" ? "selected" : ""}>Utang</option>
+                                <option value="investasi" ${data.category === "investasi" ? "selected" : ""}>Investasi</option>
+                                <option value="asuransi" ${data.category === "asuransi" ? "selected" : ""}>Asuransi</option>
+                                <option value="tujuan_jangka_panjang" ${data.category === "tujuan_jangka_panjang" ? "selected" : ""}>Tujuan Jangka Panjang</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Judul</label>
                             <input type="text" name="title_template" value="${data.title
             }" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">
@@ -970,10 +1012,28 @@ async function editIntervention(id) {
             }</textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Tombol (JSON)</label>
-                            <textarea name="actions_json" rows="3" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none font-mono text-xs">${JSON.stringify(
-                data.actions
-            )}</textarea>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Heed Message (Pesan Jika Diabaikan)</label>
+                            <textarea name="heed_message" rows="2" placeholder="Pesan yang muncul jika intervensi diabaikan..." class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none">${data.heed_message || ''}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Tombol Aksi</label>
+                            <div class="space-y-3 mb-2">
+                                ${data.actions && data.actions.length >= 1 ? `
+                                <div class="border border-gray-300 rounded p-3 bg-gray-50">
+                                    <p class="text-xs font-semibold text-gray-600 mb-2">Tombol 1</p>
+                                    <input type="text" name="action_id_0" value="${data.actions[0].id || 'heeded'}" placeholder="ID tombol" class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none mb-2 text-sm">
+                                    <input type="text" name="action_text_0" value="${data.actions[0].text || 'Lihat Penjelasan Lengkap'}" placeholder="Teks tombol" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none text-sm">
+                                </div>
+                                ` : ''}
+                                ${data.actions && data.actions.length >= 2 ? `
+                                <div class="border border-gray-300 rounded p-3 bg-gray-50">
+                                    <p class="text-xs font-semibold text-gray-600 mb-2">Tombol 2</p>
+                                    <input type="text" name="action_id_1" value="${data.actions[1].id || 'ignored'}" placeholder="ID tombol" class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none mb-2 text-sm">
+                                    <input type="text" name="action_text_1" value="${data.actions[1].text || 'Saya Sudah Yakin, Lanjut'}" placeholder="Teks tombol" required class="w-full p-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none text-sm">
+                                </div>
+                                ` : ''}
+                            </div>
+                            <p class="text-xs text-gray-500">Tombol pertama untuk 'heeded' (melihat penjelasan), tombol kedua untuk 'ignored' (melewati)</p>
                         </div>
                         <div class="flex items-center">
                             <input type="checkbox" name="is_mandatory" id="is_mandatory" ${data.is_mandatory ? "checked" : ""
@@ -1013,20 +1073,33 @@ async function saveIntervention(e) {
     const formData = new FormData(form);
 
     try {
-        // Parse JSON actions
+        // Build actions array from form fields
         let actions = [];
-        try {
-            actions = JSON.parse(formData.get("actions_json"));
-        } catch {
-            showNotification("Format JSON tombol tidak valid!", "error");
+        let i = 0;
+        while (formData.has(`action_text_${i}`)) {
+            const actionId = formData.get(`action_id_${i}`) || `action_${i}`;
+            const actionText = formData.get(`action_text_${i}`);
+            if (actionText) {
+                actions.push({
+                    id: actionId,
+                    text: actionText
+                });
+            }
+            i++;
+        }
+
+        if (actions.length === 0) {
+            showNotification("Minimal harus ada 1 tombol aksi!", "error");
             return;
         }
 
         const payload = {
             level: parseInt(formData.get("level")),
             risk_level: formData.get("risk_level"),
+            category: formData.get("category"),
             title_template: formData.get("title_template"),
             message_template: formData.get("message_template"),
+            heed_message: formData.get("heed_message") || null,
             actions: actions,
             is_mandatory: formData.get("is_mandatory") ? true : false,
         };

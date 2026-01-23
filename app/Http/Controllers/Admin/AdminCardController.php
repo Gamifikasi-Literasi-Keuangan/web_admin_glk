@@ -50,10 +50,13 @@ class AdminCardController extends Controller
     // CREATE
     public function storeRisk(Request $request)
     {
+        \Log::info('Risk card request received:', $request->all());
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'narration' => 'required|string',
             'difficulty' => 'required|integer|between:1,3',
+            'target_tile' => 'required|integer|min:0',
         ]);
         $card = $this->service->createCard('risk', $request->all());
         return response()->json(['message' => 'Risk card created', 'data' => $card], 201);
@@ -61,10 +64,13 @@ class AdminCardController extends Controller
 
     public function storeChance(Request $request)
     {
+        \Log::info('Chance card request received:', $request->all());
+        
         $request->validate([
             'title' => 'required|string|max:255',
             'narration' => 'required|string',
             'difficulty' => 'required|integer|between:1,3',
+            'target_tile' => 'required|integer|min:0',
         ]);
         $card = $this->service->createCard('chance', $request->all());
         return response()->json(['message' => 'Chance card created', 'data' => $card], 201);
@@ -93,6 +99,7 @@ class AdminCardController extends Controller
             'narration' => 'sometimes|string',
             'difficulty' => 'sometimes|integer|between:1,3',
             'scoreChange' => 'sometimes|integer',
+            'target_tile' => 'sometimes|integer|min:0',
         ]);
         $card = $this->service->updateCard($id, 'risk', $request->all());
         if (!$card)
@@ -107,6 +114,7 @@ class AdminCardController extends Controller
             'narration' => 'sometimes|string',
             'difficulty' => 'sometimes|integer|between:1,3',
             'scoreChange' => 'sometimes|integer',
+            'target_tile' => 'sometimes|integer|min:0',
         ]);
         $card = $this->service->updateCard($id, 'chance', $request->all());
         if (!$card)
