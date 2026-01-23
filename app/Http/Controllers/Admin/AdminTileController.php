@@ -31,6 +31,8 @@ class AdminTileController extends Controller
             'name' => 'required|string|max:100',
             'type' => 'required|in:scenario,property,risk,chance,quiz,start,finish',
             'position' => 'required|integer|min:0',
+            'tile_id' => 'nullable|string|max:10',
+            'category' => 'nullable|string|max:100',
             'linked_content' => 'nullable|array' // Accept JSON object directly
         ]);
 

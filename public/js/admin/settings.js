@@ -1157,99 +1157,6 @@ async function deleteIntervention(id) {
 // --- TILE CRUD ---
 let tileModal = null;
 let currentTileId = null;
-let availableContents = null;
-
-async function loadAvailableContents() {
-    if (availableContents) return availableContents;
-    try {
-        const res = await fetch(`${BASE_API}/tiles/meta/contents`, { headers });
-        const json = await res.json();
-        availableContents = json.data;
-        return availableContents;
-    } catch (e) {
-        console.error('Failed to load contents:', e);
-        return null;
-    }
-}
-
-// Build content options filtered by tile type
-function buildContentOptions(contents, tileType = null, selectedType = null, selectedValue = null) {
-    if (!contents) return '<option value="">Tidak tersedia</option>';
-
-    // For start/finish, no content needed
-    if (tileType === 'start' || tileType === 'finish') {
-        return '<option value="">-- Tidak memerlukan konten --</option>';
-    }
-
-    let options = '<option value="">-- Konten Acak --</option>';
-
-    // For scenario tiles: show categories (not individual scenarios)
-    if ((!tileType || tileType === 'scenario') && contents.scenario_categories && contents.scenario_categories.length) {
-        options += '<optgroup label="Kategori Skenario">';
-        contents.scenario_categories.forEach(cat => {
-            const selected = selectedType === 'scenario_category' && selectedValue == cat.category ? 'selected' : '';
-            options += `<option value="scenario_category:${cat.category}" ${selected}>${cat.title}</option>`;
-        });
-        options += '</optgroup>';
-    }
-
-    // Only show risks if type is risk
-    if ((!tileType || tileType === 'risk') && contents.risks && contents.risks.length) {
-        options += '<optgroup label="Risk Cards">';
-        contents.risks.forEach(r => {
-            const selected = selectedType === 'risk' && selectedValue == r.id ? 'selected' : '';
-            options += `<option value="risk:${r.id}" ${selected}>${r.title}</option>`;
-        });
-        options += '</optgroup>';
-    }
-
-    // Only show chances if type is chance
-    if ((!tileType || tileType === 'chance') && contents.chances && contents.chances.length) {
-        options += '<optgroup label="Chance Cards">';
-        contents.chances.forEach(c => {
-            const selected = selectedType === 'chance' && selectedValue == c.id ? 'selected' : '';
-            options += `<option value="chance:${c.id}" ${selected}>${c.title}</option>`;
-        });
-        options += '</optgroup>';
-    }
-
-    // Only show quizzes if type is quiz
-    if ((!tileType || tileType === 'quiz') && contents.quizzes && contents.quizzes.length) {
-        options += '<optgroup label="Quiz Cards">';
-        contents.quizzes.forEach(q => {
-            const selected = selectedType === 'quiz' && selectedValue == q.id ? 'selected' : '';
-            options += `<option value="quiz:${q.id}" ${selected}>${q.title}</option>`;
-        });
-        options += '</optgroup>';
-    }
-
-    // Property Sub-types
-    if (tileType === 'property') {
-        options = '<option value="">-- Pilih Tipe Aset --</option>';
-        const types = [
-            { id: 'investment', label: 'Investasi (Saham/Reksadana)' },
-            { id: 'savings', label: 'Tabungan & Deposito' },
-            { id: 'insurance', label: 'Asuransi (Proteksi)' },
-            { id: 'education_investment', label: 'Investasi Pendidikan' },
-            { id: 'asset', label: 'Aset Produktif Lainnya' }
-        ];
-        types.forEach(t => {
-            // Check if matches content linked data
-            const selected = (selectedType === 'property' && selectedValue === t.id) || (selectedType === t.id) ? 'selected' : '';
-            options += `<option value="property_type:${t.id}" ${selected}>${t.label}</option>`;
-        });
-    }
-
-    return options;
-}
-
-// Update content dropdown when type changes
-function updateContentDropdown(tileType) {
-    const contentSelect = document.querySelector('#tileForm select[name="content"]');
-    if (contentSelect && availableContents) {
-        contentSelect.innerHTML = buildContentOptions(availableContents, tileType);
-    }
-}
 
 // Render dynamic fields based on tile type
 function renderDynamicFields(tileType, data = {}) {
@@ -1266,21 +1173,46 @@ function renderDynamicFields(tileType, data = {}) {
 
     switch (tileType) {
         case 'scenario':
-            const scenarioCategory = linkedContent.scenario_category || data.category || '';
+            const categoryMapping = {
+                'pendapatan': ['Uang Bulanan', 'Pendapatan', 'Beasiswa'],
+                'anggaran': ['Makan', 'Transport', 'Nongkrong'],
+                'tabungan_dan_dana_darurat': ['Tabungan', 'Dana Darurat', 'Deposito'],
+                'utang': ['Pinjaman Teman', 'Pinjol', 'Utang'],
+                'investasi': ['Reksadana', 'Saham', 'Cryptocurrency'],
+                'asuransi_dan_proteksi': ['Asuransi Kesehatan', 'Asuransi Kendaraan', 'Asuransi Barang/Harta'],
+                'tujuan_jangka_panjang': ['Pendidikan', 'Pengalaman', 'Aset Produktif']
+            };
+            
+            const scenarioCategory = linkedContent.category || data.category || '';
+            const scenarioName = data.name || '';
+            
             html = `
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Kategori Skenario</label>
-                    <input list="scenario-list" name="scenario_category" value="${scenarioCategory}" 
-                        class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none"
-                        placeholder="Pilih atau ketik kategori...">
-                    <datalist id="scenario-list">
-                        ${availableContents?.scenario_categories?.map(c =>
-                `<option value="${c.category}">`
-            ).join('') || ''}
-                    </datalist>
-                    <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik kategori custom. Kosongkan untuk acak.</p>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Kategori</label>
+                    <select name="category" id="scenario-category" required onchange="updateScenarioNames()" class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                        <option value="">-- Pilih Kategori --</option>
+                        <option value="pendapatan" ${scenarioCategory === 'pendapatan' ? 'selected' : ''}>Pendapatan</option>
+                        <option value="anggaran" ${scenarioCategory === 'anggaran' ? 'selected' : ''}>Anggaran</option>
+                        <option value="tabungan_dan_dana_darurat" ${scenarioCategory === 'tabungan_dan_dana_darurat' ? 'selected' : ''}>Tabungan dan Dana Darurat</option>
+                        <option value="utang" ${scenarioCategory === 'utang' ? 'selected' : ''}>Utang</option>
+                        <option value="investasi" ${scenarioCategory === 'investasi' ? 'selected' : ''}>Investasi</option>
+                        <option value="asuransi_dan_proteksi" ${scenarioCategory === 'asuransi_dan_proteksi' ? 'selected' : ''}>Asuransi dan Proteksi</option>
+                        <option value="tujuan_jangka_panjang" ${scenarioCategory === 'tujuan_jangka_panjang' ? 'selected' : ''}>Tujuan Jangka Panjang</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Pilih kategori untuk tile scenario</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Nama Tile</label>
+                    <select name="scenario_name" id="scenario-name" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                        <option value="">-- Pilih Kategori Terlebih Dahulu --</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Nama tile akan muncul setelah memilih kategori</p>
                 </div>
             `;
+            
+            // Store category mapping globally for updateScenarioNames function
+            window.categoryMapping = categoryMapping;
+            window.initialScenarioName = scenarioName;
             break;
 
         case 'property':
@@ -1460,13 +1392,70 @@ function renderDynamicFields(tileType, data = {}) {
     }
 
     container.innerHTML = html;
+    
+    // If scenario type, trigger name dropdown update after rendering
+    if (tileType === 'scenario') {
+        setTimeout(() => {
+            updateScenarioNames();
+        }, 0);
+    }
+}
+
+// Helper function to update scenario names based on selected category
+window.updateScenarioNames = function() {
+    const categorySelect = document.getElementById('scenario-category');
+    const nameSelect = document.getElementById('scenario-name');
+    
+    if (!categorySelect || !nameSelect) return;
+    
+    const selectedCategory = categorySelect.value;
+    const categoryMapping = window.categoryMapping || {};
+    
+    // Clear existing options
+    nameSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
+    
+    // Populate with names for selected category
+    if (selectedCategory && categoryMapping[selectedCategory]) {
+        categoryMapping[selectedCategory].forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            
+            // Select if this was the initial value (for edit mode)
+            if (window.initialScenarioName === name) {
+                option.selected = true;
+            }
+            
+            nameSelect.appendChild(option);
+        });
+    }
+    
+    // Clear initial value after first use
+    window.initialScenarioName = null;
 }
 
 async function showAddTileModal() {
     currentTileId = null;
 
-    // Load available contents for dropdowns
-    await loadAvailableContents();
+    // Get existing positions and max tile_id
+    let existingPositions = [];
+    let maxTileId = 0;
+    try {
+        const res = await fetch(`${BASE_API}/tiles`, { headers });
+        const json = await res.json();
+        const tiles = json.data || json;
+        existingPositions = tiles.map(t => t.position);
+        
+        // Find max tile_id for sequential numbering
+        tiles.forEach(t => {
+            const tileIdNum = parseInt(t.tile_id);
+            if (!isNaN(tileIdNum) && tileIdNum > maxTileId) {
+                maxTileId = tileIdNum;
+            }
+        });
+    } catch (e) {
+        console.error('Failed to load existing tiles:', e);
+    }
 
     const modal = document.createElement("div");
     modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
@@ -1482,24 +1471,24 @@ async function showAddTileModal() {
             <form id="tileForm" onsubmit="saveTile(event)">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Nama Tile</label>
-                        <input type="text" name="name" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" placeholder="Contoh: Kotak Start">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Tile</label>
                         <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="renderDynamicFields(this.value)">
                             <option value="scenario">Scenario</option>
-                            <option value="property">Investasi & Aset (Property)</option>
                             <option value="risk">Risk</option>
                             <option value="chance">Chance</option>
                             <option value="quiz">Quiz</option>
-                            <option value="start">Start</option>
-                            <option value="finish">Finish</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Posisi</label>
-                        <input type="number" name="position" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" placeholder="0, 1, 2, ...">
+                        <input type="number" id="tile-position" name="position" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" placeholder="0, 1, 2, ...">
+                        ${existingPositions.length > 0 ? `
+                            <p class="text-xs text-orange-600 mt-1">
+                                <i class="fa-solid fa-exclamation-triangle mr-1"></i>
+                                Posisi yang sudah ada: ${existingPositions.sort((a,b) => a-b).join(', ')}
+                            </p>
+                        ` : ''}
+                        <p class="text-xs text-gray-500 mt-1">Pilih posisi yang belum terpakai</p>
                     </div>
                     <div id="dynamic-fields-container" class="space-y-4">
                         <!-- Dynamic fields will be rendered here -->
@@ -1519,6 +1508,10 @@ async function showAddTileModal() {
     document.body.appendChild(modal);
     tileModal = modal;
 
+    // Store existing positions and max tile_id for validation
+    window.existingTilePositions = existingPositions;
+    window.maxTileId = maxTileId;
+
     // Initialize dynamic fields for default type (scenario)
     renderDynamicFields('scenario');
 }
@@ -1530,9 +1523,6 @@ async function editTile(id) {
         const data = json.data || json;
 
         currentTileId = id;
-
-        // Load available contents for dropdowns
-        await loadAvailableContents();
 
         // Get current tile position from list
         const tilesRes = await fetch(`${BASE_API}/tiles`, { headers });
@@ -1557,24 +1547,18 @@ async function editTile(id) {
                 <form id="tileForm" onsubmit="saveTile(event)">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Nama Tile</label>
-                            <input type="text" name="name" value="${data.name || ''}" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Tipe</label>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Tipe Tile</label>
                             <select name="type" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" onchange="renderDynamicFields(this.value, window.currentEditTileData)">
                                 <option value="scenario" ${data.type === 'scenario' ? 'selected' : ''}>Scenario</option>
-                                <option value="property" ${data.type === 'property' ? 'selected' : ''}>Investasi & Aset (Property)</option>
                                 <option value="risk" ${data.type === 'risk' ? 'selected' : ''}>Risk</option>
                                 <option value="chance" ${data.type === 'chance' ? 'selected' : ''}>Chance</option>
                                 <option value="quiz" ${data.type === 'quiz' ? 'selected' : ''}>Quiz</option>
-                                <option value="start" ${data.type === 'start' ? 'selected' : ''}>Start</option>
-                                <option value="finish" ${data.type === 'finish' ? 'selected' : ''}>Finish</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">Posisi</label>
-                            <input type="number" name="position" value="${currentTile?.position || 0}" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none">
+                            <input type="number" name="position" value="${currentTile?.position || 0}" min="0" required class="w-full p-2 border border-gray-300 rounded focus:border-green-500 focus:outline-none" readonly>
+                            <p class="text-xs text-gray-500 mt-1">Posisi tidak dapat diubah saat edit</p>
                         </div>
                         <div id="dynamic-fields-container" class="space-y-4">
                             <!-- Dynamic fields will be rendered here -->
@@ -1615,74 +1599,85 @@ async function saveTile(e) {
     const formData = new FormData(form);
 
     const tileType = formData.get("type");
+    const position = parseInt(formData.get("position"));
 
-    // Build linked_content based on tile type and form fields
+    // Validate position is not already taken (only for new tiles)
+    if (!currentTileId && window.existingTilePositions && window.existingTilePositions.includes(position)) {
+        alert(`Posisi ${position} sudah digunakan! Pilih posisi lain.`);
+        return;
+    }
+
+    // Build linked_content, name, category, and tile_id based on tile type
     let linkedContent = null;
+    let tileName = null;
+    let tileCategory = null;
+    let tileId = null;
+
+    // Generate tile_id for new tiles (sequential numbering)
+    if (!currentTileId) {
+        const nextTileId = (window.maxTileId || 0) + 1;
+        tileId = nextTileId.toString();
+    }
 
     switch (tileType) {
         case 'scenario':
-            const scenarioCategory = formData.get("scenario_category");
-            if (scenarioCategory) {
-                linkedContent = { scenario_category: scenarioCategory };
+            const category = formData.get('category');
+            const scenarioName = formData.get('scenario_name');
+            
+            if (!category || !scenarioName) {
+                alert('Kategori dan Nama harus diisi untuk tile scenario!');
+                return;
             }
-            break;
-
-        case 'property':
-            const propType = formData.get("property_type");
-            const propRiskLevel = formData.get("risk_level");
-            const propInterestRate = formData.get("interest_rate");
-            const propCoverage = formData.get("coverage");
-            const propTerm = formData.get("term");
-            const propGeneratesIncome = formData.get("generates_income");
-            linkedContent = {};
-            if (propType) linkedContent.type = propType;
-            if (propRiskLevel) linkedContent.risk_level = propRiskLevel;
-            if (propInterestRate) linkedContent.interest_rate = parseFloat(propInterestRate);
-            if (propCoverage) linkedContent.coverage = propCoverage;
-            if (propTerm) linkedContent.term = parseInt(propTerm);
-            if (propGeneratesIncome === 'true') linkedContent.generates_income = true;
-            if (propGeneratesIncome === 'false') linkedContent.generates_income = false;
+            
+            linkedContent = {
+                type: 'scenario_category',
+                category: category
+            };
+            tileName = scenarioName;
+            tileCategory = category;
             break;
 
         case 'risk':
-            const riskCardId = formData.get("card_id");
-            const riskSeverity = formData.get("severity");
-            linkedContent = { card_type: 'risk' };
-            if (riskCardId) linkedContent.card_id = parseInt(riskCardId);
-            if (riskSeverity) linkedContent.severity = riskSeverity;
+            linkedContent = {
+                card_type: 'risk'
+            };
+            tileName = 'Risiko';
+            tileCategory = 'card';
             break;
 
         case 'chance':
-            const chanceCardId = formData.get("card_id");
-            const chanceIncomeType = formData.get("income_type");
-            const chanceBenefit = formData.get("benefit");
-            linkedContent = { card_type: 'chance' };
-            if (chanceCardId) linkedContent.card_id = parseInt(chanceCardId);
-            if (chanceIncomeType) linkedContent.income_type = chanceIncomeType;
-            if (chanceBenefit) linkedContent.benefit = chanceBenefit;
+            linkedContent = {
+                card_type: 'chance'
+            };
+            tileName = 'Kesempatan';
+            tileCategory = 'card';
             break;
 
         case 'quiz':
-            const quizId = formData.get("quiz_id");
-            if (quizId) {
-                linkedContent = { quiz_id: parseInt(quizId) };
-            } else {
-                linkedContent = { quiz_category: 'literasi_umum' };
-            }
+            linkedContent = {
+                card_type: 'quiz'
+            };
+            tileName = 'Kuis Literasi';
+            tileCategory = 'quiz';
             break;
 
-        case 'start':
-        case 'finish':
-            linkedContent = null;
-            break;
+        default:
+            alert('Tipe tile tidak valid!');
+            return;
     }
 
     const payload = {
-        name: formData.get("name"),
+        name: tileName,
         type: tileType,
-        position: parseInt(formData.get("position")),
+        position: position,
+        category: tileCategory,
         linked_content: linkedContent
     };
+
+    // Add tile_id for new tiles
+    if (tileId) {
+        payload.tile_id = tileId;
+    }
 
     try {
         const method = currentTileId ? "PUT" : "POST";

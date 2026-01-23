@@ -37,18 +37,21 @@ class TileRepository
 
     public function create($data)
     {
-        // Generate short tile_id (max 10 chars to fit DB column)
-        $tileId = 't' . substr(md5(uniqid()), 0, 8);
+        // Use provided tile_id if available, otherwise generate random ID
+        $tileId = $data['tile_id'] ?? ('t' . substr(md5(uniqid()), 0, 8));
         
         // Store linked_content directly from user input
         $linkedContent = $data['linked_content'] ?? null;
+        
+        // Priority: use category from data, then from linked_content
+        $category = $data['category'] ?? $linkedContent['scenario_category'] ?? $linkedContent['category'] ?? null;
         
         DB::table('boardtiles')->insert([
             'tile_id' => $tileId,
             'name' => $data['name'],
             'type' => $data['type'],
             'position_index' => $data['position'],
-            'category' => $linkedContent['scenario_category'] ?? $linkedContent['category'] ?? null,
+            'category' => $category,
             'linked_content' => $linkedContent ? json_encode($linkedContent) : null,
         ]);
         return $tileId;
