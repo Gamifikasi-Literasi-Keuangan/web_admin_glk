@@ -325,9 +325,15 @@ function renderTiles(tiles) {
                     Statistik pendaratan menunjukkan berapa kali tiles dikunjungi oleh pemain
                 </p>
             </div>
-        <!-- <button onclick="showAddTileModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-colors flex items-center transform hover:scale-105">
-            <i class="fa-solid fa-plus mr-2"></i>Tambah Tile
-        </button> -->
+            <!-- Temporarily disabled Add Tile button -->
+            <!-- <button onclick="showAddTileModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow-sm transition-colors flex items-center transform hover:scale-105">
+                <i class="fa-solid fa-plus mr-2"></i>Tambah Tile
+            </button> -->
+        </div>`;
+
+    if (!tiles.length) {
+        container.innerHTML = `
+            <div class="space-y-6">
                 ${headerHtml}
                 <div class="text-center py-12 border-2 border-dashed border-zinc-300 rounded-lg bg-zinc-50">
                     <div class="bg-white p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center shadow-sm">
